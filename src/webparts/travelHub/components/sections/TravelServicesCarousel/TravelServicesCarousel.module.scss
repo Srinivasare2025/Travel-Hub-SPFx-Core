@@ -1,0 +1,46 @@
+@import '../../../../../common/styles/mixins';
+@import '../../../../../common/styles/typography';
+
+.root {
+  width: 100%;
+}
+
+.card {
+  min-height: 100%;
+}
+
+.mediaWrap {
+  position: relative;
+}
+
+.iconChip {
+  position: absolute;
+  left: var(--full-space-3, 12px);
+  bottom: calc(-1 * var(--full-space-3, 12px));
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 25px;
+  color: #fff;
+  font-size: 0.8rem;
+  box-shadow: var(--full-shadow-card, 0 4px 16px rgba(4, 37, 60, 0.08));
+}
+
+.title {
+  @include th-card-title;
+  margin-top: var(--full-space-2, 8px);
+}
+
+.description {
+  @include th-body;
+  color: var(--full-text-muted, #7b8794);
+  margin: 0;
+  flex: 1;
+  @include th-line-clamp(3);
+}
+
+.action {
+  margin-top: var(--full-space-3, 12px);
+}

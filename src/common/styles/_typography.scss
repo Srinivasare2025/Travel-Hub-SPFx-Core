@@ -1,0 +1,61 @@
+// Semantic typography mixins. Components include these instead of setting
+// font-size / weight ad hoc, so the type hierarchy stays consistent.
+
+@mixin th-font-base {
+  font-family: var(--full-font-family, "Segoe UI", -apple-system, sans-serif);
+  color: var(--full-text, #04253c);
+}
+
+@mixin th-page-title {
+  @include th-font-base;
+  font-size: var(--full-fs-page-title, 2.25rem);
+  font-weight: var(--full-fw-bold, 700);
+  line-height: var(--full-lh-tight, 1.2);
+  color: var(--full-secondary, #04253c);
+  margin: 0;
+}
+
+@mixin th-section-title {
+  @include th-font-base;
+  font-size: var(--full-fs-section-title, 1.5rem);
+  font-weight: var(--full-fw-semibold, 600);
+  line-height: var(--full-lh-tight, 1.2);
+  color: var(--full-secondary, #04253c);
+  margin: 0;
+}
+
+@mixin th-card-title {
+  @include th-font-base;
+  font-size: var(--full-fs-card-title, 1.125rem);
+  font-weight: var(--full-fw-semibold, 600);
+  line-height: var(--full-lh-tight, 1.2);
+  margin: 0;
+}
+
+@mixin th-body {
+  @include th-font-base;
+  font-size: var(--full-fs-body, 0.9375rem);
+  font-weight: var(--full-fw-regular, 400);
+  line-height: var(--full-lh-normal, 1.5);
+}
+
+@mixin th-meta {
+  @include th-font-base;
+  font-size: var(--full-fs-meta, 0.8125rem);
+  font-weight: var(--full-fw-regular, 400);
+  line-height: var(--full-lh-normal, 1.5);
+  color: var(--full-text-muted, #7b8794);
+}
+
+@mixin th-link {
+  @include th-font-base;
+  font-size: var(--full-fs-link, 0.875rem);
+  font-weight: var(--full-fw-semibold, 600);
+  color: var(--full-primary, #b89c66);
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+  }
+}

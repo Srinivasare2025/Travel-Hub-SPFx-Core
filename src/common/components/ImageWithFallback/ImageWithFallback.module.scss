@@ -1,0 +1,30 @@
+.frame {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: var(--full-surface-alt, #faf8f4);
+
+  > picture {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.img {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
+}
+
+.fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--full-text-muted, #7b8794);
+  font-size: 2rem;
+  background: var(--full-surface-alt, #faf8f4);
+}

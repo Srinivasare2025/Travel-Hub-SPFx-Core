@@ -1,0 +1,38 @@
+@import '../../styles/mixins';
+@import '../../styles/typography';
+
+.root {
+  @include th-card-surface;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--full-space-3, 12px);
+  padding: var(--full-space-6, 32px) var(--full-space-4, 16px);
+}
+
+.icon {
+  font-size: 28px;
+}
+
+.error .icon {
+  color: var(--full-danger, #a4262c);
+}
+
+.forbidden .icon {
+  color: var(--full-secondary, #04253c);
+}
+
+.message {
+  @include th-body;
+  margin: 0;
+  max-width: 42ch;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--full-space-3, 12px);
+  justify-content: center;
+  margin-top: var(--full-space-2, 8px);
+}

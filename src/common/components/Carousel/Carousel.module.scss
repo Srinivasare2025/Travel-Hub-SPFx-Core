@@ -1,0 +1,85 @@
+@import '../../styles/mixins';
+
+.root {
+  position: relative;
+}
+
+.viewport {
+  overflow: hidden;
+}
+
+.track {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  transition: transform var(--full-transition-base, 200ms ease);
+
+  @include th-reduced-motion {
+    transition: none;
+  }
+}
+
+.slide {
+  flex-grow: 0;
+  flex-shrink: 0;
+  padding-inline: var(--full-space-2, 8px);
+  box-sizing: border-box;
+
+  &:first-child {
+    padding-inline-start: 0;
+  }
+
+  &:last-child {
+    padding-inline-end: 0;
+  }
+}
+
+.srStatus {
+  @include th-visually-hidden;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--full-space-3, 12px);
+  margin-top: var(--full-space-4, 16px);
+}
+
+.controlsOverlay {
+  position: absolute;
+  right: var(--full-space-5, 24px);
+  bottom: var(--full-space-5, 24px);
+  margin-top: 0;
+  padding: var(--full-space-1, 4px) var(--full-space-2, 8px);
+  border-radius: 999px;
+  background: rgba(4, 37, 60, 0.35);
+  backdrop-filter: blur(4px);
+  z-index: 3;
+}
+
+.dots {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-2, 8px);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--full-border, #e8e5e0);
+  cursor: pointer;
+  transition: background-color var(--full-transition-fast, 120ms ease),
+    width var(--full-transition-fast, 120ms ease);
+  @include th-focusable;
+}
+
+.dotActive {
+  background: var(--full-primary, #b89c66);
+  width: 20px;
+  border-radius: 4px;
+}

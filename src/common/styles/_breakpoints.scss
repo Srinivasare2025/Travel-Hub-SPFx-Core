@@ -1,0 +1,31 @@
+// TravelHub breakpoints. Mobile-first: base styles target mobile, media
+// queries add tablet / desktop. Card *counts* per breakpoint are configuration
+// (TH_SiteConfiguration) not CSS — these breakpoints only drive layout.
+
+$th-bp-tablet: 640px;
+$th-bp-desktop: 1024px;
+$th-bp-wide: 1440px;
+
+@mixin th-tablet-up {
+  @media (min-width: $th-bp-tablet) {
+    @content;
+  }
+}
+
+@mixin th-desktop-up {
+  @media (min-width: $th-bp-desktop) {
+    @content;
+  }
+}
+
+@mixin th-wide-up {
+  @media (min-width: $th-bp-wide) {
+    @content;
+  }
+}
+
+@mixin th-reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}

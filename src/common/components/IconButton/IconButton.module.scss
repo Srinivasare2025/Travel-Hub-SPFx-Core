@@ -1,0 +1,42 @@
+@import '../../styles/mixins';
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--full-border, #e8e5e0);
+  background: var(--full-surface, #fff);
+  color: var(--full-secondary, #04253c);
+  cursor: pointer;
+  transition: background-color var(--full-transition-fast, 120ms ease),
+    border-color var(--full-transition-fast, 120ms ease);
+  @include th-focusable;
+
+  &:hover:not(:disabled) {
+    border-color: var(--full-primary, #b89c66);
+    color: var(--full-primary, #b89c66);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.sm {
+  width: 32px;
+  height: 32px;
+  font-size: 0.75rem;
+}
+
+.md {
+  width: 40px;
+  height: 40px;
+  font-size: 0.875rem;
+}
+
+.onImage {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: transparent;
+}

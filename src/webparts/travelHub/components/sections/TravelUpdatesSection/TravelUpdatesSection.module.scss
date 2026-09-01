@@ -1,0 +1,246 @@
+@import '../../../../../common/styles/mixins';
+@import '../../../../../common/styles/typography';
+
+.root {
+  width: 100%;
+}
+
+.sectionTitle {
+  @include th-section-title;
+  margin-bottom: var(--full-space-5, 24px);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--full-space-4, 16px);
+
+  @include th-desktop-up {
+    grid-template-columns: repeat(3, 1fr);
+    align-items: start;
+  }
+}
+
+.column {
+  height: 100%;
+}
+
+.srOnly {
+  @include th-visually-hidden;
+}
+
+/* --- News ------------------------------------------------------------ */
+.newsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-4, 16px);
+}
+
+.featured {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-3, 12px);
+}
+
+.featuredImage {
+  border-radius: var(--full-radius-md, 8px);
+}
+
+.featuredBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-2, 8px);
+}
+
+.featuredTitle {
+  @include th-card-title;
+  margin: 0;
+}
+
+.featuredText {
+  @include th-body;
+  color: var(--full-text-muted, #7b8794);
+  margin: 0;
+  @include th-line-clamp(2);
+}
+
+.newsRow {
+  display: flex;
+  gap: var(--full-space-3, 12px);
+  padding-top: var(--full-space-4, 16px);
+  border-top: 1px solid var(--full-border, #e8e5e0);
+}
+
+.thumb {
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  border-radius: var(--full-radius-md, 8px);
+}
+
+.newsRowBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-1, 4px);
+  min-width: 0;
+}
+
+.newsRowTitle {
+  @include th-card-title;
+  font-size: 0.95rem;
+  color: var(--full-secondary, #04253c);
+}
+
+.newsRowText {
+  @include th-meta;
+  margin: 0;
+  @include th-line-clamp(2);
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--full-space-2, 8px);
+}
+
+.date {
+  @include th-meta;
+}
+
+.onPrem {
+  @include th-meta;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--full-primary, #b89c66);
+}
+
+/* --- Events --------------------------------------------------------- */
+.eventList,
+.tipList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-4, 16px);
+}
+
+.eventRow {
+  display: flex;
+  gap: var(--full-space-3, 12px);
+  align-items: flex-start;
+
+  & + & {
+    padding-top: var(--full-space-4, 16px);
+    border-top: 1px solid var(--full-border, #e8e5e0);
+  }
+}
+
+.dateBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  flex-shrink: 0;
+  padding: var(--full-space-2, 8px) 0;
+  border-radius: var(--full-radius-md, 8px);
+  background: var(--full-surface-alt, #faf8f4);
+  border: 1px solid var(--full-border, #e8e5e0);
+}
+
+.dateDay {
+  font-size: 1.25rem;
+  font-weight: var(--full-fw-bold, 700);
+  color: var(--full-secondary, #04253c);
+  line-height: 1;
+}
+
+.dateMonth {
+  font-size: var(--full-fs-meta, 0.8125rem);
+  font-weight: var(--full-fw-semibold, 600);
+  color: var(--full-primary, #b89c66);
+  letter-spacing: 0.04em;
+}
+
+.eventBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-1, 4px);
+  flex: 1;
+  min-width: 0;
+}
+
+.eventTitle {
+  @include th-card-title;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.eventText {
+  @include th-meta;
+  margin: 0;
+  @include th-line-clamp(2);
+}
+
+.eventMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--full-space-3, 12px);
+  @include th-meta;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+}
+
+.hijri {
+  color: var(--full-hijri, #b89c66);
+}
+
+.eventThumb {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: var(--full-radius-md, 8px);
+}
+
+/* --- Tips ---------------------------------------------------------- */
+.tipRow {
+  display: flex;
+  gap: var(--full-space-3, 12px);
+  align-items: flex-start;
+}
+
+.tipIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: rgba(184, 156, 102, 0.16);
+  color: var(--full-primary, #b89c66);
+  font-size: 0.85rem;
+}
+
+.tipBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tipText {
+  @include th-body;
+  font-weight: var(--full-fw-medium, 500);
+  color: var(--full-text, #04253c);
+}
+
+.tipDesc {
+  @include th-meta;
+}

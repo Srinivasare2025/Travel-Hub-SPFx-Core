@@ -1,0 +1,27 @@
+@import '../../styles/breakpoints';
+
+.skeleton {
+  display: block;
+  background: linear-gradient(
+    90deg,
+    var(--full-border, #e8e5e0) 25%,
+    rgba(232, 229, 224, 0.4) 37%,
+    var(--full-border, #e8e5e0) 63%
+  );
+  background-size: 400% 100%;
+  border-radius: var(--full-radius-sm, 4px);
+  animation: th-skeleton-shimmer 1.4s ease infinite;
+
+  @include th-reduced-motion {
+    animation: none;
+  }
+}
+
+@keyframes th-skeleton-shimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}

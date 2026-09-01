@@ -1,0 +1,82 @@
+@import '../../styles/mixins';
+@import '../../styles/typography';
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--full-space-4, 16px);
+  background: rgba(4, 37, 60, 0.62);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.dialog {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
+  max-height: 100%;
+  background: var(--full-surface, #fff);
+  border-radius: var(--full-radius-lg, 16px);
+  box-shadow: 0 24px 64px rgba(4, 37, 60, 0.42);
+  overflow: hidden;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.md {
+  width: 32rem;
+}
+
+.lg {
+  width: 52rem;
+}
+
+.fullscreen {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--full-space-3, 12px);
+  padding: var(--full-space-4, 16px);
+  border-bottom: 1px solid var(--full-border, #e8e5e0);
+  flex-shrink: 0;
+}
+
+.title {
+  @include th-section-title;
+  font-size: 1.125rem;
+}
+
+.floatingClose {
+  position: absolute;
+  top: var(--full-space-3, 12px);
+  right: var(--full-space-3, 12px);
+  z-index: 2;
+}
+
+.body {
+  overflow: auto;
+  padding: var(--full-space-4, 16px);
+}
+
+.fullscreen .body {
+  padding: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}

@@ -1,0 +1,50 @@
+@import '../../styles/mixins';
+
+.card {
+  @include th-card-surface;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+  transition: box-shadow var(--full-transition-base, 200ms ease),
+    transform var(--full-transition-base, 200ms ease);
+}
+
+.interactive {
+  &:hover,
+  &:focus-within {
+    box-shadow: var(--full-shadow-card-hover, 0 8px 28px rgba(4, 37, 60, 0.14));
+    transform: translateY(-2px);
+  }
+
+  @include th-reduced-motion {
+    &:hover,
+    &:focus-within {
+      transform: none;
+    }
+  }
+}
+
+.media {
+  flex-shrink: 0;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--full-space-2, 8px);
+}
+
+.padNone {
+  padding: 0;
+}
+.padSm {
+  padding: var(--full-space-3, 12px);
+}
+.padMd {
+  padding: var(--full-space-4, 16px);
+}
+.padLg {
+  padding: var(--full-space-5, 24px);
+}

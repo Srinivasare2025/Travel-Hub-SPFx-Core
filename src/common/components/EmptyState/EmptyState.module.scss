@@ -1,0 +1,27 @@
+@import '../../styles/mixins';
+@import '../../styles/typography';
+
+.root {
+  @include th-card-surface;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--full-space-3, 12px);
+  padding: var(--full-space-6, 32px) var(--full-space-4, 16px);
+}
+
+.icon {
+  font-size: 28px;
+  color: var(--full-text-muted, #7b8794);
+}
+
+.message {
+  @include th-body;
+  color: var(--full-text-muted, #7b8794);
+  margin: 0;
+}
+
+.action {
+  margin-top: var(--full-space-2, 8px);
+}

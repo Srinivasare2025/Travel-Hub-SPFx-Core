@@ -1,43 +1,59 @@
 import * as React from 'react';
-import styles from './TravelHub.module.scss';
 import type { ITravelHubProps } from './ITravelHubProps';
-import { escape } from '@microsoft/sp-lodash-subset';
+import { ServiceContext } from '../../../common/context/ServiceContext';
+import { SectionBoundary } from './SectionBoundary';
+import { HeroBanner } from './sections/HeroBanner';
+import { TravelServicesCarousel } from './sections/TravelServicesCarousel';
+import { TravelUpdatesSection } from './sections/TravelUpdatesSection';
+import styles from './TravelHub.module.scss';
 
+/**
+ * Orchestrator. Provides the service registry to the tree and renders each
+ * section in the mock's order, guarded by configuration-driven visibility and an
+ * error boundary. No data access, no business logic, no section markup here
+ * (ARCHITECTURE.md §2).
+ */
 export default class TravelHub extends React.Component<ITravelHubProps> {
   public render(): React.ReactElement<ITravelHubProps> {
-    const {
-      description,
-      isDarkTheme,
-      environmentMessage,
-      hasTeamsContext,
-      userDisplayName
-    } = this.props;
+    const { services, hasTeamsContext } = this.props;
+    const { configuration } = services;
+    const sections = configuration.sections;
 
     return (
-      <section className={`${styles.travelHub} ${hasTeamsContext ? styles.teams : ''}`}>
-        <div className={styles.welcome}>
-          <img alt="" src={isDarkTheme ? require('../assets/welcome-dark.png') : require('../assets/welcome-light.png')} className={styles.welcomeImage} />
-          <h2>Well done, {escape(userDisplayName)}!</h2>
-          <div>{environmentMessage}</div>
-          <div>Web part property value: <strong>{escape(description)}</strong></div>
+      <ServiceContext.Provider value={services}>
+        <div
+          className={`${styles.travelHub} ${hasTeamsContext ? styles.teams : ''} ${
+            configuration.layout.fullBleed ? styles.fullBleed : ''
+          }`}
+          dir={configuration.featureFlags.rtl ? 'rtl' : undefined}
+        >
+          <div className={styles.page}>
+            {sections.hero.isVisible && (
+              <SectionBoundary name="HeroBanner">
+                <HeroBanner />
+              </SectionBoundary>
+            )}
+
+            {sections.travelServices.isVisible && (
+              <SectionBoundary name="TravelServicesCarousel">
+                <TravelServicesCarousel
+                  title={sections.travelServices.title ?? 'Explore Our Travel Services'}
+                />
+              </SectionBoundary>
+            )}
+
+            {sections.travelUpdates.isVisible && (
+              <SectionBoundary name="TravelUpdatesSection">
+                <TravelUpdatesSection
+                  title={sections.travelUpdates.title ?? 'Travel Updates & Insights'}
+                />
+              </SectionBoundary>
+            )}
+
+            {/* Phases 7-10 add: TravelerEngagement, TravelInsights, TravelTeam, Footer */}
+          </div>
         </div>
-        <div>
-          <h3>Welcome to SharePoint Framework!</h3>
-          <p>
-            The SharePoint Framework (SPFx) is a extensibility model for Microsoft Viva, Microsoft Teams and SharePoint. It&#39;s the easiest way to extend Microsoft 365 with automatic Single Sign On, automatic hosting and industry standard tooling.
-          </p>
-          <h4>Learn more about SPFx development:</h4>
-          <ul className={styles.links}>
-            <li><a href="https://aka.ms/spfx" target="_blank" rel="noreferrer">SharePoint Framework Overview</a></li>
-            <li><a href="https://aka.ms/spfx-yeoman-graph" target="_blank" rel="noreferrer">Use Microsoft Graph in your solution</a></li>
-            <li><a href="https://aka.ms/spfx-yeoman-teams" target="_blank" rel="noreferrer">Build for Microsoft Teams using SharePoint Framework</a></li>
-            <li><a href="https://aka.ms/spfx-yeoman-viva" target="_blank" rel="noreferrer">Build for Microsoft Viva Connections using SharePoint Framework</a></li>
-            <li><a href="https://aka.ms/spfx-yeoman-store" target="_blank" rel="noreferrer">Publish SharePoint Framework applications to the marketplace</a></li>
-            <li><a href="https://aka.ms/spfx-yeoman-api" target="_blank" rel="noreferrer">SharePoint Framework API reference</a></li>
-            <li><a href="https://aka.ms/m365pnp" target="_blank" rel="noreferrer">Microsoft 365 Developer Community</a></li>
-          </ul>
-        </div>
-      </section>
+      </ServiceContext.Provider>
     );
   }
 }

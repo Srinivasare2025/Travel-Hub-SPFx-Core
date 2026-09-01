@@ -1,0 +1,66 @@
+@import '../../styles/mixins';
+@import '../../styles/typography';
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--full-space-2, 8px);
+  padding: var(--full-space-3, 12px) var(--full-space-5, 24px);
+  border-radius: var(--full-radius-sm, 4px);
+  border: 1px solid transparent;
+  font-family: var(--full-font-family, "Segoe UI", sans-serif);
+  font-size: var(--full-fs-link, 0.875rem);
+  font-weight: var(--full-fw-semibold, 600);
+  line-height: 1;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color var(--full-transition-fast, 120ms ease),
+    color var(--full-transition-fast, 120ms ease),
+    border-color var(--full-transition-fast, 120ms ease);
+  @include th-focusable;
+
+  &[disabled],
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.label {
+  white-space: nowrap;
+}
+
+.icon {
+  font-size: 0.75rem;
+}
+
+.primary {
+  background: var(--full-primary, #b89c66);
+  color: var(--full-primary-contrast, #04253c);
+
+  &:hover:not(:disabled) {
+    background: var(--full-primary-hover, #a5884f);
+  }
+}
+
+.secondary {
+  background: transparent;
+  color: var(--full-secondary, #04253c);
+  border-color: var(--full-secondary, #04253c);
+
+  &:hover:not(:disabled) {
+    background: var(--full-secondary, #04253c);
+    color: var(--full-secondary-contrast, #fff);
+  }
+}
+
+.tertiary {
+  background: transparent;
+  color: var(--full-primary, #b89c66);
+  padding-inline: 0;
+
+  &:hover:not(:disabled) {
+    color: var(--full-primary-hover, #a5884f);
+    text-decoration: underline;
+  }
+}

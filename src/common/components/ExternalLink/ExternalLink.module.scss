@@ -1,0 +1,29 @@
+@import '../../styles/mixins';
+@import '../../styles/typography';
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--full-space-1, 4px);
+  @include th-link;
+  @include th-focusable;
+}
+
+.arrow {
+  font-size: 0.7rem;
+  transition: transform var(--full-transition-fast, 120ms ease);
+
+  .link:hover & {
+    transform: translateX(2px);
+  }
+}
+
+.inert {
+  color: var(--full-text-muted, #7b8794);
+  cursor: default;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: none;
+  }
+}

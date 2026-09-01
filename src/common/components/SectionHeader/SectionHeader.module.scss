@@ -1,0 +1,26 @@
+@import '../../styles/mixins';
+@import '../../styles/typography';
+
+.root {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--full-space-4, 16px);
+  margin-bottom: var(--full-space-4, 16px);
+}
+
+.title {
+  @include th-section-title;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-2, 8px);
+  flex-shrink: 0;
+}
+
+.viewAll {
+  flex-shrink: 0;
+  white-space: nowrap;
+}

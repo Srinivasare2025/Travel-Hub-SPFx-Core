@@ -1,8 +1,9 @@
 define([], function() {
   return {
-    "PropertyPaneDescription": "Description",
-    "BasicGroupName": "Group Name",
+    "PropertyPaneDescription": "TravelHub landing page",
+    "BasicGroupName": "About",
     "DescriptionFieldLabel": "Description Field",
+    "ConfigManagedInList": "TravelHub content and settings are managed in SharePoint lists (TH_SiteConfiguration and the TH_* content lists). There is nothing to configure here.",
     "AppLocalEnvironmentSharePoint": "The app is running on your local environment as SharePoint web part",
     "AppLocalEnvironmentTeams": "The app is running on your local environment as Microsoft Teams app",
     "AppLocalEnvironmentOffice": "The app is running on your local environment in office.com",

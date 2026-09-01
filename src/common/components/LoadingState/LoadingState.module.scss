@@ -1,0 +1,62 @@
+@import '../../styles/mixins';
+
+.root {
+  width: 100%;
+}
+
+.srOnly {
+  @include th-visually-hidden;
+}
+
+.carousel {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--full-space-4, 16px);
+
+  @include th-tablet-up {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include th-desktop-up {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--full-space-4, 16px);
+
+  @include th-tablet-up {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include th-desktop-up {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-2, 8px);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-4, 16px);
+}
+
+.row {
+  display: flex;
+  gap: var(--full-space-3, 12px);
+  align-items: flex-start;
+}
+
+.rowText {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-2, 8px);
+}

@@ -1,0 +1,32 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--full-space-2, 8px);
+  border-radius: var(--full-radius-sm, 4px);
+  font-family: var(--full-font-family, "Segoe UI", sans-serif);
+  font-size: var(--full-fs-meta, 0.8125rem);
+  font-weight: var(--full-fw-semibold, 600);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.gold {
+  background: rgba(184, 156, 102, 0.16);
+  color: #6b5427;
+}
+
+.navy {
+  background: rgba(4, 37, 60, 0.1);
+  color: var(--full-secondary, #04253c);
+}
+
+.muted {
+  background: var(--full-surface-alt, #faf8f4);
+  color: var(--full-text-muted, #7b8794);
+  border: 1px solid var(--full-border, #e8e5e0);
+}
+
+.alert {
+  background: var(--full-danger, #a4262c);
+  color: #fff;
+}

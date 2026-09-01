@@ -1,0 +1,255 @@
+@import '../../../../../common/styles/mixins';
+@import '../../../../../common/styles/typography';
+
+$hero-min-mobile: 26rem;
+$hero-min-desktop: clamp(21rem, 32vw, 28rem);
+
+.root {
+  width: 100%;
+}
+
+/* --- Stage: one rounded frame that clips the media + the overlay --------- */
+.stage {
+  position: relative;
+  border-radius: var(--full-radius-lg, 16px);
+  overflow: hidden;
+  min-height: $hero-min-mobile;
+  background: var(--full-secondary, #04253c);
+
+  @include th-tablet-up {
+    min-height: $hero-min-desktop;
+  }
+}
+
+/* --- Slide ------------------------------------------------------------- */
+.slide,
+.fallbackSlide {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  height: 100%;
+  min-height: $hero-min-mobile;
+
+  @include th-tablet-up {
+    min-height: $hero-min-desktop;
+  }
+}
+
+.fallbackSlide {
+  background: linear-gradient(135deg, var(--full-secondary, #04253c), #063250);
+}
+
+.slideMedia {
+  position: absolute;
+  inset: 0;
+}
+
+.image,
+.video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video {
+  display: block;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(4, 37, 60, 0.5) 0%, rgba(4, 37, 60, 0.08) 28%, rgba(4, 37, 60, 0.12) 52%, rgba(4, 37, 60, 0.62) 100%),
+    linear-gradient(90deg, rgba(4, 37, 60, 0.5) 0%, rgba(4, 37, 60, 0.08) 58%);
+}
+
+.slideContent {
+  position: relative;
+  z-index: 1;
+  padding: var(--full-space-5, 24px);
+  max-width: 560px;
+  color: #fff;
+
+  @include th-desktop-up {
+    padding: var(--full-space-6, 32px);
+  }
+}
+
+.slideTitle {
+  font-family: var(--full-font-family, "Segoe UI", sans-serif);
+  font-size: clamp(1.5rem, 3.4vw, 2rem);
+  font-weight: var(--full-fw-bold, 700);
+  line-height: var(--full-lh-tight, 1.2);
+  margin: 0 0 var(--full-space-2, 8px);
+  color: #fff;
+}
+
+.slideText {
+  font-size: 0.9375rem;
+  line-height: var(--full-lh-normal, 1.5);
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* --- Quick-links overlay (on the image, pinned bottom) ------------------ */
+.quickLinksOverlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  padding: var(--full-space-7, 48px) var(--full-space-4, 16px) var(--full-space-4, 16px);
+  background: linear-gradient(
+    to top,
+    rgba(4, 37, 60, 0.6) 8%,
+    rgba(4, 37, 60, 0.28) 50%,
+    rgba(4, 37, 60, 0) 100%
+  );
+
+  @include th-desktop-up {
+    padding-inline: var(--full-space-6, 32px);
+  }
+}
+
+/* Left-aligned, must not span the image. Default layout is 'inline'. */
+.quickLinks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-2, 8px);
+  width: 100%;
+  max-width: 22rem; /* 'stack' width - a narrow left column (~352px) */
+}
+
+.quickLinkList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-2, 8px);
+
+  > li {
+    display: flex;
+  }
+}
+
+/* hero.quickLinks.layout = 'inline': the two cards on one row (side by side). */
+.inline {
+  max-width: 40rem; /* ~640px */
+}
+
+.inline .quickLinkList {
+  @include th-tablet-up {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--full-space-3, 12px);
+  }
+}
+
+/* Mostly-opaque frosted card: readable text, hero image still bleeds through faintly. */
+.quickLink {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-2, 8px);
+  width: 100%;
+  padding: var(--full-space-2, 8px) var(--full-space-3, 12px);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: var(--full-radius-md, 8px);
+  box-shadow: 0 8px 22px rgba(4, 37, 60, 0.3);
+  text-decoration: none;
+  color: inherit;
+  transition: background-color var(--full-transition-fast, 120ms ease),
+    transform var(--full-transition-fast, 120ms ease);
+  @include th-focusable;
+
+  &:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: translateY(-1px);
+  }
+
+  @include th-reduced-motion {
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+.quickLinkDisabled {
+  opacity: 0.65;
+  cursor: default;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.92);
+    transform: none;
+  }
+}
+
+.quickLinkIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: rgba(184, 156, 102, 0.22);
+  color: var(--full-primary, #b89c66);
+  font-size: 0.85rem;
+}
+
+.quickLinkBody {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.quickLinkTitleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-2, 8px);
+}
+
+.quickLinkTitle {
+  font-family: var(--full-font-family, "Segoe UI", sans-serif);
+  font-size: 0.9375rem;
+  font-weight: var(--full-fw-bold, 700);
+  line-height: 1.25;
+  color: var(--full-secondary, #04253c);
+}
+
+.quickLinkDesc {
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--full-secondary, #04253c);
+  @include th-line-clamp(2);
+}
+
+.quickLinkChevron {
+  color: var(--full-primary, #b89c66);
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.supporting {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-2, 8px);
+  margin: var(--full-space-1, 4px) 0 0;
+  font-size: var(--full-fs-meta, 0.8125rem);
+  font-weight: var(--full-fw-semibold, 600);
+  color: rgba(255, 255, 255, 0.92);
+
+  svg,
+  i {
+    color: var(--full-primary, #b89c66);
+  }
+}
