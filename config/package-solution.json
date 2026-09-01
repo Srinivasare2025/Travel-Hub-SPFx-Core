@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "travel-hub-client-side-solution",
+    "id": "dc8ca96a-e980-4257-a7a5-27f85c069a27",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "",
+      "websiteUrl": "",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": "Undefined-1.22.2"
+    },
+    "metadata": {
+      "shortDescription": {
+        "default": "TravelHub description"
+      },
+      "longDescription": {
+        "default": "TravelHub description"
+      },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "travel-hub Feature",
+        "description": "The feature that activates elements of the travel-hub solution.",
+        "id": "25be6cf2-631b-4e3d-9047-63fe070dff7f",
+        "version": "1.0.0.0"
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/travel-hub.sppkg"
+  }
+}
