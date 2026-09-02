@@ -49,6 +49,9 @@ export const TravelServicesCarousel: React.FC<ITravelServicesCarouselProps> = ({
           getKey={(s) => s.id}
           visibleCards={visibleCards}
           ariaLabel={title}
+          autoPlay={configuration.services.autoPlay}
+          intervalMs={Math.max(3, configuration.services.intervalSeconds) * 1000}
+          loop
           renderItem={(service) => <TravelServiceCard service={service} />}
         />
       )}

@@ -25,6 +25,12 @@ export interface IUseCarousel {
     onFocusCapture: () => void;
     onBlurCapture: () => void;
   };
+  /**
+   * Suspends the autoplay timer regardless of hover/focus (e.g. while the
+   * current slide is a playing video, so the timer can't cut it off
+   * mid-playback). Independent of `autoPlay`/hover/focus pausing.
+   */
+  setSuspended: (suspended: boolean) => void;
 }
 
 /**
@@ -41,6 +47,7 @@ export function useCarousel(options: IUseCarouselOptions): IUseCarousel {
   const [hoverPaused, setHoverPaused] = useState(false);
   const [focusPaused, setFocusPaused] = useState(false);
   const [tabHidden, setTabHidden] = useState(false);
+  const [suspended, setSuspended] = useState(false);
 
   // Ref mirror so the autoplay interval always sees the latest page without re-subscribing.
   const pageRef = useRef(page);
@@ -74,7 +81,7 @@ export function useCarousel(options: IUseCarouselOptions): IUseCarousel {
   const next = useCallback(() => goTo(pageRef.current + 1), [goTo]);
   const prev = useCallback(() => goTo(pageRef.current - 1), [goTo]);
 
-  const isPaused = hoverPaused || focusPaused || tabHidden || reducedMotion || !autoPlay;
+  const isPaused = hoverPaused || focusPaused || tabHidden || reducedMotion || suspended || !autoPlay;
 
   useEffect(() => {
     if (isPaused || pageCount <= 1 || intervalMs <= 0) {
@@ -105,6 +112,7 @@ export function useCarousel(options: IUseCarouselOptions): IUseCarousel {
     next,
     prev,
     goTo,
-    pauseHandlers
+    pauseHandlers,
+    setSuspended
   };
 }

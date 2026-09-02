@@ -62,7 +62,7 @@ One row per key. See CONFIGURATION.md for the full key list.
 | AccessibilityText | Single line |
 | DisplayOrder | Number |
 | AutoPlay | Yes/No |
-| DurationSeconds | Number (default 6) |
+| DurationSeconds | Number (default 6, 3–600) — image slides only; video slides advance on their own end |
 | IsActive | Yes/No |
 | StartDate | DateTime |
 | EndDate | DateTime |
@@ -245,6 +245,20 @@ other implementation. **No spend calculation happens in TravelHub.**
 > small stable set reordered rarely; links are numerous and edited often.
 > Splitting keeps editing simple and lets a column exist with zero links during
 > setup.
+
+### `TH_GlobalNavigation`
+| Column | Type |
+| --- | --- |
+| Title | Single line — the tab label |
+| Url | Hyperlink |
+| Kind | Choice (`App`, `External`) — `App` opens in the same tab; `External` always opens in a new tab |
+| DisplayOrder | Number |
+| IsActive | Yes/No |
+
+Admin-added tabs only — shown above the hero banner alongside 3 always-present
+built-in tabs (Our Services, and the same Help Desk / Travel Care links
+configured on the hero quick links) that don't need a row here. See
+GlobalNavigationService.ts and CONFIGURATION.md.
 
 ---
 

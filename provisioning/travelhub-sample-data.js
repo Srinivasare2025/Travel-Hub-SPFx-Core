@@ -454,6 +454,27 @@
     }
   }
 
+  // Admin-added tabs only - the hub's built-in Help Desk / Travel Care / Our
+  // Services tabs come from hero.quickLink.* config + the services section
+  // anchor, not from this list (GlobalNavigationService.ts).
+  async function seedGlobalNav() {
+    const items = [
+      // ['Title', 'Url', 'App' | 'External']
+      ['Travel Policy', '#', 'App'],
+      ['SAP Concur', 'https://www.concursolutions.com', 'External']
+    ];
+    let order = 1;
+    for (const [title, url, kind] of items) {
+      await addItem('TH_GlobalNavigation', {
+        Title: title,
+        Url: link(url),
+        Kind: kind,
+        DisplayOrder: order++,
+        IsActive: true
+      });
+    }
+  }
+
   async function seedFooter() {
     const columns = [
       ['Travel Services', [
@@ -520,6 +541,7 @@
     ['TH_DepartmentTravelSpend', seedSpend],
     ['TH_GreenTravel', seedGreen],
     ['TH_TravelTeam', seedTeam],
+    ['TH_GlobalNavigation', seedGlobalNav],
     ['TH_FooterColumns + TH_FooterLinks', seedFooter]
   ];
 
@@ -527,7 +549,7 @@
     'TH_FooterLinks', 'TH_FooterColumns', 'TH_QuickPulseOptions', 'TH_QuickPulseResponses',
     'TH_QuickPulseQuestions', 'TH_HeroBanners', 'TH_TravelServices', 'TH_TravelNews',
     'TH_TravelEvents', 'TH_TravelTips', 'TH_TravelerTestimonials', 'TH_DepartmentTravelSpend',
-    'TH_GreenTravel', 'TH_TravelTeam'
+    'TH_GreenTravel', 'TH_TravelTeam', 'TH_GlobalNavigation'
   ];
 
   /* ----------------------------- RUN ---------------------------------- */

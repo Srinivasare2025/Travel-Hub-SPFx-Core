@@ -2,9 +2,11 @@ import * as React from 'react';
 import type { ITravelHubProps } from './ITravelHubProps';
 import { ServiceContext } from '../../../common/context/ServiceContext';
 import { SectionBoundary } from './SectionBoundary';
+import { GlobalNav } from './GlobalNav';
 import { HeroBanner } from './sections/HeroBanner';
 import { TravelServicesCarousel } from './sections/TravelServicesCarousel';
 import { TravelUpdatesSection } from './sections/TravelUpdatesSection';
+import { applyFullBleedChrome, SHELL_MARKER_ATTR } from './chromeOverride';
 import styles from './TravelHub.module.scss';
 
 /**
@@ -14,6 +16,18 @@ import styles from './TravelHub.module.scss';
  * (ARCHITECTURE.md §2).
  */
 export default class TravelHub extends React.Component<ITravelHubProps> {
+  public componentDidMount(): void {
+    applyFullBleedChrome(this.props.services.configuration.layout.fullBleed);
+  }
+
+  public componentDidUpdate(): void {
+    applyFullBleedChrome(this.props.services.configuration.layout.fullBleed);
+  }
+
+  public componentWillUnmount(): void {
+    applyFullBleedChrome(false);
+  }
+
   public render(): React.ReactElement<ITravelHubProps> {
     const { services, hasTeamsContext } = this.props;
     const { configuration } = services;
@@ -26,7 +40,13 @@ export default class TravelHub extends React.Component<ITravelHubProps> {
             configuration.layout.fullBleed ? styles.fullBleed : ''
           }`}
           dir={configuration.featureFlags.rtl ? 'rtl' : undefined}
+          data-th-canvas={configuration.theme.canvas}
+          {...{ [SHELL_MARKER_ATTR]: true }}
         >
+          <SectionBoundary name="GlobalNav">
+            <GlobalNav />
+          </SectionBoundary>
+
           <div className={styles.page}>
             {sections.hero.isVisible && (
               <SectionBoundary name="HeroBanner">

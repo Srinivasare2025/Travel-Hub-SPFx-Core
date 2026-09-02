@@ -13,16 +13,20 @@
 .gold {
   background: rgba(184, 156, 102, 0.16);
   color: #6b5427;
+  border: 1px solid rgba(184, 156, 102, 0.35);
 }
 
+/* Themed tokens, not a fixed navy tint - a literal rgba(navy) tint would
+   nearly vanish on the dark canvas theme's own navy-toned cards. */
 .navy {
-  background: rgba(4, 37, 60, 0.1);
-  color: var(--full-secondary, #04253c);
+  background: var(--full-surface-alt, #faf8f4);
+  color: var(--full-heading, #04253c);
+  border: 1px solid var(--full-border, #e8e5e0);
 }
 
 .muted {
   background: var(--full-surface-alt, #faf8f4);
-  color: var(--full-text-muted, #7b8794);
+  color: var(--full-text-muted, #4a5568);
   border: 1px solid var(--full-border, #e8e5e0);
 }
 

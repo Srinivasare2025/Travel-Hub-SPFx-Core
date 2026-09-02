@@ -1,0 +1,50 @@
+@import '../../../../common/styles/mixins';
+@import '../../../../common/styles/typography';
+
+.root {
+  width: 100%;
+  border-bottom: 1px solid var(--full-border, #e8e5e0);
+}
+
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--full-space-1, 4px) var(--full-space-5, 24px);
+  list-style: none;
+  margin: 0;
+  padding-block: var(--full-space-3, 12px);
+  @include th-container;
+}
+
+/* Matches TravelHub.module.scss `.fullBleed .page` - same edge-to-edge choice. */
+.fullBleedList {
+  max-width: none;
+}
+
+.navLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--full-space-1, 4px);
+  @include th-font-base;
+  font-size: var(--full-fs-link, 0.875rem);
+  font-weight: var(--full-fw-semibold, 600);
+  color: var(--full-heading, #04253c);
+  text-decoration: none;
+  padding-block: var(--full-space-1, 4px);
+  border-bottom: 2px solid transparent;
+  transition: color var(--full-transition-fast, 120ms ease),
+    border-color var(--full-transition-fast, 120ms ease);
+  @include th-focusable;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--full-primary, #b89c66);
+    border-bottom-color: var(--full-primary, #b89c66);
+  }
+}
+
+.navLinkIcon {
+  font-size: 0.6875rem;
+  color: var(--full-text-muted, #4a5568);
+}

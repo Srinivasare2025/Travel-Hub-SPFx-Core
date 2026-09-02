@@ -57,7 +57,8 @@ These are pure, presentational, SharePoint-unaware, and reused everywhere.
 
 | Component | Responsibility |
 | --- | --- |
-| `TravelHub` | Reads `ITravelHubConfiguration`. Renders each section in mock order, wrapped in an error boundary, only when `config.sections.<name>.isVisible`. Provides `ServiceContext`. Contains **no** data calls, **no** business logic, **no** section markup. |
+| `TravelHub` | Reads `ITravelHubConfiguration`. Renders `GlobalNav` above the page, then each section in mock order, wrapped in an error boundary, only when `config.sections.<name>.isVisible`. Provides `ServiceContext`. Contains **no** data calls, **no** business logic, **no** section markup. |
+| `GlobalNav` | Not a "section" (not gated by `config.sections`). Loads `IGlobalNavItem[]`: the 3 always-present built-in tabs (Our Services, Help Desk, Travel Care) plus admin-added rows from `TH_GlobalNavigation`. |
 | `TravelHubErrorBoundary` | Class error boundary; a thrown section renders `<ErrorState>` instead of blanking the page. |
 
 ---
@@ -68,7 +69,7 @@ These are pure, presentational, SharePoint-unaware, and reused everywhere.
 | Component | Layer | Responsibility |
 | --- | --- | --- |
 | `HeroBanner` | S | Loads `IHeroBanner[]` (active, in window) + hero quick-link config. Composes carousel + quick links + supporting message. |
-| `HeroCarousel` | P | **Only** the rotating media/title/description. Uses `Carousel` + `ImageWithFallback` or a muted, non-autoplay-audio `<video>`. Per-slide autoplay + duration from data. |
+| `HeroCarousel` | P | **Only** the rotating media/title/description. Image slides: `Carousel` + `ImageWithFallback` (`object-fit: cover`), advancing on the shared `hero.intervalSeconds` timer. Video slides: `object-fit: contain` (never cropped), muted by default with an on-video mute/unmute toggle, plays only while the slide is active, and advances the carousel on the video's own `ended` event (not a timer) so it always plays out in full — plus a "Watch full video" link that opens the source video in a new tab. |
 | `HeroQuickLinks` | P | The two links (Help Desk, Travel Care 24/7) + supporting message. **Explicitly outside** the carousel. Each link independently configured. |
 
 ### 3.2 TravelServicesCarousel — S

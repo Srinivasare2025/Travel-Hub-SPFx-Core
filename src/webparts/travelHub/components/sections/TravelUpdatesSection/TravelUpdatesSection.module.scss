@@ -88,7 +88,15 @@
 .newsRowTitle {
   @include th-card-title;
   font-size: 0.95rem;
-  color: var(--full-secondary, #04253c);
+  color: var(--full-heading, #04253c);
+  transition: color var(--full-transition-fast, 120ms ease);
+}
+
+/* Only a clickable link shifts to the gold accent on hover — the inert
+   (invalid-URL) fallback keeps its muted colour. */
+a.newsRowTitle:hover,
+a.newsRowTitle:focus-visible {
+  color: var(--full-primary, #b89c66);
 }
 
 .newsRowText {
@@ -154,7 +162,7 @@
 .dateDay {
   font-size: 1.25rem;
   font-weight: var(--full-fw-bold, 700);
-  color: var(--full-secondary, #04253c);
+  color: var(--full-heading, #04253c);
   line-height: 1;
 }
 
@@ -239,6 +247,14 @@
   @include th-body;
   font-weight: var(--full-fw-medium, 500);
   color: var(--full-text, #04253c);
+  transition: color var(--full-transition-fast, 120ms ease);
+}
+
+/* Only a clickable link shifts to the gold accent on hover — the plain-text
+   fallback (no linkUrl) keeps its normal body colour. */
+a.tipText:hover,
+a.tipText:focus-visible {
+  color: var(--full-primary, #b89c66);
 }
 
 .tipDesc {

@@ -64,9 +64,10 @@ business mandates an external CDN (then document the change here).
 
 ## 6a. Full-width page (edge-to-edge, no left nav)
 
-The design is meant to fill the page — only the Microsoft 365 **suite bar** at
-the very top should remain; no left navigation, no side gutters. SharePoint page
-chrome cannot be removed by a web part, so this is a **page/site setup**:
+The design is meant to fill the page edge-to-edge, with **no** SharePoint suite
+bar, command bar, or side gutters visible. Most of this is a **page/site setup**;
+the remainder (hiding the suite/command bar and the canvas's own padding) is
+done by the web part itself when `layout.fullBleed` is on:
 
 1. **Use a Communication site** (or a page with site navigation disabled).
    Communication sites have **no left navigation** by default. On a Team site the
@@ -82,10 +83,35 @@ chrome cannot be removed by a web part, so this is a **page/site setup**:
    change layout), so the hero is the first thing under the suite bar.
 5. Leave `layout.fullBleed = true` in `TH_SiteConfiguration` (the default). It
    makes the web part fill its section and removes the inner content max-width,
-   so nothing is centred in a narrow column. It does **not** do a viewport-width
-   CSS breakout (that misaligns in the workbench and in non-centred layouts) —
-   the edge-to-edge comes from the full-width section in step 2. Set it to
-   `false` only if you deliberately want the content in a centred column.
+   so nothing is centred in a narrow column. On a live modern page it also
+   injects a global stylesheet (`chromeOverride.ts`) that:
+   - Hides `#spCommandBar`, `#sp-appBar`/`#spAppBar`, and the hashed modern
+     site-header row (`.headerRow-113` / `[class*="headerRow-"]`).
+   - Neutralizes the modern canvas's own wrappers around the web part —
+     `#spPageChromeAppDiv`, `#spPageCanvasContent`, `.CanvasZone`,
+     `.CanvasSection`, `.CanvasZoneSectionContainer`, `.ControlZone` — so
+     their margin/padding/rounding/shadow/max-width don't leave a gutter
+     around the section. This is the same `.CanvasZone`/`.ControlZone`
+     technique the sibling HR-Hub-SPFx solution uses in its own
+     `src/styles/host-reset.css`.
+
+   Both are `:has()`-scoped to only the zones that actually contain
+   TravelHub's root element (a `data-th-shell` marker), not every zone on the
+   page, so a page mixing TravelHub with other web parts leaves their zones
+   alone. This is a real DOM/CSS override outside the web part's own
+   placeholder, so:
+   - It hides the suite/command bar for **every visitor** of that page, not just
+     while editing — only enable it on pages meant to be a fully immersive,
+     chrome-free landing page.
+   - `:has()` needs an evergreen browser (Baseline 2023); SharePoint Online's
+     modern experience already requires one, so no fallback is provided.
+   - The hashed `headerRow-*` class is not a stable public SharePoint selector;
+     it can change with a SharePoint service update. If the header row
+     reappears, re-inspect the page in devtools and update the selector in
+     `chromeOverride.ts`.
+   - It is a no-op in the local workbench (those elements don't exist there).
+   - Set `layout.fullBleed` to `false` to keep the site chrome and sit the web
+     part inside a normal centred section instead.
 
 The web part is responsive at every width (mobile / tablet / desktop / wide) and
 never scrolls horizontally. If you still see side gutters, the page is not using

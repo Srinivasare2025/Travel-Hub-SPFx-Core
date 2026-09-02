@@ -1,6 +1,9 @@
 import * as React from 'react';
+import { Icon } from '@fluentui/react/lib/Icon';
 import { IHeroBanner } from '../../../../../models';
-import { Carousel, ImageWithFallback } from '../../../../../common/components';
+import { Carousel, ImageWithFallback, IconButton } from '../../../../../common/components';
+import type { ICarouselRenderHelpers } from '../../../../../common/components';
+import { sanitizeUrl } from '../../../../../common/utils/urlValidation';
 import styles from './HeroBanner.module.scss';
 
 export interface IHeroCarouselProps {
@@ -9,21 +12,104 @@ export interface IHeroCarouselProps {
   intervalSeconds: number;
 }
 
-function HeroSlide({ slide, eager }: { slide: IHeroBanner; eager: boolean }): React.ReactElement {
+interface IHeroSlideProps {
+  slide: IHeroBanner;
+  eager: boolean;
+  /** Video slides only: whether this is the currently-showing slide. Undefined for the single-slide (non-carousel) case, which is always active. */
+  isActive?: boolean;
+  /** Video slides only: called once the video finishes playing, to advance the carousel. */
+  onVideoEnded?: () => void;
+  /** Video slides only: suspend/resume the carousel's own autoplay timer while this video plays. */
+  setSuspended?: (suspended: boolean) => void;
+}
+
+function HeroVideo({
+  slide,
+  isActive,
+  onVideoEnded,
+  setSuspended
+}: {
+  slide: IHeroBanner;
+  isActive: boolean;
+  onVideoEnded?: () => void;
+  setSuspended?: (suspended: boolean) => void;
+}): React.ReactElement {
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+  const [muted, setMuted] = React.useState(true);
+  const watchFullHref = sanitizeUrl(slide.videoUrl);
+
+  // Only the active slide actually plays — every slide is mounted at once
+  // (the carousel just translates the track), so without this every video
+  // would start playing off-screen. Suspend the carousel's own auto-advance
+  // timer for as long as this video is active and playing, so a >30s video
+  // isn't cut off — it advances itself via onEnded instead.
+  React.useEffect(() => {
+    const video = videoRef.current;
+    if (video === null) {
+      return undefined;
+    }
+    if (isActive) {
+      setSuspended?.(true);
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          /* Autoplay can be blocked even when muted in rare cases; the poster stays visible. */
+        });
+      }
+    } else {
+      video.pause();
+      setSuspended?.(false);
+    }
+    return () => setSuspended?.(false);
+  }, [isActive, setSuspended]);
+
+  const handleEnded = (): void => {
+    setSuspended?.(false);
+    onVideoEnded?.();
+  };
+
+  return (
+    <>
+      <video
+        ref={videoRef}
+        className={styles.video}
+        src={slide.videoUrl}
+        poster={slide.imageUrl}
+        muted={muted}
+        playsInline
+        aria-label={slide.accessibilityText}
+        onEnded={handleEnded}
+      />
+      <div className={styles.videoControls}>
+        <IconButton
+          icon={muted ? 'Volume0' : 'Volume3'}
+          ariaLabel={muted ? 'Unmute video' : 'Mute video'}
+          onClick={() => setMuted((m) => !m)}
+          size="sm"
+          tone="onImage"
+        />
+        {watchFullHref !== undefined && (
+          <a
+            className={styles.videoWatchFull}
+            href={watchFullHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Watch the full video: ${slide.title || slide.accessibilityText}`}
+          >
+            <Icon iconName="OpenInNewWindow" aria-hidden="true" /> Watch full video
+          </a>
+        )}
+      </div>
+    </>
+  );
+}
+
+function HeroSlide({ slide, eager, isActive = true, onVideoEnded, setSuspended }: IHeroSlideProps): React.ReactElement {
   return (
     <div className={styles.slide}>
       <div className={styles.slideMedia}>
         {slide.mediaType === 'video' && slide.videoUrl !== undefined ? (
-          <video
-            className={styles.video}
-            src={slide.videoUrl}
-            poster={slide.imageUrl}
-            muted
-            loop
-            playsInline
-            autoPlay
-            aria-label={slide.accessibilityText}
-          />
+          <HeroVideo slide={slide} isActive={isActive} onVideoEnded={onVideoEnded} setSuspended={setSuspended} />
         ) : (
           <ImageWithFallback
             src={slide.imageUrl}
@@ -65,7 +151,15 @@ export const HeroCarousel: React.FC<IHeroCarouselProps> = ({ slides, autoPlay, i
       showArrows
       showDots
       controlsPosition="overlay"
-      renderItem={(slide, index) => <HeroSlide slide={slide} eager={index === 0} />}
+      renderItem={(slide, index, { isActive, next, setSuspended }: ICarouselRenderHelpers) => (
+        <HeroSlide
+          slide={slide}
+          eager={index === 0}
+          isActive={isActive}
+          onVideoEnded={next}
+          setSuspended={setSuspended}
+        />
+      )}
     />
   );
 };

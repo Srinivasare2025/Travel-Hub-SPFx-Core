@@ -15,6 +15,7 @@ $hero-min-desktop: clamp(21rem, 32vw, 28rem);
   overflow: hidden;
   min-height: $hero-min-mobile;
   background: var(--full-secondary, #04253c);
+  box-shadow: var(--full-shadow-card-hover, 0 8px 28px rgba(4, 37, 60, 0.14));
 
   @include th-tablet-up {
     min-height: $hero-min-desktop;
@@ -45,15 +46,58 @@ $hero-min-desktop: clamp(21rem, 32vw, 28rem);
   inset: 0;
 }
 
-.image,
-.video {
+.image {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
+/* `contain`, not `cover`: a video's own subject framing matters more than an
+   editorial photo's, and cropping it (as `cover` would) was hiding the top of
+   the frame. Letterboxed on the stage's own navy background instead. */
 .video {
   display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: var(--full-secondary, #04253c);
+}
+
+/* Top-right, not bottom: the bottom is already busy (quick-links overlay,
+   and the carousel's own overlay prev/next + dots also sit bottom-right). */
+.videoControls {
+  position: absolute;
+  top: var(--full-space-3, 12px);
+  right: var(--full-space-3, 12px);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--full-space-2, 8px);
+}
+
+.videoWatchFull {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--full-space-1, 4px);
+  padding: var(--full-space-1, 4px) var(--full-space-3, 12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 999px;
+  background: rgba(4, 37, 60, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: #fff;
+  font-family: var(--full-font-family, "Segoe UI", sans-serif);
+  font-size: var(--full-fs-meta, 0.8125rem);
+  font-weight: var(--full-fw-semibold, 600);
+  text-decoration: none;
+  transition: background-color var(--full-transition-fast, 120ms ease);
+  @include th-focusable;
+
+  &:hover,
+  &:focus-visible {
+    background: rgba(4, 37, 60, 0.8);
+  }
 }
 
 .scrim {
@@ -68,7 +112,7 @@ $hero-min-desktop: clamp(21rem, 32vw, 28rem);
   position: relative;
   z-index: 1;
   padding: var(--full-space-5, 24px);
-  max-width: 560px;
+  max-width: 640px;
   color: #fff;
 
   @include th-desktop-up {
@@ -77,19 +121,21 @@ $hero-min-desktop: clamp(21rem, 32vw, 28rem);
 }
 
 .slideTitle {
-  font-family: var(--full-font-family, "Segoe UI", sans-serif);
-  font-size: clamp(1.5rem, 3.4vw, 2rem);
+  font-family: var(--full-font-family-display, "Cormorant Garamond", Georgia, serif);
+  font-size: clamp(2.25rem, 5.2vw, 3.5rem);
   font-weight: var(--full-fw-bold, 700);
   line-height: var(--full-lh-tight, 1.2);
   margin: 0 0 var(--full-space-2, 8px);
   color: #fff;
+  text-shadow: 0 2px 12px rgba(4, 37, 60, 0.35);
 }
 
 .slideText {
-  font-size: 0.9375rem;
+  font-size: clamp(1rem, 1.8vw, 1.25rem);
   line-height: var(--full-lh-normal, 1.5);
   margin: 0;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.97);
+  text-shadow: 0 1px 6px rgba(4, 37, 60, 0.3);
 }
 
 /* --- Quick-links overlay (on the image, pinned bottom) ------------------ */
@@ -118,7 +164,7 @@ $hero-min-desktop: clamp(21rem, 32vw, 28rem);
   flex-direction: column;
   gap: var(--full-space-2, 8px);
   width: 100%;
-  max-width: 22rem; /* 'stack' width - a narrow left column (~352px) */
+  max-width: 18rem; /* 'stack' width - a narrow left column (~288px) */
 }
 
 .quickLinkList {
@@ -136,7 +182,7 @@ $hero-min-desktop: clamp(21rem, 32vw, 28rem);
 
 /* hero.quickLinks.layout = 'inline': the two cards on one row (side by side). */
 .inline {
-  max-width: 40rem; /* ~640px */
+  max-width: 28rem; /* ~448px */
 }
 
 .inline .quickLinkList {
@@ -151,9 +197,9 @@ $hero-min-desktop: clamp(21rem, 32vw, 28rem);
 .quickLink {
   display: flex;
   align-items: center;
-  gap: var(--full-space-2, 8px);
+  gap: var(--full-space-1, 4px);
   width: 100%;
-  padding: var(--full-space-2, 8px) var(--full-space-3, 12px);
+  padding: var(--full-space-2, 8px);
   font: inherit;
   text-align: start;
   cursor: pointer;
@@ -166,11 +212,13 @@ $hero-min-desktop: clamp(21rem, 32vw, 28rem);
   text-decoration: none;
   color: inherit;
   transition: background-color var(--full-transition-fast, 120ms ease),
+    box-shadow var(--full-transition-fast, 120ms ease),
     transform var(--full-transition-fast, 120ms ease);
   @include th-focusable;
 
   &:hover {
     background: rgba(255, 255, 255, 1);
+    box-shadow: 0 12px 28px rgba(4, 37, 60, 0.38);
     transform: translateY(-1px);
   }
 
@@ -187,6 +235,7 @@ $hero-min-desktop: clamp(21rem, 32vw, 28rem);
 
   &:hover {
     background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 8px 22px rgba(4, 37, 60, 0.3);
     transform: none;
   }
 }
@@ -195,13 +244,13 @@ $hero-min-desktop: clamp(21rem, 32vw, 28rem);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
   border-radius: 50%;
   background: rgba(184, 156, 102, 0.22);
   color: var(--full-primary, #b89c66);
-  font-size: 0.85rem;
+  font-size: 0.7rem;
 }
 
 .quickLinkBody {
@@ -220,22 +269,22 @@ $hero-min-desktop: clamp(21rem, 32vw, 28rem);
 
 .quickLinkTitle {
   font-family: var(--full-font-family, "Segoe UI", sans-serif);
-  font-size: 0.9375rem;
+  font-size: 0.8125rem;
   font-weight: var(--full-fw-bold, 700);
   line-height: 1.25;
   color: var(--full-secondary, #04253c);
 }
 
 .quickLinkDesc {
-  font-size: 0.75rem;
-  line-height: 1.35;
+  font-size: 0.6875rem;
+  line-height: 1.3;
   color: var(--full-secondary, #04253c);
   @include th-line-clamp(2);
 }
 
 .quickLinkChevron {
   color: var(--full-primary, #b89c66);
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   flex-shrink: 0;
 }
 
@@ -246,7 +295,7 @@ $hero-min-desktop: clamp(21rem, 32vw, 28rem);
   margin: var(--full-space-1, 4px) 0 0;
   font-size: var(--full-fs-meta, 0.8125rem);
   font-weight: var(--full-fw-semibold, 600);
-  color: rgba(255, 255, 255, 0.92);
+  color: rgba(255, 255, 255, 0.97);
 
   svg,
   i {

@@ -9,6 +9,7 @@ import { TravelServicesService } from './TravelServicesService';
 import { NewsService } from './NewsService';
 import { EventService } from './EventService';
 import { TravelTipsService } from './TravelTipsService';
+import { GlobalNavigationService } from './GlobalNavigationService';
 
 /**
  * Composition root for the service layer. Called once from
@@ -28,6 +29,7 @@ export async function createServiceRegistry(context: WebPartContext): Promise<IS
     travelServices: new TravelServicesService(spo, cache, logger),
     news: new NewsService(spo, cache, logger),
     events: new EventService(spo, cache, logger),
-    tips: new TravelTipsService(spo, cache, logger)
+    tips: new TravelTipsService(spo, cache, logger),
+    globalNav: new GlobalNavigationService(spo, cache, logger)
   };
 }

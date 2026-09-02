@@ -4,6 +4,7 @@ import { ITravelServicesService } from './TravelServicesService';
 import { INewsService } from './NewsService';
 import { IEventService } from './EventService';
 import { ITravelTipsService } from './TravelTipsService';
+import { IGlobalNavigationService } from './GlobalNavigationService';
 
 /**
  * The set of services + resolved configuration handed to the React tree via
@@ -20,4 +21,5 @@ export interface IServiceRegistry {
   news: INewsService;
   events: IEventService;
   tips: ITravelTipsService;
+  globalNav: IGlobalNavigationService;
 }

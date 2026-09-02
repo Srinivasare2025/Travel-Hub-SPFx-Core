@@ -1,5 +1,6 @@
 @import '../../../common/styles/tokens';
 @import '../../../common/styles/mixins';
+@import '../../../common/styles/fonts';
 
 .travelHub {
   // Declare the design tokens once here; every descendant inherits them.
@@ -20,10 +21,15 @@
 }
 
 /* Full-bleed: fill the section and drop the inner content max-width so nothing
-   is centred in a narrow column. True edge-to-edge (no page gutters) comes from
-   placing the web part in a full-width section on the page - see DEPLOYMENT.md.
-   No viewport-width breakout: that misaligns in the workbench and in non-centred
-   layouts. */
+   is centred in a narrow column. True edge-to-edge (no page gutters, no suite/
+   command bar, no residual canvas-zone padding) also needs the web part
+   placed in a full-width section on the page - see DEPLOYMENT.md - plus the
+   SharePoint-chrome override applied in TravelHub.tsx (chromeOverride.ts),
+   which hides #spCommandBar/#sp-appBar and neutralizes the modern canvas's
+   own zone/section/control-zone wrappers, `:has()`-scoped to pages that
+   render this web part (same technique as the sibling HR-Hub-SPFx solution's
+   host-reset.css). That override only matches real modern-page chrome, so
+   it's a no-op in the local workbench. */
 .fullBleed {
   width: 100%;
 }
@@ -35,8 +41,9 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: var(--full-section-gap, 64px);
+  gap: var(--full-section-gap, 48px);
   padding-block: var(--full-space-6, 32px);
+  background-color: var(--full-page-bg, #f8f9fa);
   @include th-container;
 
   @include th-desktop-up {

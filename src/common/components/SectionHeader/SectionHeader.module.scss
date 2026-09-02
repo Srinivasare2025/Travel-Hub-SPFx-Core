@@ -10,7 +10,34 @@
 }
 
 .title {
+  position: relative;
+  padding-left: var(--full-space-3, 12px);
+  min-width: 0;
+
+  /* Small gold accent - a "jewelry" touch, not a colour block. */
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.15em;
+    bottom: 0.15em;
+    width: 3px;
+    border-radius: var(--full-radius-sm, 4px);
+    background: var(--full-primary, #b89c66);
+  }
+}
+
+/* headingLevel 2 - page-level section titles (the display font, larger). */
+.level2 {
   @include th-section-title;
+}
+
+/* headingLevel 3/4 - card-level titles, e.g. the three Travel Updates cards.
+   Deliberately smaller than .level2 (th-card-title, body font) so three
+   cards of differing title length still fit their heading on one line at
+   full width instead of wrapping to two and breaking row alignment. */
+.level3 {
+  @include th-card-title;
 }
 
 .actions {

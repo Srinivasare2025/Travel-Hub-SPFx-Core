@@ -188,7 +188,10 @@
         { name: 'AccessibilityText', xml: F.text('AccessibilityText') },
         { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
         { name: 'AutoPlay', xml: F.bool('AutoPlay', true) },
-        { name: 'DurationSeconds', xml: F.number('DurationSeconds', { default: 6, min: 3, max: 30 }) },
+        // Image slides only - video slides advance on their own `ended` event instead
+        // (HeroBannerService.ts), so this ceiling only needs to cover a reasonable
+        // image dwell time, not a video's length.
+        { name: 'DurationSeconds', xml: F.number('DurationSeconds', { default: 6, min: 3, max: 600 }) },
         { name: 'IsActive', xml: F.bool('IsActive', true) },
         { name: 'StartDate', xml: F.date('StartDate', true) },
         { name: 'EndDate', xml: F.date('EndDate', true) }
@@ -366,6 +369,22 @@
         { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
         { name: 'IsActive', xml: F.bool('IsActive', true) }
       ]
+    },
+    {
+      // Admin-added tabs only. The hub's Help Desk / Travel Care / Our
+      // Services tabs are always present and come from the hero quick-link
+      // config + the services section anchor (GlobalNavigationService.ts) -
+      // they don't need a row here.
+      title: 'TH_GlobalNavigation',
+      description: 'Extra global navigation tabs, shown above the hero banner.',
+      fields: [
+        { name: 'Url', xml: F.url('Url') },
+        // 'App' = an existing destination inside this SharePoint/Teams app - opens in the same tab.
+        // 'External' = always opens in a new tab.
+        { name: 'Kind', xml: F.choice('Kind', ['App', 'External'], 'App') },
+        { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
+        { name: 'IsActive', xml: F.bool('IsActive', true) }
+      ]
     }
   ];
 
@@ -380,6 +399,8 @@
   const CONFIG_SEED = [
     ['brand.name', 'RSG', 'string'],
     ['layout.fullBleed', 'true', 'boolean'],
+    // 'sky' | 'cream' | 'dark' - see docs/CONFIGURATION.md "Theme".
+    ['theme.canvas', 'sky', 'string'],
     ['hero.autoPlay', 'true', 'boolean'],
     ['hero.intervalSeconds', '6', 'number'],
     ['hero.supportingMessage', 'Travel Care - Your Partner in Every Journey', 'string'],
@@ -401,8 +422,12 @@
     ['services.tabletVisibleCards', '2', 'number'],
     ['services.mobileVisibleCards', '1', 'number'],
     ['services.defaultLinkText', 'Learn More', 'string'],
+    ['services.autoPlay', 'true', 'boolean'],
+    ['services.intervalSeconds', '5', 'number'],
     ['updates.news.count', '4', 'number'],
-    ['updates.events.count', '4', 'number'],
+    // Business rule: Upcoming Events shows at most 3 on the hub page - the
+    // rest live behind "View All" (viewAll.events).
+    ['updates.events.count', '3', 'number'],
     ['updates.tips.count', '7', 'number'],
     ['viewAll.news.text', 'View All', 'string'],
     ['viewAll.news.url', '#', 'string'],

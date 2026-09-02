@@ -87,6 +87,7 @@ src/
 ├── models/                         # Phase 2 – pure interfaces, no logic
 │   ├── IHeroBanner.ts
 │   ├── ITravelService.ts
+│   ├── IGlobalNav.ts
 │   ├── … one per entity …
 │   ├── ITravelHubConfiguration.ts
 │   └── index.ts                    # barrel re-export
@@ -104,6 +105,7 @@ src/
 │   ├── NewsService.ts
 │   ├── EventService.ts
 │   ├── TravelTipsService.ts
+│   ├── GlobalNavigationService.ts
 │   ├── QuickPulseService.ts
 │   ├── TestimonialService.ts
 │   ├── ITravelSpendService.ts      # interface only

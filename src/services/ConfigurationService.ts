@@ -167,6 +167,9 @@ export class ConfigurationService implements IConfigurationService {
       layout: {
         fullBleed: bool('layout.fullBleed', true)
       },
+      theme: {
+        canvas: enumVal('theme.canvas', ['sky', 'cream', 'dark'] as const, 'sky')
+      },
       hero: {
         autoPlay: bool('hero.autoPlay', true),
         intervalSeconds: num('hero.intervalSeconds', 6, 3, 20),
@@ -209,11 +212,15 @@ export class ConfigurationService implements IConfigurationService {
         desktopVisibleCards: num('services.desktopVisibleCards', 4, 2, 8),
         tabletVisibleCards: num('services.tabletVisibleCards', 2, 1, 4),
         mobileVisibleCards: num('services.mobileVisibleCards', 1, 1, 2),
-        defaultLinkText: str('services.defaultLinkText', 'Learn More')
+        defaultLinkText: str('services.defaultLinkText', 'Learn More'),
+        autoPlay: bool('services.autoPlay', true),
+        intervalSeconds: num('services.intervalSeconds', 5, 3, 20)
       },
       updates: {
         newsCount: num('updates.news.count', 4, 2, 8),
-        eventsCount: num('updates.events.count', 4, 2, 8),
+        // Business rule: Upcoming Events shows at most 3 on the hub page —
+        // the rest live behind "View All" (updates.viewAll.events).
+        eventsCount: num('updates.events.count', 3, 1, 3),
         tipsCount: num('updates.tips.count', 7, 3, 12),
         viewAll: {
           news: viewAll('viewAll.news', 'View All'),

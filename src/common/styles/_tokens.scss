@@ -7,11 +7,20 @@
 
 @mixin th-tokens {
   // --- Brand palette (exact values from the brand design system) -----------
-  --full-primary: #b89c66; // gold — accent, CTAs, focus, icon backgrounds
-  --full-secondary: #04253c; // navy — headings, footer, primary text
+  --full-primary: #b89c66; // gold — accent, CTAs, focus, icon backgrounds — constant across every canvas theme
+  --full-secondary: #04253c; // navy — the hero's own photo-overlay chrome (scrim, quick-link card text) and the
+  // brand navy itself. Deliberately constant across every canvas theme: the hero quick-link cards always float,
+  // white, over a photo, independent of the page canvas. Themed heading/content text uses --full-heading instead.
   --full-bg: #ffffff;
+  --full-page-bg: #f8f9fa; // soft off-white behind the section stack, so white cards/shadows read against it
   --full-text: #04253c;
-  --full-text-muted: #7b8794;
+  // Deepened from the original #7b8794 - that read washed out/dull for body
+  // copy (borderline on WCAG AA contrast against white/off-white too); this
+  // still reads as clearly secondary to --full-text but with real contrast.
+  --full-text-muted: #4a5568;
+  // Themed heading colour for content that sits on the page canvas (SectionHeader/card titles, card icon
+  // buttons, badges) - unlike --full-secondary this flips to a light colour on the dark canvas theme.
+  --full-heading: #04253c;
   --full-border: #e8e5e0;
   --full-hijri: #b89c66;
 
@@ -30,6 +39,10 @@
   // --- Typography --------------------------------------------------------
   --full-font-family: "Segoe UI", -apple-system, BlinkMacSystemFont,
     "Helvetica Neue", Arial, sans-serif;
+  // Display face for the two largest heading tiers only (page/section titles) —
+  // self-hosted in _fonts.scss, same face/role as the sibling HR-Hub-SPFx
+  // solution's `--font-display` token. Card-level titles stay on the body font.
+  --full-font-family-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
   --full-fs-page-title: 2.25rem; // 36px
   --full-fs-section-title: 1.5rem; // 24px
   --full-fs-card-title: 1.125rem; // 18px
@@ -64,5 +77,44 @@
 
   // --- Layout ----------------------------------------------------------
   --full-content-max: 1280px;
-  --full-section-gap: var(--full-space-8);
+  --full-section-gap: var(--full-space-7); // 48px — tighter rhythm than the old space-8 (64px)
+}
+
+// --- Canvas themes (theme.canvas: 'sky' | 'cream' | 'dark') -----------------
+//
+// `sky` is the default and needs no override block - it's exactly the
+// `th-tokens` values above. `cream` and `dark` override only the tokens that
+// define the page canvas: backgrounds/surfaces, body/heading/muted text,
+// borders, shadows and the focus ring. The gold/navy brand tokens
+// (--full-primary*, --full-secondary*) and every spacing/typography/radius
+// token stay constant - only the "canvas" changes, not the brand.
+//
+// Attribute selectors (`.travelHub[data-th-canvas="…"]`) outrank the plain
+// `.travelHub` selector on specificity alone, so these rules win regardless
+// of where this partial is @imported relative to `@include th-tokens`.
+.travelHub[data-th-canvas='cream'] {
+  --full-bg: #fffcf4;
+  --full-page-bg: #f5f0e1;
+  --full-text: #04253c;
+  --full-text-muted: #5c4f3a;
+  --full-heading: #04253c;
+  --full-border: #e0d6c0;
+  --full-surface: #fffcf4;
+  --full-surface-alt: #f0e6d2;
+}
+
+.travelHub[data-th-canvas='dark'] {
+  --full-bg: #0b2337;
+  --full-page-bg: #071825;
+  --full-text: #f5f4f0;
+  --full-text-muted: #b9c4cf;
+  --full-heading: #f5f4f0;
+  --full-border: rgba(255, 255, 255, 0.14);
+  --full-surface: #123048;
+  --full-surface-alt: #0e2a40;
+  // Black-based, not navy-based: a navy shadow is nearly invisible on a navy card.
+  --full-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.24), 0 4px 16px rgba(0, 0, 0, 0.32);
+  --full-shadow-card-hover: 0 2px 4px rgba(0, 0, 0, 0.28), 0 8px 28px rgba(0, 0, 0, 0.4);
+  // Navy-on-navy focus rings would be invisible; gold reads clearly on the dark canvas.
+  --full-focus-ring: var(--full-primary);
 }

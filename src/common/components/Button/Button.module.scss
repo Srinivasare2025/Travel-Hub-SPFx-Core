@@ -16,8 +16,15 @@
   text-decoration: none;
   transition: background-color var(--full-transition-fast, 120ms ease),
     color var(--full-transition-fast, 120ms ease),
-    border-color var(--full-transition-fast, 120ms ease);
+    border-color var(--full-transition-fast, 120ms ease),
+    box-shadow var(--full-transition-fast, 120ms ease),
+    transform var(--full-transition-fast, 120ms ease);
   @include th-focusable;
+  @include th-reduced-motion {
+    &:hover:not(:disabled) {
+      transform: none;
+    }
+  }
 
   &[disabled],
   &:disabled {
@@ -40,17 +47,19 @@
 
   &:hover:not(:disabled) {
     background: var(--full-primary-hover, #a5884f);
+    box-shadow: var(--full-shadow-card-hover, 0 8px 28px rgba(4, 37, 60, 0.14));
+    transform: translateY(-1px);
   }
 }
 
 .secondary {
   background: transparent;
-  color: var(--full-secondary, #04253c);
-  border-color: var(--full-secondary, #04253c);
+  color: var(--full-heading, #04253c);
+  border-color: var(--full-heading, #04253c);
 
   &:hover:not(:disabled) {
-    background: var(--full-secondary, #04253c);
-    color: var(--full-secondary-contrast, #fff);
+    background: var(--full-heading, #04253c);
+    color: var(--full-bg, #fff);
   }
 }
 

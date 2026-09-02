@@ -7,7 +7,7 @@
   border-radius: 50%;
   border: 1px solid var(--full-border, #e8e5e0);
   background: var(--full-surface, #fff);
-  color: var(--full-secondary, #04253c);
+  color: var(--full-heading, #04253c);
   cursor: pointer;
   transition: background-color var(--full-transition-fast, 120ms ease),
     border-color var(--full-transition-fast, 120ms ease);
@@ -36,7 +36,14 @@
   font-size: 0.875rem;
 }
 
+/* Always floats over a photo (hero media, image viewer), never the themed
+   page canvas, so it stays pinned to navy-on-white regardless of canvas theme. */
 .onImage {
   background: rgba(255, 255, 255, 0.9);
   border-color: transparent;
+  color: var(--full-secondary, #04253c);
+
+  &:hover:not(:disabled) {
+    color: var(--full-primary, #b89c66);
+  }
 }

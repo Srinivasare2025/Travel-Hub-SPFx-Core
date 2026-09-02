@@ -47,13 +47,18 @@ shown).
 | Key | Type | Default | Used by |
 | --- | --- | --- | --- |
 | `brand.name` | string | `RSG` | Footer, Quick Pulse copy, aria labels |
-| `layout.fullBleed` | boolean | `true` | `TravelHub` root — breaks the web part out of SharePoint's centred canvas to the full viewport width and removes the inner content max-width. See DEPLOYMENT.md "Full-width page" for the page setup this expects. Set `false` to sit inside a normal centred section. |
+| `layout.fullBleed` | boolean | `true` | `TravelHub` root — breaks the web part out of SharePoint's centred canvas to the full viewport width and removes the inner content max-width. On a live page it also hides the SharePoint suite/command bar and neutralizes the canvas's zone/section/control-zone wrappers (`chromeOverride.ts`, `:has()`-scoped to this web part) for every visitor of that page. See DEPLOYMENT.md "Full-width page" for the page setup this expects and the trade-offs. Set `false` to keep the site chrome and sit inside a normal centred section. |
+
+### Theme
+| Key | Type | Default | Used by |
+| --- | --- | --- | --- |
+| `theme.canvas` | enum `sky` \| `cream` \| `dark` | `sky` | `TravelHub` root (`data-th-canvas`) — the page canvas palette (`src/common/styles/_tokens.scss`). `sky` is the standard light theme, `cream` a warm ivory alternative, `dark` a dark navy canvas with light text. The gold/navy brand colours (buttons, links, the hero's own photo-overlay chrome) stay constant across all three — only backgrounds, borders, and card/section text swap, so nothing loses contrast in any theme. |
 
 ### Hero
 | Key | Type | Default | Used by |
 | --- | --- | --- | --- |
 | `hero.autoPlay` | boolean | `true` | HeroCarousel |
-| `hero.intervalSeconds` | number (3–20) | `6` | HeroCarousel (fallback when a slide has no `DurationSeconds`) |
+| `hero.intervalSeconds` | number (3–20) | `6` | HeroCarousel — how long each **image** slide is shown before advancing. Video slides ignore it and advance when the video finishes playing (`TH_HeroBanners.DurationSeconds`, 3–600s, is unused for video). |
 | `hero.supportingMessage` | string | `Travel Care — Your Partner in Every Journey` | HeroQuickLinks |
 | `hero.quickLinks.layout` | enum `inline` \| `stack` | `inline` | `inline` = the two cards on one row (side by side); `stack` = a narrow single-column list |
 | `hero.quickLink.helpDesk.title` | string | `Travel Services Help Desk` | HeroQuickLinks |
@@ -75,6 +80,8 @@ shown).
 | `services.tabletVisibleCards` | number (1–4) | `2` | " |
 | `services.mobileVisibleCards` | number (1–2) | `1` | " |
 | `services.defaultLinkText` | string | `Learn More` | TravelServiceCard (when a row has no `LinkText`) |
+| `services.autoPlay` | boolean | `true` | TravelServicesCarousel auto-advances, same as the hero |
+| `services.intervalSeconds` | number (3–20) | `5` | " |
 
 ### Travel Updates – View All
 | Key | Type | Default |
@@ -83,7 +90,7 @@ shown).
 | `viewAll.events.text` / `viewAll.events.url` | string / safe URL | `View All` / `#` |
 | `viewAll.tips.text` / `viewAll.tips.url` | string / safe URL | `View All` / `#` |
 | `updates.news.count` | number (2–8) | `4` |
-| `updates.events.count` | number (2–8) | `4` |
+| `updates.events.count` | number (1–3) | `3` — business rule: at most 3 upcoming events show on the hub page, the rest are behind "View All" |
 | `updates.tips.count` | number (3–12) | `7` |
 
 ### Testimonials
