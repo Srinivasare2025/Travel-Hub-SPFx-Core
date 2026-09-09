@@ -349,11 +349,11 @@
       OneResponsePerUser: true
     });
     const options = [
-      ['Excellent', 'Emoji2', 5],
-      ['Good', 'Emoji', 4],
-      ['Average', 'EmojiNeutral', 3],
-      ['Poor', 'Sad', 2],
-      ['Very Poor', 'EmojiDisappointed', 1]
+      ['Very Difficult', 'EmojiDisappointed', 1],
+      ['Difficult', 'Sad', 2],
+      ['Neutral', 'EmojiNeutral', 3],
+      ['Easy', 'Emoji', 4],
+      ['Very Easy', 'Emoji2', 5]
     ];
     let order = 1;
     for (const [title, icon, value] of options) {
@@ -369,18 +369,22 @@
   }
 
   async function seedTestimonials() {
+    // [name, rating, comment, category, designation, department, location, avatar]
     const rows = [
-      ['Khalid Alattas', 5, 'The request-to-booking flow was quick and the Travel Care team sorted a last-minute change within minutes.', 'Principal', 'Project Delivery', 'Jeddah', 11],
-      ['Noura Alharbi', 5, 'Concur made expense submission painless and I especially value the proactive travel advisories.', 'Analyst', 'Finance', 'Riyadh', 5],
-      ['Faisal Bin Saeed', 4, 'The preferred-hotel programme saved my family money on a workation and the support was excellent.', 'Operations Lead', 'Operations', 'Dammam', 12]
+      ['Khalid Alattas', 5, 'The request-to-booking flow was quick and the Travel Care team sorted a last-minute change within minutes.', 'Travel Care', 'Principal', 'Project Delivery', 'Jeddah', 11],
+      ['Noura Alharbi', 5, 'Concur made expense submission painless and I especially value the proactive travel advisories.', 'SAP Concur', 'Analyst', 'Finance', 'Riyadh', 5],
+      ['Faisal Bin Saeed', 4, 'The preferred-hotel programme saved my family money on a workation and the support was excellent.', 'Personal Travel', 'Operations Lead', 'Operations', 'Dammam', 12],
+      ['Reem Al-Otaibi', 5, 'Business Travel handled a same-day itinerary change across two cities without a single hiccup.', 'Business Travel', 'Programme Manager', 'Corporate Affairs', 'Jeddah', 23],
+      ['Yousef Al-Harbi', 4, 'Catering Services made our offsite workshop effortless — great food, on time, zero follow-up needed.', 'Catering Services', 'Coordinator', 'Meetings & Events', 'Riyadh', 34]
     ];
     let order = 1;
-    for (const [name, rating, comment, desig, dept, loc, av] of rows) {
+    for (const [name, rating, comment, category, desig, dept, loc, av] of rows) {
       await addItem('TH_TravelerTestimonials', {
         Title: name,
         ProfileImage: link(avatar(av)),
         Rating: rating,
         Comment: comment,
+        Category: category,
         Designation: desig,
         Department: dept,
         Location: loc,
@@ -454,14 +458,16 @@
     }
   }
 
-  // Admin-added tabs only - the hub's built-in Help Desk / Travel Care / Our
-  // Services tabs come from hero.quickLink.* config + the services section
-  // anchor, not from this list (GlobalNavigationService.ts).
+  // Admin-added EXTRA tabs only. The hub's built-in tabs - one per active
+  // TH_TravelServices row (Business Travel, Personal Travel, SAP Concur,
+  // Catering Services, Meetings & Events, ...), the Travel Policy landing
+  // page, and Help Desk / Travel Care from hero.quickLink.* config - do not
+  // need a row here; a "SAP Concur" row here would just duplicate the tab
+  // TH_TravelServices already produces (GlobalNavigationService.ts).
   async function seedGlobalNav() {
     const items = [
       // ['Title', 'Url', 'App' | 'External']
-      ['Travel Policy', '#', 'App'],
-      ['SAP Concur', 'https://www.concursolutions.com', 'External']
+      ['RSG Intranet', '#', 'App']
     ];
     let order = 1;
     for (const [title, url, kind] of items) {
@@ -469,6 +475,230 @@
         Title: title,
         Url: link(url),
         Kind: kind,
+        DisplayOrder: order++,
+        IsActive: true
+      });
+    }
+  }
+
+  // The Travel Policy landing page + the one fully-specified detail page
+  // (Annual Flight Ticket Benefits). No mock exists yet for the "Explore
+  // Policy Information" targets or the other two category cards' detail
+  // pages, so those seed with no link (inert) rather than fabricated content
+  // - see PolicyService.ts.
+  async function seedPolicyPages() {
+    const landingId = await addItem('TH_PolicyPages', {
+      Title: 'Travel Policy',
+      Slug: 'travel-policy',
+      HeroIcon: 'Page',
+      HeroTitle: 'Travel Policy',
+      HeroSubtitle: 'Clear guidelines for compliant, responsible and sustainable travel.',
+      HeroDescription: 'Travel with purpose. Plan with confidence. Stay compliant.',
+      HeroImageUrl: link(img('policy-hero', 1600, 500)),
+      HeroTagline: 'Responsible Travel\nA Brighter Tomorrow',
+      NeedHelpTitle: 'Need Help?',
+      NeedHelpSupportLabel: 'Contact Travel Services',
+      NeedHelpDescription: 'For policy related questions and support.',
+      NeedHelpEmail: 'TravelServices@RedSeaGlobal.com',
+      DisplayOrder: 1,
+      IsActive: true
+    });
+
+    const benefitsId = await addItem('TH_PolicyPages', {
+      Title: 'Annual Flight Ticket Benefits',
+      Slug: 'annual-flight-ticket-benefits',
+      ParentSlug: 'travel-policy',
+      ParentTitle: 'Travel Policy',
+      HeroIcon: 'AirTickets',
+      HeroTitle: 'Annual Flight Ticket Benefits',
+      HeroSubtitle: 'Stay connected with what matters most.',
+      HeroDescription: "Supporting you and your family's journey home.",
+      HeroImageUrl: link(img('policy-benefits-hero', 1600, 500)),
+      HeroTagline: 'People Closer\nA Brighter Tomorrow',
+      InfoBannerText: 'This benefit is provided in accordance with the company policy and subject to the rules and conditions below.',
+      NoteBannerText: 'These terms and conditions may be reviewed and modified in accordance with changes to the company policy.',
+      CtaTitle: 'Ready to proceed?',
+      CtaDescription: 'Review the complete benefit conditions before submitting your request.',
+      CtaLinkText: 'Full Rules & Conditions',
+      CtaLinkUrl: link('#'),
+      CtaPrimaryText: 'Apply',
+      CtaPrimaryUrl: link('#'),
+      ClosingBannerTitle: 'Travel with Purpose',
+      ClosingBannerDescription: 'Connecting people. Supporting communities. A more sustainable tomorrow.',
+      ClosingBadges: ['Our People', 'Our Planet', 'Our Future'].join('\n'),
+      NeedHelpTitle: 'Need Help?',
+      NeedHelpSupportLabel: 'ASK HR',
+      NeedHelpDescription: 'Follow the steps below to raise your request or get support.',
+      // Content Specifications §3 "Important: Do not display the Travel Services
+      // email in this Page 2 Need Help area." - intentionally no NeedHelpEmail here.
+      DisplayOrder: 2,
+      IsActive: true
+    });
+
+    const categories = [
+      ['Business Travel Policy', 'Airplane',
+        'Guidance for approved business travel of less than 30 days, covering travel arrangements, entitlements, expenses and reimbursement requirements.',
+        'View Policy', null],
+      ['Business Assignment Policy', 'Suitcase',
+        'Guidance for business assignments exceeding 30 continuous calendar days, covering preparation, allowances, accommodation and applicable entitlements.',
+        'View Policy', null],
+      ['Annual Flight Ticket Benefits', 'AirTickets',
+        'With every service anniversary, employees can choose to use the company agency to book a flight ticket or request the benefit in cash.',
+        'View Rules and Conditions', 'annual-flight-ticket-benefits']
+    ];
+    let order = 1;
+    for (const [title, icon, desc, linkText, targetSlug] of categories) {
+      await addItem('TH_PolicyCards', {
+        Title: title,
+        PageIdId: landingId,
+        Kind: 'Category',
+        Icon: icon,
+        Description: desc,
+        LinkText: linkText,
+        TargetSlug: targetSlug,
+        LinkUrl: targetSlug ? null : link('#'),
+        DisplayOrder: order++,
+        IsActive: true
+      });
+    }
+
+    const infoTopics = [
+      ['Purpose & Scope', 'Page'],
+      ['Guiding Principles', 'CompassNW'],
+      ['Travel Planning & Approvals', 'Calendar'],
+      ['Travel Entitlement', 'Money'],
+      ['Expenses (Allowable & Non-Allowable)', 'ReceiptCheck'],
+      ['Compliance & Responsibilities', 'Shield']
+    ];
+    order = 1;
+    for (const [title, icon] of infoTopics) {
+      await addItem('TH_PolicyCards', {
+        Title: title,
+        PageIdId: landingId,
+        Kind: 'Info',
+        Icon: icon,
+        DisplayOrder: order++,
+        IsActive: true
+      });
+    }
+
+    // Content Specifications §3.1-3.4 - the approved wording, including the
+    // submit-by-destination / approval-by-excess tables (rendered as bullets,
+    // since TH_PolicyCards has no table field) and the numbered cancellation steps.
+    const highlights = [
+      ['Plan Before Your Travel', 'Calendar',
+        'To ensure adequate time for travel arrangements, employees shall submit travel requests as follows:',
+        [
+          'GCC Countries: at least 5 business days before travel',
+          'Rest of the World: at least 10 business days before travel',
+          'Conferences & Events: at least 30 days before travel',
+          "Policy note: business travel shall not normally be combined with an employee's annual vacation. However, this may be permitted with the approval of the Group Chief Administrative Officer."
+        ]],
+      ['Exceeding Accommodation Cap Limits', 'Bed',
+        'Accommodation above the applicable policy cap requires an approved exception.',
+        [
+          'Up to 25% over cap: GCAO Approval',
+          'Above 25% over cap: GCEO Approval',
+          'You may use your daily transportation allowance, or part of it, to increase the hotel cap, provided the overall daily transportation amount is not exceeded.',
+          'Raise accommodation-cap exception requests through SAP Concur.'
+        ]],
+      ['Cancellations & No-Shows', 'Cancel',
+        "Tickets and accommodation cannot be cancelled after booking confirmation, except in circumstances beyond the employee's control or when required for business purposes.",
+        [
+          'In such cases, RSG will bear the cancellation charges, subject to DoA approval.',
+          'If an employee cancels a booking for personal reasons, they must notify the Travel Desk and provide appropriate justification.',
+          'Failure to notify the Travel Desk or provide appropriate justification may result in disciplinary action by RSG.'
+        ]],
+      ['Cancellation Process', 'Sync', '',
+        [
+          '1. Inform your manager and raise a cancellation request in SAP Concur.',
+          '2. Contact the Travel Desk to cancel your reservation at rsgtravel@travelats.com.',
+          '3. Ensure you receive a cancellation confirmation.',
+          '4. Retain records for audit purposes.'
+        ]]
+    ];
+    order = 1;
+    for (const [title, icon, desc, subPoints] of highlights) {
+      await addItem('TH_PolicyCards', {
+        Title: title,
+        PageIdId: landingId,
+        Kind: 'Highlight',
+        Icon: icon,
+        Description: desc,
+        SubPoints: subPoints.join('\n'),
+        DisplayOrder: order++,
+        IsActive: true
+      });
+    }
+
+    // Cycled across a few on-brand colours (gold/navy/success/danger) rather
+    // than inventing an arbitrary new palette for the numbered badges.
+    const ruleColors = ['#b89c66', '#04253c', '#107c41', '#a4262c'];
+    const rules = [
+      [1, 'Probation Period Completion', 'CheckMark',
+        'Employees must have successfully passed their probation period to be eligible for the annual flight ticket benefit. Earning the accrued ticket will be upon the service anniversary.',
+        []],
+      [2, 'Approved Annual Leave', 'CheckList',
+        'The employee must have their annual leave approved before submitting the flight ticket booking request.',
+        []],
+      [3, 'Ticket Submission Deadline', 'CalendarAgenda',
+        'Travel plans must be submitted at least 30 days before the date of the flight. For seasonal periods, it should be 90 days in advance after obtaining the approved annual leave.',
+        [
+          'Summer months: July, August and September',
+          'New Year: 15 December - 15 January',
+          '10 days prior to and after Eid Al-Fitr and Eid Al-Adha (including Eid break)',
+          'A week before and after National Day and Founding Day'
+        ]],
+      [4, 'Eligible Routes', 'Airplane',
+        "Only flights between the employee's home country (point of origin) and Riyadh (nearest international airport). Tickets from site will not be covered within the booked route. Maximum one stop is allowed with a reasonable layover time.",
+        []],
+      [5, 'Dependents', 'People',
+        "The benefit extends to dependents as per the company's policy. Dependents' flight tickets must follow the same point-of-origin and work-location route criteria. Employee SF profile should be updated with applicable backup documents.",
+        []],
+      [6, 'Flight Tickets Cancellation / Rescheduling', 'EventDeclined',
+        'Employee and their eligible dependents must comply with the airfare and contract terms and conditions for travel. The company will not cover the cost if the issued ticket has been rescheduled or canceled.',
+        []],
+      [7, 'Non-Eligibility', 'Blocked', '',
+        [
+          'Terminated or resigned employees.',
+          'Employees on long unpaid leave.',
+          'Employees or dependents travelling outside of approved routes.',
+          'Employees on a business trip.',
+          "Employees cannot use their dependents' ticket for their own booking."
+        ]],
+      [8, 'Recovery', 'Money',
+        'The company will have the right to recover the costs if the employee resigns before completing the contractual term.',
+        []]
+    ];
+    order = 1;
+    for (const [num, title, icon, desc, subPoints] of rules) {
+      await addItem('TH_PolicyCards', {
+        Title: title,
+        PageIdId: benefitsId,
+        Kind: 'Rule',
+        Number: num,
+        Icon: icon,
+        IconColor: ruleColors[(num - 1) % ruleColors.length],
+        Description: desc,
+        SubPoints: subPoints.join('\n'),
+        DisplayOrder: order++,
+        IsActive: true
+      });
+    }
+
+    const steps = [
+      [1, 'Create Ticket', 'Log in to the HR Portal and create a new ticket.'],
+      [2, 'Service Category', 'Select HR Payroll.'],
+      [3, 'Incident Category', 'Select the relevant incident category from the drop down.']
+    ];
+    order = 1;
+    for (const [num, title, desc] of steps) {
+      await addItem('TH_PolicyCards', {
+        Title: title,
+        PageIdId: benefitsId,
+        Kind: 'HelpStep',
+        Number: num,
+        Description: desc,
         DisplayOrder: order++,
         IsActive: true
       });
@@ -542,11 +772,13 @@
     ['TH_GreenTravel', seedGreen],
     ['TH_TravelTeam', seedTeam],
     ['TH_GlobalNavigation', seedGlobalNav],
+    ['TH_PolicyPages + TH_PolicyCards', seedPolicyPages],
     ['TH_FooterColumns + TH_FooterLinks', seedFooter]
   ];
 
   const RESETTABLE = [
     'TH_FooterLinks', 'TH_FooterColumns', 'TH_QuickPulseOptions', 'TH_QuickPulseResponses',
+    'TH_PolicyCards', 'TH_PolicyPages',
     'TH_QuickPulseQuestions', 'TH_HeroBanners', 'TH_TravelServices', 'TH_TravelNews',
     'TH_TravelEvents', 'TH_TravelTips', 'TH_TravelerTestimonials', 'TH_DepartmentTravelSpend',
     'TH_GreenTravel', 'TH_TravelTeam', 'TH_GlobalNavigation'

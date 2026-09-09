@@ -1,0 +1,94 @@
+@import '../../../../../common/styles/mixins';
+@import '../../../../../common/styles/typography';
+
+.root {
+  width: 100%;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--full-space-4, 16px);
+
+  @include th-tablet-up {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include th-desktop-up {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Photo on the left, details on the right (mock) - a contact-card layout. */
+.card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--full-space-3, 12px);
+  height: 100%;
+}
+
+.avatar {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.name {
+  @include th-card-title;
+  font-size: 0.9375rem;
+  margin: 0;
+}
+
+.designation {
+  @include th-body;
+  margin: 0;
+}
+
+.secondary {
+  @include th-meta;
+  margin: 0;
+}
+
+.contactRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--full-space-3, 12px);
+  margin-top: var(--full-space-2, 8px);
+}
+
+.contactItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  @include th-meta;
+}
+
+.contactLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--full-surface-alt, #faf8f4);
+  color: var(--full-primary, #b89c66);
+  transition: background-color var(--full-transition-fast, 120ms ease),
+    color var(--full-transition-fast, 120ms ease);
+  @include th-focusable;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--full-primary, #b89c66);
+    color: var(--full-primary-contrast, #04253c);
+  }
+}

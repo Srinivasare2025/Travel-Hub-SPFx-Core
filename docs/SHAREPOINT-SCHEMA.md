@@ -167,12 +167,13 @@ Permissions: **broken inheritance.** Members get **Contribute-add-only**
 | ProfileImage | Hyperlink |
 | Rating | Number (1–5) |
 | Comment | Multiple lines (plain) |
+| Category | Single line — free-text tag shown top-left of the card, e.g. "Business Travel" / "Travel Care" |
 | Designation | Single line |
 | Department | Single line |
 | Location | Single line |
 | PersonInfoLine | Single line (optional explicit override) |
 | DisplayOrder | Number |
-| IsActive | Yes/No |
+| IsActive | Yes/No — rows submitted through the web part's "Submit Feedback" screen land here as `No`, pending review |
 
 ### `TH_DepartmentTravelSpend`  (restricted — optional; may be replaced by Power BI/Concur)
 | Column | Type |
@@ -255,10 +256,59 @@ other implementation. **No spend calculation happens in TravelHub.**
 | DisplayOrder | Number |
 | IsActive | Yes/No |
 
-Admin-added tabs only — shown above the hero banner alongside 3 always-present
-built-in tabs (Our Services, and the same Help Desk / Travel Care links
-configured on the hero quick links) that don't need a row here. See
+Admin-added tabs only — shown above the hero banner alongside 4 always-present
+built-in tabs (Our Services, Travel Policy, and the same Help Desk / Travel
+Care links configured on the hero quick links) that don't need a row here. See
 GlobalNavigationService.ts and CONFIGURATION.md.
+
+### `TH_PolicyPages`
+| Column | Type |
+| --- | --- |
+| Title | Single line — the page name |
+| Slug | Single line, indexed — routing key (e.g. `travel-policy`, `annual-flight-ticket-benefits`) |
+| ParentSlug / ParentTitle | Single line — breadcrumb parent, denormalised (not a lookup); blank on the landing page |
+| HeroIcon | Single line (Fluent icon name) |
+| HeroTitle / HeroSubtitle | Single line |
+| HeroDescription | Multiple lines (plain) |
+| HeroImageUrl | Hyperlink |
+| HeroTagline | Multiple lines (plain) — the italic script-style line |
+| InfoBannerText / NoteBannerText | Multiple lines (plain) |
+| CtaTitle / CtaLinkText / CtaPrimaryText | Single line |
+| CtaDescription | Multiple lines (plain) |
+| CtaLinkUrl / CtaPrimaryUrl | Hyperlink |
+| ClosingBannerTitle | Single line |
+| ClosingBannerDescription | Multiple lines (plain) |
+| ClosingBadges | Multiple lines (plain) — newline list, e.g. "Our People" |
+| NeedHelpTitle | Single line |
+| NeedHelpSupportLabel | Single line — small eyebrow label, e.g. "Contact Travel Services" / "ASK HR" |
+| NeedHelpDescription | Multiple lines (plain) |
+| NeedHelpEmail | Single line — leave blank to omit (e.g. the benefits page intentionally shows none) |
+| DisplayOrder | Number |
+| IsActive | Yes/No |
+
+One row per Travel Policy page, landing page included. See `PolicyService.ts`.
+
+### `TH_PolicyCards`
+| Column | Type |
+| --- | --- |
+| Title | Single line |
+| PageId | Lookup → `TH_PolicyPages` |
+| Kind | Choice (`Category`, `Info`, `Highlight`, `Rule`, `HelpStep`) — one rendering template per kind |
+| Number | Number — Rule/HelpStep badge |
+| Icon | Single line (Fluent icon name) |
+| IconColor | Single line (hex) |
+| Description | Multiple lines (plain) |
+| SubPoints | Multiple lines (plain) — newline list, e.g. a Rule card's "Seasonal periods include" bullets |
+| TargetSlug | Single line — internal navigation to another `TH_PolicyPages` row; takes priority over `LinkUrl` |
+| LinkUrl | Hyperlink |
+| LinkText | Single line |
+| DisplayOrder | Number |
+| IsActive | Yes/No |
+
+Repeatable content blocks for a page — the same shape covers the landing
+page's 3 policy-category cards, 6 "Explore Policy Information" tiles, 4 "Key
+Policy Highlights", the benefits page's 8 numbered rule cards, and its 3
+"Ask HR" help steps.
 
 ---
 

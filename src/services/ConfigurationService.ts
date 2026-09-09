@@ -248,7 +248,7 @@ export class ConfigurationService implements IConfigurationService {
         dashboardUrl: url('spend.dashboardUrl', '#'),
         deniedMessage: str(
           'spend.deniedMessage',
-          'This dashboard is available to authorised users only. Access is role-based. Please sync with the appropriate permissions to view your department’s travel spend details.'
+          'This dashboard is available to authorized users only. Access is role-based. Please sign in with the appropriate permissions to view your department’s travel spend insights.'
         )
       },
       team: {

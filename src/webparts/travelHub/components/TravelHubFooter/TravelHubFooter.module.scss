@@ -1,0 +1,102 @@
+@import '../../../../common/styles/mixins';
+@import '../../../../common/styles/typography';
+
+.root {
+  width: 100%;
+  margin-top: var(--full-space-7, 48px);
+  border-top: 1px solid var(--full-border, #e8e5e0);
+  background: var(--full-bg, #fff);
+}
+
+.inner {
+  padding-block: var(--full-space-6, 32px);
+  @include th-container;
+}
+
+/* Matches TravelHub.module.scss `.fullBleed .page` - same edge-to-edge choice. */
+.fullBleedInner {
+  max-width: none;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--full-space-5, 24px);
+  padding-bottom: var(--full-space-5, 24px);
+  margin-bottom: var(--full-space-5, 24px);
+  border-bottom: 1px solid var(--full-border, #e8e5e0);
+
+  @include th-tablet-up {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @include th-desktop-up {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-2, 8px);
+}
+
+.columnTitle {
+  @include th-font-base;
+  font-size: var(--full-fs-meta, 0.8125rem);
+  font-weight: var(--full-fw-bold, 700);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--full-text-muted, #4a5568);
+  margin: 0 0 var(--full-space-1, 4px);
+}
+
+.linkList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-2, 8px);
+}
+
+.link {
+  color: var(--full-heading, #04253c);
+
+  &:hover,
+  &:focus-visible {
+    color: var(--full-primary, #b89c66);
+  }
+}
+
+.brandRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--full-space-4, 16px);
+}
+
+.brandText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.legal {
+  @include th-meta;
+  margin: 0;
+}
+
+.lastUpdated {
+  @include th-meta;
+  margin: 0;
+}
+
+.qrCode {
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  border-radius: var(--full-radius-sm, 4px);
+  border: 1px solid var(--full-border, #e8e5e0);
+}

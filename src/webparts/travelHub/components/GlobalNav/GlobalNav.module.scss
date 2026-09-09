@@ -31,8 +31,13 @@
   font-weight: var(--full-fw-semibold, 600);
   color: var(--full-heading, #04253c);
   text-decoration: none;
-  padding-block: var(--full-space-1, 4px);
+  /* Reset for the `policy` tab, which renders a <button> - identical layout to the <a> tabs either way. */
+  border: none;
   border-bottom: 2px solid transparent;
+  background: none;
+  padding: 0;
+  padding-block: var(--full-space-1, 4px);
+  cursor: pointer;
   transition: color var(--full-transition-fast, 120ms ease),
     border-color var(--full-transition-fast, 120ms ease);
   @include th-focusable;
@@ -42,6 +47,11 @@
     color: var(--full-primary, #b89c66);
     border-bottom-color: var(--full-primary, #b89c66);
   }
+}
+
+.navLinkActive {
+  color: var(--full-primary, #b89c66);
+  border-bottom-color: var(--full-primary, #b89c66);
 }
 
 .navLinkIcon {

@@ -299,6 +299,9 @@
         { name: 'ProfileImage', xml: F.url('ProfileImage') },
         { name: 'Rating', xml: F.number('Rating', { min: 1, max: 5 }) },
         { name: 'Comment', xml: F.note('Comment', 4) },
+        // Free text, not a Choice - lets the content owner tag a story with whatever it relates
+        // to (a travel service name, "Travel Care", etc.) without a fixed enum to maintain.
+        { name: 'Category', xml: F.text('Category') },
         { name: 'Designation', xml: F.text('Designation') },
         { name: 'Department', xml: F.text('Department') },
         { name: 'Location', xml: F.text('Location') },
@@ -385,13 +388,72 @@
         { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
         { name: 'IsActive', xml: F.bool('IsActive', true) }
       ]
+    },
+    {
+      // One row per Travel Policy page - the landing page included. Title =
+      // the page name; Slug is the routing key used in the URL and in
+      // TH_PolicyCards.TargetSlug. See PolicyService.ts.
+      title: 'TH_PolicyPages',
+      description: 'Travel Policy pages (landing + detail pages).',
+      fields: [
+        { name: 'Slug', xml: F.text('Slug', { indexed: true }) },
+        { name: 'ParentSlug', xml: F.text('ParentSlug') },
+        { name: 'ParentTitle', xml: F.text('ParentTitle') },
+        { name: 'HeroIcon', xml: F.text('HeroIcon') },
+        { name: 'HeroTitle', xml: F.text('HeroTitle') },
+        { name: 'HeroSubtitle', xml: F.text('HeroSubtitle') },
+        { name: 'HeroDescription', xml: F.note('HeroDescription', 3) },
+        { name: 'HeroImageUrl', xml: F.url('HeroImageUrl') },
+        { name: 'HeroTagline', xml: F.note('HeroTagline', 2) },
+        { name: 'InfoBannerText', xml: F.note('InfoBannerText', 2) },
+        { name: 'NoteBannerText', xml: F.note('NoteBannerText', 2) },
+        { name: 'CtaTitle', xml: F.text('CtaTitle') },
+        { name: 'CtaDescription', xml: F.note('CtaDescription', 2) },
+        { name: 'CtaLinkText', xml: F.text('CtaLinkText') },
+        { name: 'CtaLinkUrl', xml: F.url('CtaLinkUrl') },
+        { name: 'CtaPrimaryText', xml: F.text('CtaPrimaryText') },
+        { name: 'CtaPrimaryUrl', xml: F.url('CtaPrimaryUrl') },
+        { name: 'ClosingBannerTitle', xml: F.text('ClosingBannerTitle') },
+        { name: 'ClosingBannerDescription', xml: F.note('ClosingBannerDescription', 2) },
+        { name: 'ClosingBadges', xml: F.note('ClosingBadges', 3) },
+        { name: 'NeedHelpTitle', xml: F.text('NeedHelpTitle') },
+        { name: 'NeedHelpSupportLabel', xml: F.text('NeedHelpSupportLabel') },
+        { name: 'NeedHelpDescription', xml: F.note('NeedHelpDescription', 2) },
+        { name: 'NeedHelpEmail', xml: F.text('NeedHelpEmail') },
+        { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
+        { name: 'IsActive', xml: F.bool('IsActive', true) }
+      ]
+    },
+    {
+      // Repeatable content blocks belonging to a TH_PolicyPages row - one
+      // Kind -> one rendering template (PolicyCardSections.tsx). The same
+      // shape covers policy-category cards, "Explore Policy Information"
+      // tiles, "Key Policy Highlights", numbered rule cards, and "Ask HR"
+      // help steps.
+      title: 'TH_PolicyCards',
+      description: 'Travel Policy page content blocks (category/info/highlight/rule/help cards).',
+      fields: [
+        // PageId is a lookup -> TH_PolicyPages, added via LOOKUPS below (same pattern as TH_FooterLinks.ColumnId).
+        { name: 'Kind', xml: F.choice('Kind', ['Category', 'Info', 'Highlight', 'Rule', 'HelpStep'], 'Info') },
+        { name: 'Number', xml: F.number('Number', {}) },
+        { name: 'Icon', xml: F.text('Icon') },
+        { name: 'IconColor', xml: F.text('IconColor') },
+        { name: 'Description', xml: F.note('Description', 3) },
+        { name: 'SubPoints', xml: F.note('SubPoints', 4) },
+        { name: 'TargetSlug', xml: F.text('TargetSlug') },
+        { name: 'LinkUrl', xml: F.url('LinkUrl') },
+        { name: 'LinkText', xml: F.text('LinkText') },
+        { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
+        { name: 'IsActive', xml: F.bool('IsActive', true) }
+      ]
     }
   ];
 
   const LOOKUPS = [
     { list: 'TH_QuickPulseOptions', name: 'QuestionId', target: 'TH_QuickPulseQuestions' },
     { list: 'TH_QuickPulseResponses', name: 'QuestionId', target: 'TH_QuickPulseQuestions' },
-    { list: 'TH_FooterLinks', name: 'ColumnId', target: 'TH_FooterColumns' }
+    { list: 'TH_FooterLinks', name: 'ColumnId', target: 'TH_FooterColumns' },
+    { list: 'TH_PolicyCards', name: 'PageId', target: 'TH_PolicyPages' }
   ];
 
   const LIBRARIES = ['Travel Hub Images', 'Travel Hub Documents', 'Travel Hub Videos'];

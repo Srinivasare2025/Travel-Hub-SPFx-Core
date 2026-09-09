@@ -102,7 +102,7 @@ shown).
 | `testimonials.tabletVisibleCards` | number (1–3) | `2` | " |
 | `testimonials.mobileVisibleCards` | number (1–2) | `1` | " |
 | `testimonials.personInfoTemplate` | string | `{designation} – {location}` | composes the ambiguous line when a row has no explicit `PersonInfoLine` (see ASSUMPTIONS) |
-| `viewAll.testimonials.text` / `.url` | string / safe URL | `View All Stories` / `#` |
+| `viewAll.testimonials.text` / `.url` | string / safe URL | `View All Stories` / `#` — **not currently read by the UI**: "View All Stories" always navigates in-app to `ViewAllFeedbackScreen` (COMPONENTS.md §3.4) rather than this external URL. Kept resolved for possible future re-use. |
 
 ### Quick Pulse
 | Key | Type | Default | Used by |

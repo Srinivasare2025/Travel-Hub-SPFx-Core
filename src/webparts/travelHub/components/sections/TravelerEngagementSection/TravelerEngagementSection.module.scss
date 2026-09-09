@@ -1,0 +1,460 @@
+@import '../../../../../common/styles/mixins';
+@import '../../../../../common/styles/typography';
+
+.root {
+  width: 100%;
+}
+
+.sectionTitle {
+  @include th-section-title;
+  margin-bottom: var(--full-space-5, 24px);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--full-space-5, 24px);
+  align-items: start;
+
+  /* Roughly 20/80 (mock): Quick Pulse is a compact teaser card, testimonials
+     needs the width to show up to testimonials.desktopVisibleCards (3) cards
+     side by side. */
+  @include th-desktop-up {
+    grid-template-columns: minmax(15rem, 1fr) minmax(0, 4fr);
+  }
+}
+
+/* --- Quick Pulse -------------------------------------------------------- */
+.pulseCard {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-3, 12px);
+}
+
+.pulseHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-3, 12px);
+}
+
+.pulseIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: rgba(184, 156, 102, 0.16);
+  color: var(--full-primary, #b89c66);
+  font-size: 1rem;
+}
+
+.pulseTimeHint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  @include th-meta;
+}
+
+.pulseQuestion {
+  @include th-body;
+  margin: 0;
+}
+
+.pulsePreviewOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--full-space-2, 8px);
+}
+
+.pulsePreviewOption {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--full-surface-alt, #faf8f4);
+  border: 1px solid var(--full-border, #e8e5e0);
+  color: var(--full-primary, #b89c66);
+  font-size: 1.05rem;
+}
+
+.pulseThanks {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-2, 8px);
+  padding: var(--full-space-3, 12px) var(--full-space-4, 16px);
+  border-radius: var(--full-radius-md, 8px);
+  background: var(--full-surface-alt, #faf8f4);
+  color: var(--full-heading, #04253c);
+  font-weight: var(--full-fw-medium, 500);
+
+  svg,
+  i {
+    color: var(--full-success, #107c41);
+    flex-shrink: 0;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.pulseSubmitRow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--full-space-3, 12px);
+  margin-top: var(--full-space-4, 16px);
+}
+
+.pulseComments {
+  width: 100%;
+  resize: vertical;
+  padding: var(--full-space-2, 8px) var(--full-space-3, 12px);
+  border: 1px solid var(--full-border, #e8e5e0);
+  border-radius: var(--full-radius-md, 8px);
+  background: var(--full-surface, #fff);
+  color: var(--full-text, #04253c);
+  font-family: var(--full-font-family, "Segoe UI", sans-serif);
+  font-size: var(--full-fs-body, 0.9375rem);
+
+  &:focus-visible {
+    @include th-focus-ring;
+  }
+}
+
+.pulseError {
+  margin: 0;
+  color: var(--full-danger, #a4262c);
+  font-size: var(--full-fs-meta, 0.8125rem);
+}
+
+.pulseResultsToggle {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--full-space-1, 4px);
+  margin-top: auto;
+  padding-top: var(--full-space-3, 12px);
+  border: none;
+  border-top: 1px solid var(--full-border, #e8e5e0);
+  background: none;
+  color: var(--full-primary, #b89c66);
+  font-family: var(--full-font-family, "Segoe UI", sans-serif);
+  font-size: var(--full-fs-link, 0.875rem);
+  font-weight: var(--full-fw-semibold, 600);
+  cursor: pointer;
+  @include th-focusable;
+}
+
+.pulseBreakdown {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-2, 8px);
+}
+
+.pulseBreakdownRow {
+  display: grid;
+  grid-template-columns: 2rem 1fr 3rem;
+  align-items: center;
+  gap: var(--full-space-2, 8px);
+  @include th-meta;
+}
+
+.pulseBar {
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--full-border, #e8e5e0);
+  overflow: hidden;
+
+  > span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--full-primary, #b89c66);
+  }
+}
+
+.pulseBreakdownTotal {
+  margin-top: var(--full-space-1, 4px);
+  @include th-meta;
+}
+
+/* --- Quick Pulse full-screen views (submit / results) -------------------- */
+.screen {
+  width: 100%;
+  max-width: 40rem;
+  margin-inline: auto;
+  padding-block: var(--full-space-6, 32px);
+}
+
+.screenBack {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--full-space-1, 4px);
+  margin-bottom: var(--full-space-5, 24px);
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--full-text-muted, #4a5568);
+  font-family: var(--full-font-family, "Segoe UI", sans-serif);
+  font-size: var(--full-fs-link, 0.875rem);
+  font-weight: var(--full-fw-semibold, 600);
+  cursor: pointer;
+  @include th-focusable;
+
+  &:hover {
+    color: var(--full-heading, #04253c);
+  }
+}
+
+.screenTitle {
+  @include th-page-title;
+  font-size: 1.75rem;
+  margin-bottom: var(--full-space-2, 8px);
+}
+
+.screenDescription {
+  @include th-body;
+  color: var(--full-text-muted, #4a5568);
+  margin: 0 0 var(--full-space-5, 24px);
+}
+
+.screenOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--full-space-3, 12px);
+}
+
+.screenOption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--full-space-2, 8px);
+  flex: 1 1 8rem;
+  padding: var(--full-space-4, 16px) var(--full-space-3, 12px);
+  border: 1px solid var(--full-border, #e8e5e0);
+  border-radius: var(--full-radius-md, 8px);
+  background: var(--full-surface, #fff);
+  color: var(--full-heading, #04253c);
+  font-family: var(--full-font-family, "Segoe UI", sans-serif);
+  font-size: var(--full-fs-link, 0.875rem);
+  font-weight: var(--full-fw-semibold, 600);
+  text-align: center;
+  cursor: pointer;
+  transition: background-color var(--full-transition-fast, 120ms ease),
+    border-color var(--full-transition-fast, 120ms ease),
+    color var(--full-transition-fast, 120ms ease);
+  @include th-focusable;
+
+  &:hover {
+    border-color: var(--full-primary, #b89c66);
+  }
+}
+
+.screenOptionSelected {
+  background: var(--full-primary, #b89c66);
+  border-color: var(--full-primary, #b89c66);
+  color: var(--full-primary-contrast, #04253c);
+}
+
+.screenOptionIcon {
+  font-size: 1.5rem;
+}
+
+/* Wider variant of .screen for grid-based screens (View All Feedback), vs.
+   the narrow single-column form width the Quick Pulse screens use. */
+.screenWide {
+  max-width: var(--full-content-max, 1280px);
+}
+
+/* --- View All Feedback ---------------------------------------------------- */
+.feedbackGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--full-space-4, 16px);
+  margin-top: var(--full-space-5, 24px);
+
+  @include th-tablet-up {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include th-desktop-up {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.feedbackCard {
+  @include th-card-surface;
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-2, 8px);
+  padding: var(--full-space-4, 16px);
+}
+
+.feedbackPerson {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-2, 8px);
+  margin-top: var(--full-space-1, 4px);
+}
+
+.feedbackAvatar {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.feedbackComment {
+  @include th-body;
+  margin: 0;
+  flex: 1;
+  @include th-line-clamp(4);
+}
+
+.feedbackDepartment {
+  @include th-meta;
+  padding-top: var(--full-space-2, 8px);
+  border-top: 1px solid var(--full-border, #e8e5e0);
+}
+
+.feedbackSubmitRow {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--full-space-6, 32px);
+}
+
+/* --- Submit Feedback form --------------------------------------------------- */
+.feedbackForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-4, 16px);
+}
+
+.formLabel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-1, 4px);
+  @include th-meta;
+  font-weight: var(--full-fw-semibold, 600);
+  color: var(--full-heading, #04253c);
+}
+
+.formInput,
+.formTextarea {
+  @include th-body;
+  padding: var(--full-space-2, 8px) var(--full-space-3, 12px);
+  border: 1px solid var(--full-border, #e8e5e0);
+  border-radius: var(--full-radius-md, 8px);
+  background: var(--full-surface, #fff);
+  color: var(--full-text, #04253c);
+
+  &:focus-visible {
+    @include th-focus-ring;
+  }
+}
+
+.formTextarea {
+  resize: vertical;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--full-space-3, 12px);
+
+  @include th-tablet-up {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.ratingPicker {
+  display: flex;
+  gap: var(--full-space-1, 4px);
+}
+
+.ratingStar {
+  padding: 4px;
+  border: none;
+  background: none;
+  color: var(--full-primary, #b89c66);
+  font-size: 1.5rem;
+  cursor: pointer;
+  @include th-focusable;
+}
+
+/* --- Testimonials -------------------------------------------------------- */
+.testimonials {
+  width: 100%;
+}
+
+.viewAllStories {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  @include th-link;
+}
+
+/* Photo on the left, content stacked on the right (mock). */
+.testimonialCard {
+  @include th-card-surface;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--full-space-3, 12px);
+  height: 100%;
+  padding: var(--full-space-5, 24px);
+}
+
+.testimonialAvatar {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.testimonialBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-2, 8px);
+  min-width: 0;
+  flex: 1;
+}
+
+.stars {
+  display: inline-flex;
+  gap: 2px;
+  color: var(--full-primary, #b89c66);
+  font-size: 0.8rem;
+}
+
+.testimonialComment {
+  @include th-body;
+  margin: 0;
+  @include th-line-clamp(4);
+}
+
+.testimonialName {
+  @include th-card-title;
+  font-size: 0.9375rem;
+  color: var(--full-heading, #04253c);
+}
+
+.testimonialInfo {
+  @include th-meta;
+}

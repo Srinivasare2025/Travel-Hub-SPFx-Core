@@ -58,7 +58,7 @@ These are pure, presentational, SharePoint-unaware, and reused everywhere.
 | Component | Responsibility |
 | --- | --- |
 | `TravelHub` | Reads `ITravelHubConfiguration`. Renders `GlobalNav` above the page, then each section in mock order, wrapped in an error boundary, only when `config.sections.<name>.isVisible`. Provides `ServiceContext`. Contains **no** data calls, **no** business logic, **no** section markup. |
-| `GlobalNav` | Not a "section" (not gated by `config.sections`). Loads `IGlobalNavItem[]`: the 3 always-present built-in tabs (Our Services, Help Desk, Travel Care) plus admin-added rows from `TH_GlobalNavigation`. |
+| `GlobalNav` | Not a "section" (not gated by `config.sections`). Loads `IGlobalNavItem[]`: a "Home" tab (the only way back to the hub from a sub-screen), one tab per active `TH_TravelServices` row (Business Travel, Personal Travel, SAP Concur, …, each opening its own `ServicePageScreen`; "Travel Policy" among them opens the real Travel Policy landing page instead), the Help Desk/Travel Care hero quick links (Travel Care's `type: image` quick link opens the same in-app `ImageLightbox` the hero card does, never a raw navigation to the image file), plus admin-added rows from `TH_GlobalNavigation`. |
 | `TravelHubErrorBoundary` | Class error boundary; a thrown section renders `<ErrorState>` instead of blanking the page. |
 
 ---
@@ -89,9 +89,13 @@ These are pure, presentational, SharePoint-unaware, and reused everywhere.
 ### 3.4 TravelerEngagementSection — S
 | Component | Layer | Responsibility |
 | --- | --- | --- |
-| `TravelerEngagementSection` | S | Two-column layout: Quick Pulse + testimonials. |
-| `QuickPulseCard` | P | Loads active question + options. Renders option controls (emoji/icon + label), optional comment, submit. Shows confirmation state after submit. Enforces "already responded" rule. Never renders other users' responses. "View Previous Results" opens `Modal` with **aggregate** data only (if permitted). |
-| `TravelerTestimonialsCarousel` | P | `Carousel` (~3 visible desktop) of testimonial cards: profile image, `Rating`, comment, name, and a configurable person-info line (see ASSUMPTIONS). Auto-scroll + manual + keyboard. |
+| `TravelerEngagementSection` | S | Two-column layout (~20/80): Quick Pulse + testimonials. Both columns start with the same `SectionHeader` so the two cards line up. |
+| `QuickPulseCard` | P | Teaser: question + a decorative row of the configured option icons + "Submit Quick Pulse"/"View All Traveler Survey", each navigating (`NavigationContext`) to a dedicated in-app screen rather than an inline form or a `Modal`. |
+| `QuickPulseSubmitScreen` | P | The actual submission: text-labelled option buttons, optional comment, submit. Enforces "already responded". Never renders other users' responses. |
+| `QuickPulseResultsScreen` | P | **Aggregate** counts only, and only fetched when permitted. |
+| `TravelerTestimonialsCarousel` | P | `Carousel` (~3 visible desktop) of testimonial cards: profile image, category tag (`Badge`), `Rating`, comment, name, and a configurable person-info line (see ASSUMPTIONS). "View All Stories" navigates to `ViewAllFeedbackScreen`. |
+| `ViewAllFeedbackScreen` | P | Every active testimonial (not just the carousel's page), each card tagged with its category, ending in a "Submit Feedback" button to `SubmitFeedbackScreen`. |
+| `SubmitFeedbackScreen` | P | Rating/category/comment/designation/department/location form. Writes to `TH_TravelerTestimonials` with `IsActive = false` — held for moderation, never live immediately. The submitter's name comes from their signed-in identity, not a form field. |
 
 ### 3.5 TravelInsightsSection — S
 | Component | Layer | Responsibility |
@@ -111,6 +115,24 @@ These are pure, presentational, SharePoint-unaware, and reused everywhere.
 | --- | --- | --- |
 | `TravelHubFooter` | S | Loads `IFooterColumn[]` + `IFooterLink[]`. Renders up to six columns, brand block, legal/last-updated line, optional QR. Fully data-driven. |
 | `FooterColumn` | P | One column: title + ordered links (`ExternalLink`, icon optional). |
+
+### 3.8 PolicyPages — S
+Not one of the mock's original sections — reached via `GlobalNav`'s built-in
+"Travel Policy" tab, not `configuration.sections`.
+
+| Component | Layer | Responsibility |
+| --- | --- | --- |
+| `PolicyPageScreen` | S | One adaptive template for every Travel Policy page (landing page included, via `PolicyService.getPage(slug)`) — breadcrumb, hero, info/note banners, CTA row, "Need Help", closing banner, and card sections, each rendered only when that page has the corresponding data. An AI-assistant section renders as a static "Coming Soon" placeholder on top-level pages only — no service, deferred pending a decision on what it integrates with. |
+| `PolicyCardSections` (`CategoryCards`/`InfoCards`/`HighlightCards`/`RuleCards`/`HelpSteps`) | P | One rendering template per `IPolicyCard.kind`. A `Category`/`Info` card navigates in-app via `TargetSlug` (priority) or an external `LinkUrl`. |
+
+### 3.9 ServicePages — S
+Not one of the mock's original sections — reached via `GlobalNav`'s per-service
+tabs (Business Travel, Personal Travel Offers, SAP Concur, Catering Services,
+Meetings & Events, Expense Claim, …), not `configuration.sections`.
+
+| Component | Layer | Responsibility |
+| --- | --- | --- |
+| `ServicePageScreen` | S | A placeholder landing page reusing one `TH_TravelServices` row's own title/description/icon/image, plus a CTA button from that row's own link if it has one. No dedicated content/layout yet ("future we will decide content and layout") — exists so these tabs go to a real page instead of a dead `#` link. |
 
 ---
 
