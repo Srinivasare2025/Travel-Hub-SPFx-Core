@@ -67,20 +67,36 @@
 .pulsePreviewOptions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--full-space-2, 8px);
+  gap: var(--full-space-3, 12px);
 }
 
 .pulsePreviewOption {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--full-space-1, 4px);
+  width: 3.75rem;
+}
+
+.pulsePreviewOptionIcon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 36px;
   height: 36px;
+  flex-shrink: 0;
   border-radius: 50%;
   background: var(--full-surface-alt, #faf8f4);
   border: 1px solid var(--full-border, #e8e5e0);
   color: var(--full-primary, #b89c66);
   font-size: 1.05rem;
+}
+
+.pulsePreviewOptionLabel {
+  @include th-meta;
+  color: var(--full-text-muted, #4a5568);
+  text-align: center;
+  line-height: 1.2;
 }
 
 .pulseThanks {

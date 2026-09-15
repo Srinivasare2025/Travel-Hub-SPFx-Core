@@ -220,6 +220,11 @@
         Title: title,
         Description: desc,
         ImageUrl: link(img('svc-' + order, 800, 500)),
+        // The demo images are all cropped photography (`Cover`); a real SAP
+        // Concur card usually uses their logo/wordmark image instead, which
+        // needs `Contain` so the text isn't cropped - set that here if you
+        // swap ImageUrl for a real logo.
+        ImageFit: 'Cover',
         Icon: icon,
         IconBackgroundColor: colour,
         LinkUrl: link(external ? 'https://www.concursolutions.com' : '#'),
@@ -227,6 +232,45 @@
         LinkText: cta,
         OpenInNewTab: external,
         DisplayOrder: order++,
+        IsActive: true
+      });
+    }
+  }
+
+  async function seedBusinessTravel() {
+    const steps = [
+      ['Raise Request', 'Submit a travel request in SAP Concur with your trip details and business justification.', '--full-secondary'],
+      ['Approval', 'Your manager reviews and approves the request in line with the travel policy.', '--full-primary'],
+      ['Book', 'Book flights, hotels and ground transport through the approved booking tool.', '--full-secondary'],
+      ['Travel', 'Travel with confidence - Travel Care support is available 24/7 while you are on the road.', '--full-primary'],
+      ['Expense', 'Submit your expense report in Concur with receipts attached for reimbursement.', '--full-secondary']
+    ];
+    let stepOrder = 1;
+    for (const [title, desc, colour] of steps) {
+      await addItem('TH_BusinessTravelSteps', {
+        Title: title,
+        Description: desc,
+        Number: stepOrder,
+        BackgroundColor: colour,
+        DisplayOrder: stepOrder++,
+        IsActive: true
+      });
+    }
+
+    const infoCards = [
+      ['Policy reminders', 'A quick refresher on approval limits, per-diem rules and booking classes before you travel.', 'View'],
+      ['Useful Documents', 'Download travel request templates, expense forms and the mobile app guide.', 'View'],
+      ['Need further help?', 'Reach the Travel Care team for support with requests, approvals or urgent changes.', 'View']
+    ];
+    let infoOrder = 1;
+    for (const [title, desc, linkText] of infoCards) {
+      await addItem('TH_BusinessTravelInfoCards', {
+        Title: title,
+        Description: desc,
+        LinkUrl: link('#'),
+        LinkText: linkText,
+        OpenInNewTab: false,
+        DisplayOrder: infoOrder++,
         IsActive: true
       });
     }
@@ -763,6 +807,7 @@
   const STEPS = [
     ['TH_HeroBanners', seedHero],
     ['TH_TravelServices', seedServices],
+    ['TH_BusinessTravelSteps + TH_BusinessTravelInfoCards', seedBusinessTravel],
     ['TH_TravelNews', seedNews],
     ['TH_TravelEvents', seedEvents],
     ['TH_TravelTips', seedTips],
@@ -779,7 +824,8 @@
   const RESETTABLE = [
     'TH_FooterLinks', 'TH_FooterColumns', 'TH_QuickPulseOptions', 'TH_QuickPulseResponses',
     'TH_PolicyCards', 'TH_PolicyPages',
-    'TH_QuickPulseQuestions', 'TH_HeroBanners', 'TH_TravelServices', 'TH_TravelNews',
+    'TH_QuickPulseQuestions', 'TH_HeroBanners', 'TH_TravelServices',
+    'TH_BusinessTravelSteps', 'TH_BusinessTravelInfoCards', 'TH_TravelNews',
     'TH_TravelEvents', 'TH_TravelTips', 'TH_TravelerTestimonials', 'TH_DepartmentTravelSpend',
     'TH_GreenTravel', 'TH_TravelTeam', 'TH_GlobalNavigation'
   ];

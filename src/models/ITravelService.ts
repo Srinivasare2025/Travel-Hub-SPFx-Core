@@ -5,6 +5,8 @@ export interface ITravelService {
   description: string;
   /** Validated image URL; `undefined` when invalid/missing (card shows icon only). */
   imageUrl: string | undefined;
+  /** `contain` for a logo/wordmark image that must stay fully visible (not cropped); `cover` (default) for full-bleed photography. */
+  imageFit: 'cover' | 'contain';
   /** Fluent UI icon name or asset key. */
   icon: string;
   /** Validated CSS colour (hex or token name) for the icon chip background. */

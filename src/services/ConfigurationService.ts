@@ -178,7 +178,7 @@ export class ConfigurationService implements IConfigurationService {
         quickLinks: [
           {
             key: 'helpDesk' as const,
-            title: str('hero.quickLink.helpDesk.title', 'Travel Services Help Desk'),
+            title: str('hero.quickLink.helpDesk.title', 'Help Desk'),
             description: str(
               'hero.quickLink.helpDesk.description',
               'General travel guidance and non-urgent assistance'
@@ -215,6 +215,19 @@ export class ConfigurationService implements IConfigurationService {
         defaultLinkText: str('services.defaultLinkText', 'Learn More'),
         autoPlay: bool('services.autoPlay', true),
         intervalSeconds: num('services.intervalSeconds', 5, 3, 20)
+      },
+      businessTravel: {
+        title: str('businessTravel.title', 'Business Travel'),
+        description: str(
+          'businessTravel.description',
+          'Everything you need to raise a request, get it approved, and book your trip — all in one place.'
+        ),
+        concurUrl: (() => {
+          const u = url('businessTravel.concurUrl', '#');
+          return u === '#' ? undefined : u;
+        })(),
+        concurLinkText: str('businessTravel.concurLinkText', 'Access SAP Concur'),
+        concurOpenInNewTab: bool('businessTravel.concurOpenInNewTab', true)
       },
       updates: {
         newsCount: num('updates.news.count', 4, 2, 8),

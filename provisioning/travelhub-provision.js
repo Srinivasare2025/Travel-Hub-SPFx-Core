@@ -168,7 +168,7 @@
         {
           name: 'Category',
           xml: F.choice('Category', [
-            'Brand', 'Hero', 'Services', 'Updates', 'Testimonials', 'QuickPulse',
+            'Brand', 'Hero', 'Services', 'BusinessTravel', 'Updates', 'Testimonials', 'QuickPulse',
             'Spend', 'Team', 'Footer', 'Dates', 'Sections', 'ViewAll', 'FeatureFlags'
           ])
         },
@@ -203,6 +203,11 @@
       fields: [
         { name: 'Description', xml: F.note('Description', 4) },
         { name: 'ImageUrl', xml: F.url('ImageUrl') },
+        // 'Cover' crops to fill the card image (photography); 'Contain'
+        // letterboxes to keep the whole image visible - use it for a
+        // logo/wordmark image (e.g. a partner brand image with text) that
+        // must not be cropped.
+        { name: 'ImageFit', xml: F.choice('ImageFit', ['Cover', 'Contain'], 'Cover') },
         { name: 'Icon', xml: F.text('Icon') },
         { name: 'IconBackgroundColor', xml: F.text('IconBackgroundColor') },
         { name: 'LinkUrl', xml: F.url('LinkUrl') },
@@ -213,6 +218,35 @@
         { name: 'IsActive', xml: F.bool('IsActive', true) },
         { name: 'StartDate', xml: F.date('StartDate', true) },
         { name: 'EndDate', xml: F.date('EndDate', true) }
+      ]
+    },
+    {
+      // The 5 process-step cards on the dedicated Business Travel page
+      // (Raise Request, Approval, Book, Travel, Expense). Title = step
+      // title; Number is the value shown in the small coloured square.
+      title: 'TH_BusinessTravelSteps',
+      description: 'Business Travel page - the request-to-expense process steps.',
+      fields: [
+        { name: 'Description', xml: F.note('Description', 3) },
+        { name: 'Number', xml: F.number('Number', {}) },
+        // Hex (#rrggbb) or a --full-* design-token name (e.g. --full-primary).
+        { name: 'BackgroundColor', xml: F.text('BackgroundColor') },
+        { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
+        { name: 'IsActive', xml: F.bool('IsActive', true) }
+      ]
+    },
+    {
+      // The 3 info cards below the steps (Policy reminders, Useful
+      // Documents, Need further help?, …) on the same page.
+      title: 'TH_BusinessTravelInfoCards',
+      description: 'Business Travel page - supporting info cards.',
+      fields: [
+        { name: 'Description', xml: F.note('Description', 3) },
+        { name: 'LinkUrl', xml: F.url('LinkUrl') },
+        { name: 'LinkText', xml: F.text('LinkText') },
+        { name: 'OpenInNewTab', xml: F.bool('OpenInNewTab', false) },
+        { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
+        { name: 'IsActive', xml: F.bool('IsActive', true) }
       ]
     },
     {
@@ -467,7 +501,7 @@
     ['hero.intervalSeconds', '6', 'number'],
     ['hero.supportingMessage', 'Travel Care - Your Partner in Every Journey', 'string'],
     ['hero.quickLinks.layout', 'inline', 'string'],
-    ['hero.quickLink.helpDesk.title', 'Travel Services Help Desk', 'string'],
+    ['hero.quickLink.helpDesk.title', 'Help Desk', 'string'],
     ['hero.quickLink.helpDesk.description', 'General travel guidance and non-urgent assistance', 'string'],
     ['hero.quickLink.helpDesk.url', '#', 'string'],
     ['hero.quickLink.helpDesk.type', 'page', 'string'],
@@ -486,6 +520,11 @@
     ['services.defaultLinkText', 'Learn More', 'string'],
     ['services.autoPlay', 'true', 'boolean'],
     ['services.intervalSeconds', '5', 'number'],
+    ['businessTravel.title', 'Business Travel', 'string'],
+    ['businessTravel.description', 'Everything you need to raise a request, get it approved, and book your trip - all in one place.', 'string'],
+    ['businessTravel.concurUrl', 'https://www.concursolutions.com', 'string'],
+    ['businessTravel.concurLinkText', 'Access SAP Concur', 'string'],
+    ['businessTravel.concurOpenInNewTab', 'true', 'boolean'],
     ['updates.news.count', '4', 'number'],
     // Business rule: Upcoming Events shows at most 3 on the hub page - the
     // rest live behind "View All" (viewAll.events).

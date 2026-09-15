@@ -10,7 +10,8 @@ import styles from './TravelerEngagementSection.module.scss';
  * The Quick Pulse teaser card shown on the hub (its own "Quick Pulse" title
  * is a matching `SectionHeader` rendered by `TravelerEngagementSection`, not
  * inside this card, so it lines up with the testimonials column's header):
- * a preview (question + a decorative row of the configured option icons)
+ * a preview (question + a decorative row of the configured options, each an
+ * icon with its status label underneath)
  * with two links out to dedicated full-screen "pages" — Submit Quick Pulse
  * and View All Traveler Survey (both are in-app screens via
  * `useNavigation()`, not the inline form this card used to be; see
@@ -52,7 +53,10 @@ export const QuickPulseCard: React.FC = () => {
         <div className={styles.pulsePreviewOptions} aria-hidden="true">
           {options.map((option) => (
             <span key={option.id} className={styles.pulsePreviewOption}>
-              <Icon iconName={option.icon} />
+              <span className={styles.pulsePreviewOptionIcon}>
+                <Icon iconName={option.icon} />
+              </span>
+              <span className={styles.pulsePreviewOptionLabel}>{option.title}</span>
             </span>
           ))}
         </div>

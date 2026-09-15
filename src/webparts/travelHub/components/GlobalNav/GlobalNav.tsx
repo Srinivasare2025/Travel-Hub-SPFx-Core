@@ -17,6 +17,8 @@ function isActive(item: IGlobalNavItem, view: ThView): boolean {
       return view.kind === 'policyPage';
     case 'service':
       return view.kind === 'servicePage' && Number(item.url) === view.serviceId;
+    case 'businessTravel':
+      return view.kind === 'businessTravel';
     default:
       return false;
   }
@@ -59,6 +61,15 @@ function NavLink({
     return (
       <li>
         <button type="button" className={className} onClick={() => navigate({ kind: 'servicePage', serviceId })}>
+          {item.title}
+        </button>
+      </li>
+    );
+  }
+  if (item.kind === 'businessTravel') {
+    return (
+      <li>
+        <button type="button" className={className} onClick={() => navigate({ kind: 'businessTravel' })}>
           {item.title}
         </button>
       </li>

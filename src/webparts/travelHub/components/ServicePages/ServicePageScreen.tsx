@@ -12,13 +12,14 @@ export interface IServicePageScreenProps {
 
 /**
  * A placeholder landing page for one "Explore Our Travel Services" tile
- * (Business Travel, Personal Travel Offers, SAP Concur, Catering Services,
- * Meetings & Events, Expense Claim, …), reached from `GlobalNav`. Reuses
- * that service's own title/description/icon/image — there is no dedicated
- * content or layout for these pages yet ("future we will decide content and
- * layout" per the business); this exists so the nav tab goes to a real page
- * instead of a dead `#` link, with the service's own action link (if any)
- * as a CTA. Travel Policy is its own real page (`PolicyPageScreen`), not this.
+ * (Personal Travel Offers, SAP Concur, Catering Services, Meetings & Events,
+ * Expense Claim, …), reached from `GlobalNav`. Reuses that service's own
+ * title/description/icon/image — there is no dedicated content or layout for
+ * these pages yet ("future we will decide content and layout" per the
+ * business); this exists so the nav tab goes to a real page instead of a
+ * dead `#` link, with the service's own action link (if any) as a CTA.
+ * Travel Policy and Business Travel are each their own real page
+ * (`PolicyPageScreen`, `BusinessTravelPageScreen`), not this.
  */
 export const ServicePageScreen: React.FC<IServicePageScreenProps> = ({ serviceId }) => {
   const { travelServices, configuration } = useServices();
@@ -62,7 +63,13 @@ export const ServicePageScreen: React.FC<IServicePageScreenProps> = ({ serviceId
           </div>
 
           {service.imageUrl !== undefined && (
-            <ImageWithFallback src={service.imageUrl} alt="" aspectRatio="21 / 9" className={styles.image} />
+            <ImageWithFallback
+              src={service.imageUrl}
+              alt=""
+              aspectRatio="21 / 9"
+              fit={service.imageFit}
+              className={styles.image}
+            />
           )}
 
           <p className={styles.description}>{service.description}</p>

@@ -149,6 +149,12 @@ export class QuickPulseService implements IQuickPulseService {
       list: QUESTIONS_LIST,
       select: ['Id', 'Title', 'IsActive', 'StartDate', 'EndDate', 'AllowComments', 'OneResponsePerUser'],
       filter: `IsActive eq 1 and (StartDate eq null or StartDate le datetime'${nowIso}') and (EndDate eq null or EndDate ge datetime'${nowIso}')`,
+      // Only one row should be IsActive at a time, but if an admin leaves an
+      // older question active while adding a new one, prefer the most
+      // recently created row - otherwise this can silently pick a stale
+      // question whose TH_QuickPulseOptions rows no longer match anything
+      // the admin just added.
+      orderBy: { field: 'Id', ascending: false },
       top: 1
     });
     const item = raw[0];

@@ -58,6 +58,15 @@ export interface ITravelHubConfiguration {
 
   services: IResponsiveCounts & { defaultLinkText: string; autoPlay: boolean; intervalSeconds: number };
 
+  businessTravel: {
+    title: string;
+    description: string;
+    /** Validated; `undefined` hides the "Access SAP Concur" button. */
+    concurUrl: string | undefined;
+    concurLinkText: string;
+    concurOpenInNewTab: boolean;
+  };
+
   updates: {
     newsCount: number;
     eventsCount: number;

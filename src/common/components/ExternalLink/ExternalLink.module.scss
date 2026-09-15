@@ -9,6 +9,16 @@
   @include th-focusable;
 }
 
+/* Reset native button chrome when ExternalLink renders in-app navigation as a
+   <button> (the `onClick` prop) instead of an <a>. */
+button.link {
+  border: none;
+  padding: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
 .arrow {
   font-size: 0.7rem;
   transition: transform var(--full-transition-fast, 120ms ease);

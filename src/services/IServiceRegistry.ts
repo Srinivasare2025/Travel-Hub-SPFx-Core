@@ -12,6 +12,7 @@ import { IGreenTravelService } from './GreenTravelService';
 import { ITravelTeamService } from './TravelTeamService';
 import { IFooterService } from './FooterService';
 import { IPolicyService } from './PolicyService';
+import { IBusinessTravelService } from './BusinessTravelService';
 
 /**
  * The set of services + resolved configuration handed to the React tree via
@@ -36,4 +37,5 @@ export interface IServiceRegistry {
   team: ITravelTeamService;
   footer: IFooterService;
   policy: IPolicyService;
+  businessTravel: IBusinessTravelService;
 }

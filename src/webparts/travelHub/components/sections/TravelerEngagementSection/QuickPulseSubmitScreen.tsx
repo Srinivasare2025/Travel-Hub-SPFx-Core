@@ -63,7 +63,12 @@ export const QuickPulseSubmitScreen: React.FC = () => {
           <h1 className={styles.screenTitle}>Quick Pulse</h1>
           <p className={styles.screenDescription}>{data.question.question}</p>
 
-          {data.userHasResponded || justSubmitted ? (
+          {data.options.length === 0 ? (
+            <EmptyState
+              message="No response options are configured for this question right now. Please check back later."
+              iconName="Feedback"
+            />
+          ) : data.userHasResponded || justSubmitted ? (
             <div className={styles.pulseThanks} role="status">
               <Icon iconName="CheckMark" aria-hidden="true" />
               <p>{configuration.quickPulse.confirmationMessage}</p>

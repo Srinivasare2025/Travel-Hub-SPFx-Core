@@ -73,6 +73,7 @@ One row per key. See CONFIGURATION.md for the full key list.
 | Title | Single line |
 | Description | Multiple lines (plain) |
 | ImageUrl | Hyperlink |
+| ImageFit | Choice (`Cover`, `Contain`) - `Cover` (default) crops to fill the card image, right for photography; use `Contain` for a logo/wordmark image (e.g. a partner brand image with text) so it isn't cropped |
 | Icon | Single line (Fluent icon name or asset key) |
 | IconBackgroundColor | Single line (hex or token name) |
 | LinkUrl | Hyperlink |
@@ -82,6 +83,33 @@ One row per key. See CONFIGURATION.md for the full key list.
 | DisplayOrder | Number |
 | IsActive | Yes/No |
 | StartDate / EndDate | DateTime |
+
+### `TH_BusinessTravelSteps`
+The dedicated Business Travel page's request-to-expense process row (5 cards:
+Raise Request, Approval, Book, Travel, Expense). Title = step title.
+
+| Column | Type |
+| --- | --- |
+| Title | Single line |
+| Description | Multiple lines (plain) |
+| Number | Number - shown in the small coloured square |
+| BackgroundColor | Single line (hex or `--full-*` token name) - the square's background |
+| DisplayOrder | Number |
+| IsActive | Yes/No |
+
+### `TH_BusinessTravelInfoCards`
+The same page's supporting info-card row (e.g. Policy reminders, Useful
+Documents, Need further help?). Title = card title.
+
+| Column | Type |
+| --- | --- |
+| Title | Single line |
+| Description | Multiple lines (plain) |
+| LinkUrl | Hyperlink |
+| LinkText | Single line (e.g. "View") |
+| OpenInNewTab | Yes/No |
+| DisplayOrder | Number |
+| IsActive | Yes/No |
 
 ### `TH_TravelNews`
 | Column | Type |

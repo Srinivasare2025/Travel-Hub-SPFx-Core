@@ -12,4 +12,5 @@ export * from './ITravelTeamMember';
 export * from './IFooter';
 export * from './IGlobalNav';
 export * from './IPolicyPage';
+export * from './IBusinessTravel';
 export * from './ITravelHubConfiguration';

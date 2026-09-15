@@ -18,6 +18,7 @@ import { TravelInsightsSection } from './sections/TravelInsightsSection';
 import { TravelTeamSection } from './sections/TravelTeamSection';
 import { PolicyPageScreen } from './PolicyPages';
 import { ServicePageScreen } from './ServicePages';
+import { BusinessTravelPageScreen } from './BusinessTravelPage';
 import { TravelHubFooter } from './TravelHubFooter';
 import { applyFullBleedChrome, SHELL_MARKER_ATTR } from './chromeOverride';
 import styles from './TravelHub.module.scss';
@@ -60,6 +61,9 @@ function readViewFromLocation(): ThView {
         return { kind: 'servicePage', serviceId };
       }
     }
+    if (raw === 'business-travel') {
+      return { kind: 'businessTravel' };
+    }
     return { kind: 'hub' };
   } catch {
     return { kind: 'hub' };
@@ -80,6 +84,8 @@ function viewToParam(view: ThView): string | undefined {
       return 'feedback-submit';
     case 'servicePage':
       return `service/${String(view.serviceId)}`;
+    case 'businessTravel':
+      return 'business-travel';
     case 'hub':
     default:
       return undefined;
@@ -247,6 +253,14 @@ export default class TravelHub extends React.Component<ITravelHubProps, ITravelH
               <div className={styles.page}>
                 <SectionBoundary name="ServicePageScreen">
                   <ServicePageScreen serviceId={view.serviceId} />
+                </SectionBoundary>
+              </div>
+            )}
+
+            {view.kind === 'businessTravel' && (
+              <div className={styles.page}>
+                <SectionBoundary name="BusinessTravelPageScreen">
+                  <BusinessTravelPageScreen />
                 </SectionBoundary>
               </div>
             )}

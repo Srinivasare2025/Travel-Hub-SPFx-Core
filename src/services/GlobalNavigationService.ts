@@ -25,10 +25,10 @@ export interface IGlobalNavigationService {
    * The global nav bar shown above the hero: a "Home" tab, one tab per
    * active `TH_TravelServices` row (Business Travel, Personal Travel,
    * Travel Policy, SAP Concur, Catering Services, Meetings & Events, …) —
-   * every one of them opens an in-app page (`servicePage`/`policyPage`),
-   * not the service's own `LinkUrl`, since Travel Care and everything else
-   * needs a real destination, not a dead link — plus the Help Desk / Travel
-   * Care hero quick links, plus any admin-added rows from
+   * every one of them opens an in-app page (`businessTravel`/`servicePage`/
+   * `policyPage`), not the service's own `LinkUrl`, since Travel Care and
+   * everything else needs a real destination, not a dead link — plus the
+   * Help Desk / Travel Care hero quick links, plus any admin-added rows from
    * `TH_GlobalNavigation`.
    */
   getNavItems(config: ITravelHubConfiguration): Promise<IGlobalNavItem[]>;
@@ -56,11 +56,13 @@ export class GlobalNavigationService implements IGlobalNavigationService {
    * that isn't the hero itself), then one tab per active Travel Service -
    * "Travel Policy" (wherever it sits in DisplayOrder - the sample data
    * positions it third, matching the mock) becomes the real in-app Travel
-   * Policy tab; every other service becomes its own in-app `ServicePageScreen`
-   * (title/description/icon reused from that service row - "future we will
-   * decide content and layout" per the business, so this is a real page, not
-   * a dead `#` link, while the actual content is still pending) - then the
-   * Help Desk / Travel Care hero quick links.
+   * Policy tab, "Business Travel" becomes the real in-app Business Travel
+   * page (`BusinessTravelPageScreen`); every other service becomes its own
+   * in-app `ServicePageScreen` (title/description/icon reused from that
+   * service row - "future we will decide content and layout" per the
+   * business, so this is a real page, not a dead `#` link, while the actual
+   * content is still pending) - then the Help Desk / Travel Care hero quick
+   * links.
    */
   private async getBuiltInItems(config: ITravelHubConfiguration): Promise<IGlobalNavItem[]> {
     const items: IGlobalNavItem[] = [{ id: 0, title: 'Home', url: undefined, kind: 'home', openInNewTab: false }];
@@ -72,6 +74,10 @@ export class GlobalNavigationService implements IGlobalNavigationService {
         for (const service of services) {
           if (service.title.trim().toLowerCase() === 'travel policy') {
             items.push({ id: nextId--, title: service.title, url: 'travel-policy', kind: 'policy', openInNewTab: false });
+            continue;
+          }
+          if (service.title.trim().toLowerCase() === 'business travel') {
+            items.push({ id: nextId--, title: service.title, url: undefined, kind: 'businessTravel', openInNewTab: false });
             continue;
           }
           items.push({ id: nextId--, title: service.title, url: String(service.id), kind: 'service', openInNewTab: false });
@@ -91,12 +97,12 @@ export class GlobalNavigationService implements IGlobalNavigationService {
       if (link.url === undefined || link.title.length === 0) {
         continue;
       }
-      // The Help Desk label is the full configured card title ("Travel
-      // Services Help Desk") - too long for a nav tab, shortened here only
-      // (the hero card itself is untouched). Travel Care's `kind: 'image'`
-      // quick link (its QR poster) opens the same in-app viewer the hero
-      // card uses, instead of the browser navigating straight to the image
-      // file and showing its raw path.
+      // The Help Desk nav tab is always labelled "Help Desk" regardless of
+      // the configured hero card title, so a longer card title never breaks
+      // the nav layout. Travel Care's `kind: 'image'` quick link (its QR
+      // poster) opens the same in-app viewer the hero card uses, instead of
+      // the browser navigating straight to the image file and showing its
+      // raw path.
       const title = link.key === 'helpDesk' ? 'Help Desk' : link.title;
       items.push({
         id: nextId--,

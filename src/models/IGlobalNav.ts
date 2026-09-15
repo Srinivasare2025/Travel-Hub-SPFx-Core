@@ -26,8 +26,11 @@ export interface IGlobalNavItem {
    * `navigate({ kind: 'servicePage', serviceId })`. `image` = a hero quick
    * link whose `type` is `image` (e.g. Travel Care's QR poster) - `GlobalNav`
    * opens the same in-app `ImageLightbox` the hero card does, instead of
-   * navigating the browser to the raw file URL.
+   * navigating the browser to the raw file URL. `businessTravel` = the
+   * built-in "Business Travel" tab - `GlobalNav` calls
+   * `navigate({ kind: 'businessTravel' })` instead of the generic
+   * `ServicePageScreen` every other service tab gets.
    */
-  kind: 'home' | 'app' | 'external' | 'policy' | 'service' | 'image';
+  kind: 'home' | 'app' | 'external' | 'policy' | 'service' | 'image' | 'businessTravel';
   openInNewTab: boolean;
 }

@@ -61,7 +61,7 @@ shown).
 | `hero.intervalSeconds` | number (3–20) | `6` | HeroCarousel — how long each **image** slide is shown before advancing. Video slides ignore it and advance when the video finishes playing (`TH_HeroBanners.DurationSeconds`, 3–600s, is unused for video). |
 | `hero.supportingMessage` | string | `Travel Care — Your Partner in Every Journey` | HeroQuickLinks |
 | `hero.quickLinks.layout` | enum `inline` \| `stack` | `inline` | `inline` = the two cards on one row (side by side); `stack` = a narrow single-column list |
-| `hero.quickLink.helpDesk.title` | string | `Travel Services Help Desk` | HeroQuickLinks |
+| `hero.quickLink.helpDesk.title` | string | `Help Desk` | HeroQuickLinks |
 | `hero.quickLink.helpDesk.description` | string | `General travel guidance and non-urgent assistance` | " |
 | `hero.quickLink.helpDesk.url` | string (safe URL) | `#` | destination — a page |
 | `hero.quickLink.helpDesk.type` | enum `page` \| `image` | `page` | `page` = normal link; `image` = the URL is an image and opens in an **in-app image viewer** (the file URL never appears in the address bar, so viewers aren't dropped into the document library) |
@@ -82,6 +82,21 @@ shown).
 | `services.defaultLinkText` | string | `Learn More` | TravelServiceCard (when a row has no `LinkText`) |
 | `services.autoPlay` | boolean | `true` | TravelServicesCarousel auto-advances, same as the hero |
 | `services.intervalSeconds` | number (3–20) | `5` | " |
+
+### Business Travel page
+The dedicated page reached from the "Business Travel" service card and its
+matching global nav tab (`NavigationContext`'s `businessTravel` view,
+`BusinessTravelPageScreen`). Its 5 process-step cards and 3 info cards come
+from `TH_BusinessTravelSteps` / `TH_BusinessTravelInfoCards`
+(SHAREPOINT-SCHEMA.md), not these config keys.
+
+| Key | Type | Default | Used by |
+| --- | --- | --- | --- |
+| `businessTravel.title` | string | `Business Travel` | BusinessTravelPageScreen |
+| `businessTravel.description` | string | `Everything you need to raise a request, get it approved, and book your trip — all in one place.` | " |
+| `businessTravel.concurUrl` | string (safe URL) | `https://www.concursolutions.com` | destination for the "Access SAP Concur" button; invalid/blank hides the button |
+| `businessTravel.concurLinkText` | string | `Access SAP Concur` | " |
+| `businessTravel.concurOpenInNewTab` | boolean | `true` | " |
 
 ### Travel Updates – View All
 | Key | Type | Default |

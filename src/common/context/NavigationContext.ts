@@ -19,7 +19,8 @@ export type ThView =
   | { kind: 'policyPage'; slug: string }
   | { kind: 'testimonialsAll' }
   | { kind: 'testimonialsSubmit' }
-  | { kind: 'servicePage'; serviceId: number };
+  | { kind: 'servicePage'; serviceId: number }
+  | { kind: 'businessTravel' };
 
 export type ThViewKind = ThView['kind'];
 
