@@ -4,25 +4,29 @@ import { useServices } from '../../../../../common/context/ServiceContext';
 import { useNavigation } from '../../../../../common/context/NavigationContext';
 import { useAsyncData } from '../../../../../common/hooks';
 import { Card, Button, LoadingState, ErrorState, EmptyState } from '../../../../../common/components';
+import { IQuickPulseOption } from '../../../../../models';
 import styles from './TravelerEngagementSection.module.scss';
 
 /**
- * The Quick Pulse teaser card shown on the hub (its own "Quick Pulse" title
- * is a matching `SectionHeader` rendered by `TravelerEngagementSection`, not
+ * The Quick Pulse card shown on the hub (its own "Quick Pulse" title is a
+ * matching `SectionHeader` rendered by `TravelerEngagementSection`, not
  * inside this card, so it lines up with the testimonials column's header):
- * a preview (question + a decorative row of the configured options, each an
- * icon with its status label underneath)
- * with two links out to dedicated full-screen "pages" — Submit Quick Pulse
- * and View All Traveler Survey (both are in-app screens via
- * `useNavigation()`, not the inline form this card used to be; see
- * `QuickPulseSubmitScreen`/`QuickPulseResultsScreen`). SECURITY.md §2 — this
- * component never renders a list of individual responses;
- * `QuickPulseService` never returns one to it.
+ * question + selectable emoji/icon options + an optional comment box, all
+ * submitted in place (no more full-screen "Submit Quick Pulse" redirect).
+ * "View All Traveler Survey" still opens the dedicated results screen -
+ * SECURITY.md §2, `QuickPulseService` never returns a list of individual
+ * responses to this card.
  */
 export const QuickPulseCard: React.FC = () => {
   const { quickPulse, configuration } = useServices();
   const { navigate } = useNavigation();
   const { status, data, retry } = useAsyncData(() => quickPulse.getState(configuration), [configuration]);
+
+  const [selectedValue, setSelectedValue] = React.useState<number | undefined>(undefined);
+  const [comments, setComments] = React.useState('');
+  const [submitting, setSubmitting] = React.useState(false);
+  const [submitError, setSubmitError] = React.useState<string | undefined>(undefined);
+  const [justSubmitted, setJustSubmitted] = React.useState(false);
 
   if (status === 'loading') {
     return <LoadingState variant="card" count={1} label="Loading Quick Pulse" />;
@@ -35,6 +39,28 @@ export const QuickPulseCard: React.FC = () => {
   }
 
   const { question, options } = data;
+  const hasResponded = data.userHasResponded || justSubmitted;
+
+  const handleSubmit = (): void => {
+    if (selectedValue === undefined || submitting) {
+      return;
+    }
+    setSubmitting(true);
+    setSubmitError(undefined);
+    quickPulse
+      .submitResponse(
+        { questionId: question.id, responseValue: selectedValue, comments: comments.trim().length > 0 ? comments.trim() : undefined },
+        question.oneResponsePerUser
+      )
+      .then(() => {
+        setJustSubmitted(true);
+        setSubmitting(false);
+      })
+      .catch((error: unknown) => {
+        setSubmitError(error instanceof Error ? error.message : 'Could not submit your response. Please try again.');
+        setSubmitting(false);
+      });
+  };
 
   return (
     <Card padding="lg" className={styles.pulseCard}>
@@ -49,28 +75,46 @@ export const QuickPulseCard: React.FC = () => {
 
       <p className={styles.pulseQuestion}>{question.question}</p>
 
-      {options.length > 0 && (
-        <div className={styles.pulsePreviewOptions} aria-hidden="true">
-          {options.map((option) => (
-            <span key={option.id} className={styles.pulsePreviewOption}>
-              <span className={styles.pulsePreviewOptionIcon}>
-                <Icon iconName={option.icon} />
-              </span>
-              <span className={styles.pulsePreviewOptionLabel}>{option.title}</span>
-            </span>
-          ))}
-        </div>
-      )}
-
-      {data.userHasResponded ? (
+      {hasResponded ? (
         <div className={styles.pulseThanks} role="status">
           <Icon iconName="CheckMark" aria-hidden="true" />
           <p>{configuration.quickPulse.confirmationMessage}</p>
         </div>
+      ) : options.length === 0 ? (
+        <EmptyState message="No response options are configured for this question right now." iconName="Feedback" />
       ) : (
-        <Button variant="primary" onClick={() => navigate({ kind: 'quickPulseSubmit' })}>
-          Submit Quick Pulse
-        </Button>
+        <>
+          <div className={styles.pulsePreviewOptions} role="radiogroup" aria-label={question.question}>
+            {options.map((option) => (
+              <PulseOptionButton
+                key={option.id}
+                option={option}
+                selected={selectedValue === option.value}
+                onSelect={() => setSelectedValue(option.value)}
+              />
+            ))}
+          </div>
+
+          {selectedValue !== undefined && (
+            <div className={styles.pulseSubmitRow}>
+              {question.allowComments && (
+                <textarea
+                  className={styles.pulseComments}
+                  placeholder="Add a comment (optional)"
+                  value={comments}
+                  onChange={(e) => setComments(e.target.value)}
+                  maxLength={1000}
+                  rows={2}
+                  aria-label="Optional comment"
+                />
+              )}
+              {submitError !== undefined && <p className={styles.pulseError}>{submitError}</p>}
+              <Button variant="primary" type="submit" onClick={handleSubmit} disabled={submitting}>
+                {submitting ? 'Submitting…' : 'Submit Quick Pulse'}
+              </Button>
+            </div>
+          )}
+        </>
       )}
 
       {data.canViewResults && (
@@ -81,3 +125,28 @@ export const QuickPulseCard: React.FC = () => {
     </Card>
   );
 };
+
+function PulseOptionButton({
+  option,
+  selected,
+  onSelect
+}: {
+  option: IQuickPulseOption;
+  selected: boolean;
+  onSelect: () => void;
+}): React.ReactElement {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={selected}
+      className={`${styles.pulsePreviewOption} ${selected ? styles.pulsePreviewOptionSelected : ''}`}
+      onClick={onSelect}
+    >
+      <span className={styles.pulsePreviewOptionIcon}>
+        <Icon iconName={option.icon} />
+      </span>
+      <span className={styles.pulsePreviewOptionLabel}>{option.title}</span>
+    </button>
+  );
+}

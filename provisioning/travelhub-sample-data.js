@@ -9,7 +9,8 @@
  * HOW TO RUN
  *   1. Open a page on the target site, e.g.
  *        https://theredsea.sharepoint.com/sites/TravelHub
- *   2. F12 -> Console. Set CONFIG.TARGET_WEB_URL below if auto-detect is wrong.
+ *   2. F12 -> Console. Check CONFIG.TARGET_WEB_URL below matches your site
+ *        (same value as travelhub-provision.js's own CONFIG.TARGET_WEB_URL).
  *   3. Paste the whole file, press Enter. Read the SUMMARY at the end.
  *
  * OPTIONS (CONFIG block below)
@@ -30,10 +31,15 @@
   'use strict';
 
   /* ----------------------------- CONFIG ---------------------------------- */
+  // Plain hardcoded string, same as travelhub-provision.js's own CONFIG -
+  // no auto-detect. `window.location.origin` (the old fallback here) is
+  // ALWAYS just the tenant root (scheme://host, e.g.
+  // "https://theredsea.sharepoint.com") - it never includes a subsite path
+  // like "/sites/TravelHub", so relying on it silently pointed every run at
+  // the tenant root site instead of the target site. Edit this if your site
+  // URL is different.
   const CONFIG = {
-    TARGET_WEB_URL:
-      (typeof _spPageContextInfo !== 'undefined' && _spPageContextInfo.webAbsoluteUrl) ||
-      window.location.origin,
+    TARGET_WEB_URL: "https://theredsea.sharepoint.com/sites/TravelHub",
     RESET: false,
     USE_PLACEHOLDER_IMAGES: true,
     THROTTLE_MS: 120
@@ -144,9 +150,12 @@
   }
 
   /* --------------------------- helpers --------------------------------- */
-  // SP.FieldUrlValue for Hyperlink columns.
+  // SP.FieldUrlValue for Hyperlink columns. `'#'` is used throughout this
+  // file as a "no real destination yet" placeholder - SharePoint's URL field
+  // rejects it server-side ("HTTP 400 - Invalid URL: #."), so it's treated
+  // the same as no URL at all (field omitted) rather than sent as-is.
   const link = (url, desc) =>
-    url ? { __metadata: { type: 'SP.FieldUrlValue' }, Url: url, Description: desc || url } : null;
+    url && url !== '#' ? { __metadata: { type: 'SP.FieldUrlValue' }, Url: url, Description: desc || url } : null;
 
   const P = CONFIG.USE_PLACEHOLDER_IMAGES;
   const img = (seed, w, h) => (P ? `https://picsum.photos/seed/${seed}/${w || 800}/${h || 500}` : '');
@@ -525,11 +534,80 @@
     }
   }
 
-  // The Travel Policy landing page + the one fully-specified detail page
-  // (Annual Flight Ticket Benefits). No mock exists yet for the "Explore
-  // Policy Information" targets or the other two category cards' detail
-  // pages, so those seed with no link (inert) rather than fabricated content
-  // - see PolicyService.ts.
+  // --- Policy content-model helpers -----------------------------------
+  // TH_PolicySections is the ordered content block a page is built from;
+  // TH_PolicyCards/TH_PolicyTables (+TH_PolicyTableRows)/TH_PolicyTabs hang
+  // off a section (or a tab within it) depending on the section's Layout.
+  // See PolicyService.ts / PolicyCardSections.tsx.
+  async function addPolicySection(pageId, opts) {
+    return addItem('TH_PolicySections', {
+      Title: opts.title || null,
+      PageIdId: pageId,
+      Subtitle: opts.subtitle || null,
+      Layout: opts.layout,
+      CardVariant: opts.cardVariant || null,
+      Body: Array.isArray(opts.body) ? opts.body.join('\n') : (opts.body || null),
+      Icon: opts.icon || null,
+      ImageUrl: opts.imageUrl ? link(opts.imageUrl) : null,
+      DisplayOrder: opts.order,
+      IsActive: true
+    });
+  }
+
+  async function addPolicyTab(sectionId, label, order) {
+    return addItem('TH_PolicyTabs', {
+      Title: label,
+      SectionIdId: sectionId,
+      DisplayOrder: order,
+      IsActive: true
+    });
+  }
+
+  // parentField is 'PageIdId' | 'SectionIdId' | 'TabIdId'.
+  async function addPolicyCards(parentField, parentId, cards) {
+    let order = 1;
+    for (const c of cards) {
+      const row = {
+        Title: c.title || '',
+        Kind: c.kind,
+        Number: c.number != null ? c.number : null,
+        Icon: c.icon || null,
+        IconColor: c.iconColor || null,
+        Description: c.description || null,
+        SubPoints: c.subPoints ? c.subPoints.join('\n') : null,
+        TargetSlug: c.targetSlug || null,
+        LinkUrl: c.linkUrl ? link(c.linkUrl) : null,
+        LinkText: c.linkText || null,
+        DisplayOrder: order++,
+        IsActive: true
+      };
+      row[parentField] = parentId;
+      await addItem('TH_PolicyCards', row);
+    }
+  }
+
+  async function addPolicyTables(parentField, parentId, tables) {
+    let order = 1;
+    for (const t of tables) {
+      const row = {
+        Title: t.title || null,
+        ColumnHeaders: t.headers.join('\n'),
+        DisplayOrder: order++,
+        IsActive: true
+      };
+      row[parentField] = parentId;
+      const tableId = await addItem('TH_PolicyTables', row);
+      let rOrder = 1;
+      for (const r of t.rows) {
+        await addItem('TH_PolicyTableRows', { TableIdId: tableId, CellValues: r.join('\n'), DisplayOrder: rOrder++ });
+      }
+    }
+  }
+
+  // The Travel Policy landing page, the Annual Flight Ticket Benefits page,
+  // and the 6 "Explore Policy Information" sub-pages - approved content
+  // baselines from RSG_Travel_Policy_Pages_1_2_Content_Specifications.docx
+  // and RSG_Explore_Policy_Information_6_Subpages_Content_Specification.docx.
   async function seedPolicyPages() {
     const landingId = await addItem('TH_PolicyPages', {
       Title: 'Travel Policy',
@@ -540,6 +618,12 @@
       HeroDescription: 'Travel with purpose. Plan with confidence. Stay compliant.',
       HeroImageUrl: link(img('policy-hero', 1600, 500)),
       HeroTagline: 'Responsible Travel\nA Brighter Tomorrow',
+      SuggestedQuestions: [
+        'What is my travel class entitlement?',
+        'How can I claim my business travel expenses?',
+        'What is my hotel accommodation cap?',
+        'What are my daily and transportation allowances?'
+      ].join('\n'),
       NeedHelpTitle: 'Need Help?',
       NeedHelpSupportLabel: 'Contact Travel Services',
       NeedHelpDescription: 'For policy related questions and support.',
@@ -579,112 +663,99 @@
       IsActive: true
     });
 
-    const categories = [
-      ['Business Travel Policy', 'Airplane',
-        'Guidance for approved business travel of less than 30 days, covering travel arrangements, entitlements, expenses and reimbursement requirements.',
-        'View Policy', null],
-      ['Business Assignment Policy', 'Suitcase',
-        'Guidance for business assignments exceeding 30 continuous calendar days, covering preparation, allowances, accommodation and applicable entitlements.',
-        'View Policy', null],
-      ['Annual Flight Ticket Benefits', 'AirTickets',
-        'With every service anniversary, employees can choose to use the company agency to book a flight ticket or request the benefit in cash.',
-        'View Rules and Conditions', 'annual-flight-ticket-benefits']
-    ];
-    let order = 1;
-    for (const [title, icon, desc, linkText, targetSlug] of categories) {
-      await addItem('TH_PolicyCards', {
-        Title: title,
-        PageIdId: landingId,
-        Kind: 'Category',
-        Icon: icon,
-        Description: desc,
-        LinkText: linkText,
-        TargetSlug: targetSlug,
-        LinkUrl: targetSlug ? null : link('#'),
-        DisplayOrder: order++,
-        IsActive: true
-      });
-    }
+    // -------------------------------------------------------------------
+    // Travel Policy landing page sections
+    // -------------------------------------------------------------------
+    const categorySectionId = await addPolicySection(landingId, { layout: 'CardsGrid', cardVariant: 'Category', order: 1 });
+    await addPolicyCards('SectionIdId', categorySectionId, [
+      {
+        kind: 'Category', title: 'Business Travel Policy', icon: 'Airplane',
+        description: 'Guidance for approved business travel of less than 30 days, covering travel arrangements, entitlements, expenses and reimbursement requirements.',
+        linkText: 'View Policy', linkUrl: '#'
+      },
+      {
+        kind: 'Category', title: 'Business Assignment Policy', icon: 'Suitcase',
+        description: 'Guidance for business assignments exceeding 30 continuous calendar days, covering preparation, allowances, accommodation and applicable entitlements.',
+        linkText: 'View Policy', linkUrl: '#'
+      },
+      {
+        kind: 'Category', title: 'Annual Flight Ticket Benefits', icon: 'AirTickets',
+        description: 'With every service anniversary, employees can choose to use the company agency to book a flight ticket or request the benefit in cash.',
+        linkText: 'View Rules and Conditions', targetSlug: 'annual-flight-ticket-benefits'
+      }
+    ]);
 
-    const infoTopics = [
-      ['Purpose & Scope', 'Page'],
-      ['Guiding Principles', 'CompassNW'],
-      ['Travel Planning & Approvals', 'Calendar'],
-      ['Travel Entitlement', 'Money'],
-      ['Expenses (Allowable & Non-Allowable)', 'ReceiptCheck'],
-      ['Compliance & Responsibilities', 'Shield']
-    ];
-    order = 1;
-    for (const [title, icon] of infoTopics) {
-      await addItem('TH_PolicyCards', {
-        Title: title,
-        PageIdId: landingId,
-        Kind: 'Info',
-        Icon: icon,
-        DisplayOrder: order++,
-        IsActive: true
-      });
-    }
+    const infoSectionId = await addPolicySection(landingId, {
+      layout: 'CardsGrid', cardVariant: 'Info', order: 2,
+      title: 'Explore Policy Information',
+      subtitle: 'Select a topic to view detailed information, guidelines and examples.'
+    });
+    await addPolicyCards('SectionIdId', infoSectionId, [
+      { kind: 'Info', title: 'Purpose & Scope', icon: 'Page', targetSlug: 'purpose-scope' },
+      { kind: 'Info', title: 'Guiding Principles', icon: 'CompassNW', targetSlug: 'guiding-principles' },
+      { kind: 'Info', title: 'Travel Planning & Approvals', icon: 'Calendar', targetSlug: 'travel-planning-approvals' },
+      { kind: 'Info', title: 'Travel Entitlement', icon: 'Money', targetSlug: 'travel-entitlement' },
+      { kind: 'Info', title: 'Expenses (Allowable & Non-Allowable)', icon: 'ReceiptCheck', targetSlug: 'expenses' },
+      { kind: 'Info', title: 'Compliance & Responsibilities', icon: 'Shield', targetSlug: 'compliance-responsibilities' }
+    ]);
 
-    // Content Specifications §3.1-3.4 - the approved wording, including the
-    // submit-by-destination / approval-by-excess tables (rendered as bullets,
-    // since TH_PolicyCards has no table field) and the numbered cancellation steps.
-    const highlights = [
-      ['Plan Before Your Travel', 'Calendar',
-        'To ensure adequate time for travel arrangements, employees shall submit travel requests as follows:',
-        [
+    const highlightSectionId = await addPolicySection(landingId, {
+      layout: 'CardsGrid', cardVariant: 'Highlight', order: 3,
+      title: 'Key Policy Highlights',
+      subtitle: 'Quick guidance on important rules to keep in mind.'
+    });
+    await addPolicyCards('SectionIdId', highlightSectionId, [
+      {
+        kind: 'Highlight', title: 'Plan Before Your Travel', icon: 'Calendar',
+        description: 'To ensure adequate time for travel arrangements, employees shall submit travel requests as follows:',
+        subPoints: [
           'GCC Countries: at least 5 business days before travel',
           'Rest of the World: at least 10 business days before travel',
           'Conferences & Events: at least 30 days before travel',
           "Policy note: business travel shall not normally be combined with an employee's annual vacation. However, this may be permitted with the approval of the Group Chief Administrative Officer."
-        ]],
-      ['Exceeding Accommodation Cap Limits', 'Bed',
-        'Accommodation above the applicable policy cap requires an approved exception.',
-        [
+        ]
+      },
+      {
+        kind: 'Highlight', title: 'Exceeding Accommodation Cap Limits', icon: 'Bed',
+        description: 'Accommodation above the applicable policy cap requires an approved exception.',
+        subPoints: [
           'Up to 25% over cap: GCAO Approval',
           'Above 25% over cap: GCEO Approval',
           'You may use your daily transportation allowance, or part of it, to increase the hotel cap, provided the overall daily transportation amount is not exceeded.',
           'Raise accommodation-cap exception requests through SAP Concur.'
-        ]],
-      ['Cancellations & No-Shows', 'Cancel',
-        "Tickets and accommodation cannot be cancelled after booking confirmation, except in circumstances beyond the employee's control or when required for business purposes.",
-        [
+        ]
+      },
+      {
+        kind: 'Highlight', title: 'Cancellations & No-Shows', icon: 'Cancel',
+        description: "Tickets and accommodation cannot be cancelled after booking confirmation, except in circumstances beyond the employee's control or when required for business purposes.",
+        subPoints: [
           'In such cases, RSG will bear the cancellation charges, subject to DoA approval.',
           'If an employee cancels a booking for personal reasons, they must notify the Travel Desk and provide appropriate justification.',
           'Failure to notify the Travel Desk or provide appropriate justification may result in disciplinary action by RSG.'
-        ]],
-      ['Cancellation Process', 'Sync', '',
-        [
+        ]
+      },
+      {
+        kind: 'Highlight', title: 'Cancellation Process', icon: 'Sync',
+        subPoints: [
           '1. Inform your manager and raise a cancellation request in SAP Concur.',
           '2. Contact the Travel Desk to cancel your reservation at rsgtravel@travelats.com.',
           '3. Ensure you receive a cancellation confirmation.',
           '4. Retain records for audit purposes.'
-        ]]
-    ];
-    order = 1;
-    for (const [title, icon, desc, subPoints] of highlights) {
-      await addItem('TH_PolicyCards', {
-        Title: title,
-        PageIdId: landingId,
-        Kind: 'Highlight',
-        Icon: icon,
-        Description: desc,
-        SubPoints: subPoints.join('\n'),
-        DisplayOrder: order++,
-        IsActive: true
-      });
-    }
+        ]
+      }
+    ]);
 
-    // Cycled across a few on-brand colours (gold/navy/success/danger) rather
-    // than inventing an arbitrary new palette for the numbered badges.
+    // -------------------------------------------------------------------
+    // Annual Flight Ticket Benefits sections
+    // -------------------------------------------------------------------
     const ruleColors = ['#b89c66', '#04253c', '#107c41', '#a4262c'];
-    const rules = [
+    const rulesSectionId = await addPolicySection(benefitsId, { layout: 'NumberedSteps', order: 1 });
+    let ruleOrder = 1;
+    for (const [num, title, icon, desc, subPoints] of [
       [1, 'Probation Period Completion', 'CheckMark',
-        'Employees must have successfully passed their probation period to be eligible for the annual flight ticket benefit. Earning the accrued ticket will be upon the service anniversary.',
-        []],
+        'Employees must have successfully passed their probation period to be eligible for the annual flight ticket benefit. Earning the accrued ticket will be upon the service anniversary.', []],
       [2, 'Approved Annual Leave', 'CheckList',
-        'The employee must have their annual leave approved before submitting the flight ticket booking request.',
-        []],
+        'The employee must have their annual leave approved before submitting the flight ticket booking request.', []],
       [3, 'Ticket Submission Deadline', 'CalendarAgenda',
         'Travel plans must be submitted at least 30 days before the date of the flight. For seasonal periods, it should be 90 days in advance after obtaining the approved annual leave.',
         [
@@ -694,14 +765,11 @@
           'A week before and after National Day and Founding Day'
         ]],
       [4, 'Eligible Routes', 'Airplane',
-        "Only flights between the employee's home country (point of origin) and Riyadh (nearest international airport). Tickets from site will not be covered within the booked route. Maximum one stop is allowed with a reasonable layover time.",
-        []],
+        "Only flights between the employee's home country (point of origin) and Riyadh (nearest international airport). Tickets from site will not be covered within the booked route. Maximum one stop is allowed with a reasonable layover time.", []],
       [5, 'Dependents', 'People',
-        "The benefit extends to dependents as per the company's policy. Dependents' flight tickets must follow the same point-of-origin and work-location route criteria. Employee SF profile should be updated with applicable backup documents.",
-        []],
+        "The benefit extends to dependents as per the company's policy. Dependents' flight tickets must follow the same point-of-origin and work-location route criteria. Employee SF profile should be updated with applicable backup documents.", []],
       [6, 'Flight Tickets Cancellation / Rescheduling', 'EventDeclined',
-        'Employee and their eligible dependents must comply with the airfare and contract terms and conditions for travel. The company will not cover the cost if the issued ticket has been rescheduled or canceled.',
-        []],
+        'Employee and their eligible dependents must comply with the airfare and contract terms and conditions for travel. The company will not cover the cost if the issued ticket has been rescheduled or canceled.', []],
       [7, 'Non-Eligibility', 'Blocked', '',
         [
           'Terminated or resigned employees.',
@@ -711,42 +779,359 @@
           "Employees cannot use their dependents' ticket for their own booking."
         ]],
       [8, 'Recovery', 'Money',
-        'The company will have the right to recover the costs if the employee resigns before completing the contractual term.',
-        []]
-    ];
-    order = 1;
-    for (const [num, title, icon, desc, subPoints] of rules) {
+        'The company will have the right to recover the costs if the employee resigns before completing the contractual term.', []]
+    ]) {
       await addItem('TH_PolicyCards', {
         Title: title,
-        PageIdId: benefitsId,
+        SectionIdId: rulesSectionId,
         Kind: 'Rule',
         Number: num,
         Icon: icon,
         IconColor: ruleColors[(num - 1) % ruleColors.length],
         Description: desc,
         SubPoints: subPoints.join('\n'),
-        DisplayOrder: order++,
+        DisplayOrder: ruleOrder++,
         IsActive: true
       });
     }
 
-    const steps = [
-      [1, 'Create Ticket', 'Log in to the HR Portal and create a new ticket.'],
-      [2, 'Service Category', 'Select HR Payroll.'],
-      [3, 'Incident Category', 'Select the relevant incident category from the drop down.']
-    ];
-    order = 1;
-    for (const [num, title, desc] of steps) {
+    // "Ask HR" steps - a fixed page-level feature under Need Help, attached
+    // directly via PageId (not part of the reorderable sections above).
+    await addPolicyCards('PageIdId', benefitsId, [
+      { kind: 'HelpStep', number: 1, title: 'Create Ticket', description: 'Log in to the HR Portal and create a new ticket.' },
+      { kind: 'HelpStep', number: 2, title: 'Service Category', description: 'Select HR Payroll.' },
+      { kind: 'HelpStep', number: 3, title: 'Incident Category', description: 'Select the relevant incident category from the drop down.' }
+    ]);
+
+    // -------------------------------------------------------------------
+    // The 6 "Explore Policy Information" sub-pages - common ending on every
+    // one: Ask Policy Assistant (SuggestedQuestions) -> Need Help? (Contact
+    // Travel Services) -> Travel with Purpose footer (ClosingBanner).
+    // -------------------------------------------------------------------
+    const COMMON_SUBPAGE_FIELDS = {
+      ParentSlug: 'travel-policy',
+      ParentTitle: 'Travel Policy',
+      ParentSectionLabel: 'Explore Policy Information',
+      NeedHelpTitle: 'Need Help?',
+      NeedHelpSupportLabel: 'Contact Travel Services',
+      NeedHelpDescription: 'For policy related questions or support, contact the Travel Services team.',
+      NeedHelpEmail: 'TravelServices@RedSeaGlobal.com',
+      ClosingBannerTitle: 'Travel with Purpose',
+      ClosingBannerDescription: 'Connecting people. Supporting communities. A more sustainable tomorrow.',
+      ClosingBadges: ['Our People', 'Our Planet', 'Our Future'].join('\n')
+    };
+
+    async function addSubPage(order, fields) {
+      return addItem('TH_PolicyPages', Object.assign({ DisplayOrder: order, IsActive: true }, COMMON_SUBPAGE_FIELDS, fields));
+    }
+
+    // --- 1. Purpose & Scope ---------------------------------------------
+    const purposeId = await addSubPage(3, {
+      Title: 'Purpose & Scope',
+      Slug: 'purpose-scope',
+      HeroIcon: 'Page',
+      HeroTitle: 'Purpose & Scope',
+      HeroSubtitle: 'Understand why the Business Travel and Business Assignment Policy exists and when each part of the policy applies.',
+      HeroDescription: 'Know your journey. Understand the policy that applies to you.',
+      HeroImageUrl: link(img('policy-purpose-hero', 1600, 500)),
+      SuggestedQuestions: ['Which policy applies to me?', 'Can I combine business travel with vacation?', 'What expenses are covered?'].join('\n')
+    });
+    await addPolicySection(purposeId, {
+      layout: 'Paragraph', order: 1, title: 'Purpose',
+      body: [
+        'The following policy guidelines specify conditions for travel arrangements and the reimbursement of expenses incurred while employees are traveling on company business.',
+        'In order to be covered under the terms of this policy, expenses must be supported with valid documentation and approval, and must meet the requirement of being reasonable and necessary business travel-related expenses.'
+      ]
+    });
+    const purposeComparisonId = await addPolicySection(purposeId, {
+      layout: 'CardsGrid', cardVariant: 'Highlight', order: 2, title: 'Which Policy Applies to Your Travel?'
+    });
+    await addPolicyCards('SectionIdId', purposeComparisonId, [
+      {
+        kind: 'Highlight', title: 'Business Travel', icon: 'Airplane',
+        description: "Less than 30 days. Business travel outside the employee's base working location for business meetings, conferences, events, training sessions, etc.",
+        subPoints: ['Important: Travel to project sites is not included under this Policy.']
+      },
+      {
+        kind: 'Highlight', title: 'Business Assignment', icon: 'Suitcase',
+        description: 'Exceeding 30 continuous calendar days. Any business assignment for business purposes for a period exceeding thirty (30) continuous calendar days.',
+        subPoints: ['Up to 4 days of discontinuation of the business trip will not be counted as an interruption of the business trip.']
+      }
+    ]);
+    await addPolicySection(purposeId, {
+      layout: 'Callout', order: 3, title: 'Business Travel + Annual Vacation', icon: 'Info',
+      body: "Business Travel shall not normally be combined with the employee's annual vacation. However, it can be allowed upon approval of the Group Chief Administrative Officer. In that case, the employee will be responsible for bearing the accommodation cost for the extended period and the cost of the return air ticket if the destination of the return flight differs from the business trip's destination."
+    });
+
+    // --- 2. Guiding Principles -------------------------------------------
+    const principlesId = await addSubPage(4, {
+      Title: 'Guiding Principles',
+      Slug: 'guiding-principles',
+      HeroIcon: 'CompassNW',
+      HeroTitle: 'Guiding Principles',
+      HeroSubtitle: 'The principles that guide responsible, consistent and effective business travel across RSG.',
+      HeroDescription: 'Travel with purpose. Make responsible decisions. Represent RSG.',
+      HeroImageUrl: link(img('policy-principles-hero', 1600, 500)),
+      SuggestedQuestions: ['Do I need approval before travelling?', 'What does "no loss, no gain" mean?', 'When should I consider alternatives to travel?'].join('\n')
+    });
+    await addPolicySection(principlesId, {
+      layout: 'Paragraph', order: 1, title: 'Our Commitment',
+      body: 'Our guiding principles ensure that business travel at RSG is purposeful, responsible and aligned with our values. They help us make the right decisions, represent the company professionally and create value for our people, our business and our planet.'
+    });
+    const principlesGridId = await addPolicySection(principlesId, {
+      layout: 'CardsGrid', cardVariant: 'Highlight', order: 2, title: 'How We Approach Business Travel'
+    });
+    await addPolicyCards('SectionIdId', principlesGridId, [
+      { kind: 'Highlight', title: 'Travel with a Business Purpose', icon: 'Ribbon', description: 'Business travel should be necessary to achieve company objectives, including face-to-face meetings, work requirements, training and projects.' },
+      { kind: 'Highlight', title: 'Consider the Need to Travel', icon: 'Video', description: 'Balance the need for travel against cost, time and environmental impact. Where appropriate, consider alternatives such as phone, video or conferencing.' },
+      { kind: 'Highlight', title: 'Obtain Approval Before Travel', icon: 'CheckMark', description: "All business trips require prior authorization from the employee's Manager before travel arrangements are made." },
+      { kind: 'Highlight', title: 'Follow a Consistent Framework', icon: 'TaskList', description: 'The policy provides the mandatory baseline standards for managing Business Travel and Business Assignments across the organization.' },
+      { kind: 'Highlight', title: 'No Loss, No Gain', icon: 'Balance', description: 'Business travel reimbursement follows the "no loss, no gain" principle - employees should neither personally gain nor incur a financial loss from approved business travel.' },
+      { kind: 'Highlight', title: 'Travel Responsibly & Professionally', icon: 'ContactCard', description: 'Employees are expected to understand and follow the Travel Policy, minimize travel costs where reasonably possible, retain required invoices and documentation, and conduct themselves in accordance with RSG professional standards, values and Code of Conduct.' }
+    ]);
+    await addPolicySection(principlesId, {
+      layout: 'Callout', order: 3, title: 'Company-Determined Travel Arrangements', icon: 'Info',
+      body: 'RSG reserves the right to determine appropriate transportation and accommodation arrangements based on the best interests of the company.'
+    });
+
+    // --- 3. Travel Planning & Approvals -----------------------------------
+    const planningId = await addSubPage(5, {
+      Title: 'Travel Planning & Approvals',
+      Slug: 'travel-planning-approvals',
+      HeroIcon: 'Calendar',
+      HeroTitle: 'Travel Planning & Approvals',
+      HeroSubtitle: 'Plan your business travel early and secure the required approvals before making travel arrangements.',
+      HeroDescription: 'Plan ahead. Obtain approval. Travel with confidence.',
+      HeroImageUrl: link(img('policy-planning-hero', 1600, 500)),
+      SuggestedQuestions: ['How early should I submit my travel request?', 'Who approves my business trip?', 'What if I need an urgent travel change?'].join('\n')
+    });
+    const planningTableId = await addPolicySection(planningId, {
+      layout: 'Table', order: 1, title: 'Plan Before You Travel',
+      subtitle: "All business trips require prior authorization from the employee's Manager. To ensure adequate time for travel arrangements, employees shall submit travel requests as follows:"
+    });
+    await addPolicyTables('SectionIdId', planningTableId, [
+      { headers: ['Travel Type', 'Submit Request'], rows: [
+        ['GCC Countries', 'At least 5 business days before travel'],
+        ['Rest of the World', 'At least 10 business days before travel'],
+        ['International Conferences & Events', 'At least 30 days before travel']
+      ] }
+    ]);
+    await addPolicySection(planningId, {
+      layout: 'Callout', order: 2, icon: 'Lightbulb',
+      body: "Plan Early for Better Value: employees should request travel arrangements with RSG's travel agency as far in advance as possible in order to obtain the lowest possible cost/fare."
+    });
+    const urgentTableId = await addPolicySection(planningId, { layout: 'Table', order: 3, title: 'Urgent Changes to Travel Plans' });
+    await addPolicyTables('SectionIdId', urgentTableId, [
+      { headers: ['Travel Type', 'Urgent Change Request'], rows: [
+        ['GCC Countries', 'At least 3 business days before travel'],
+        ['Rest of the World', 'At least 5 business days before travel'],
+        ['International Conferences & Events', 'At least 15 days before travel']
+      ] }
+    ]);
+    await addPolicySection(planningId, {
+      layout: 'Callout', order: 4, icon: 'Warning',
+      body: 'Exception: travel-plan exceptions require approval from the Group Chief Administrative Officer (GCAO).'
+    });
+    const beforeArrangingId = await addPolicySection(planningId, { layout: 'CardsGrid', cardVariant: 'Highlight', order: 5, title: 'Before Making Travel Arrangements' });
+    await addPolicyCards('SectionIdId', beforeArrangingId, [
+      { kind: 'Highlight', title: 'Get Manager Approval', icon: 'AccountActivity', description: 'Obtain prior authorization from your Manager before proceeding with business travel.' },
+      { kind: 'Highlight', title: 'Check Visa Requirements', icon: 'Certificate', description: 'Employees are responsible for verifying applicable entry visa requirements. RSG will cover required visa documentation costs in accordance with the policy.' },
+      { kind: 'Highlight', title: 'Use the Approved Travel Channel', icon: 'Airplane', description: 'Once approved, proceed with travel arrangements through the approved RSG travel process/channel.' }
+    ]);
+    await addPolicySection(planningId, {
+      layout: 'Callout', order: 6, title: 'Business Travel + Annual Vacation', icon: 'Info',
+      body: "Business travel shall not normally be combined with an employee's annual vacation. However, it may be permitted with approval from the Group Chief Administrative Officer (GCAO), subject to the applicable policy conditions."
+    });
+
+    // --- 4. Travel Entitlement ---------------------------------------------
+    const entitlementId = await addSubPage(6, {
+      Title: 'Travel Entitlement',
+      Slug: 'travel-entitlement',
+      HeroIcon: 'Money',
+      HeroTitle: 'Travel Entitlement',
+      HeroSubtitle: 'Understand your travel entitlements based on job grade, travel duration and destination.',
+      HeroDescription: 'Know your entitlement. Plan your journey with confidence.',
+      HeroImageUrl: link(img('policy-entitlement-hero', 1600, 500)),
+      SuggestedQuestions: [
+        'What is my travel class entitlement?', 'What is my hotel accommodation cap?',
+        'What are my daily and transportation allowances?', 'What is my assignment entitlement?'
+      ].join('\n')
+    });
+    const entitlementTabsSectionId = await addPolicySection(entitlementId, { layout: 'Tabs', order: 1 });
+    const businessTravelTabId = await addPolicyTab(entitlementTabsSectionId, 'Business Travel (< 30 days)', 1);
+    const businessAssignmentTabId = await addPolicyTab(entitlementTabsSectionId, 'Business Assignment (> 30 days)', 2);
+
+    await addPolicyTables('TabIdId', businessTravelTabId, [
+      { title: 'Air Travel Entitlement', headers: ['Job Grade', 'Zone 1 (< 6 flying hours)', 'Zone 2 (> 6 flying hours)'], rows: [
+        ['Grades 12-14', 'Business Class', 'Business Class'],
+        ['Grades 1-11', 'Economy Class', 'Business Class']
+      ] },
+      { title: 'RSI & EJH (Al Wajh)', headers: ['Job Grade', 'Travel Class'], rows: [
+        ['Grade 14', 'Business Class'],
+        ['Grades 1-13', 'Economy Class']
+      ] },
+      { title: 'Accommodation Entitlement', headers: ['Location', 'Grade 13', 'Grades 12 & Below'], rows: [
+        ['Within KSA', 'SAR 1,800', 'SAR 1,000'],
+        ['Outside KSA', 'SAR 2,250', 'SAR 1,500']
+      ] },
+      { title: 'Daily Transportation Allowance', headers: ['Travel Location', 'Grades 13-14', 'Grades 1-12'], rows: [
+        ['Outside KSA', 'SAR 750', 'SAR 500'],
+        ['Within KSA', 'SAR 600', 'SAR 300']
+      ] },
+      { title: 'Daily Allowance', headers: ['Travel Location', 'Grades 13-14', 'Grades 1-12'], rows: [
+        ['Outside KSA', 'SAR 600', 'SAR 500'],
+        ['Within KSA', 'SAR 500', 'SAR 400']
+      ] }
+    ]);
+    await addPolicyCards('TabIdId', businessTravelTabId, [
+      { kind: 'Highlight', title: 'Upgrade Approval', icon: 'DoubleChevronUp', description: 'If the eligible travel class is unavailable, an upgrade is subject to approval from the Group Head of People Strategy and Culture.' },
+      { kind: 'Highlight', title: 'Excess Baggage', icon: 'Bank', description: 'Excess baggage is covered only when required for a business purpose and with prior Division Head approval.' },
+      { kind: 'Highlight', title: 'Accommodation Standard', icon: 'Bed', description: 'Minimum standard: 4-star accommodation. Hotel lounge access is not covered. Corporate rates should be utilized through approved company travel providers. Room and breakfast are excluded from the Daily Allowance. For accommodation above the applicable cap, raise an exception through SAP Concur.' },
+      { kind: 'Highlight', title: 'Airport Transfer', icon: 'Car', description: 'Grade 13 and below: reimbursable up to SAR 100 per trip for standard/economy car services through ride-sharing applications or taxis. Where possible, employees should share airport transfers.' },
+      { kind: 'Highlight', title: 'Additional Entitlement - Extra Travel Day', icon: 'CalendarAgenda', description: 'For international travel excluding GCC and domestic travel, one additional day may be added to the total travel duration. The employee may request the additional day before or after the business trip.' }
+    ]);
+
+    await addPolicyTables('TabIdId', businessAssignmentTabId, [
+      { title: 'Accommodation Entitlement (Maximum)', headers: ['Location', 'Maximum Accommodation'], rows: [
+        ['Within KSA', 'SAR 600'],
+        ['Outside KSA', 'SAR 850']
+      ] },
+      { title: 'Daily Cash Allowance', headers: ['Job Grade', 'Daily Cash Allowance'], rows: [
+        ['Grades 12-14', 'SAR 400'],
+        ['Grades 1-11', 'SAR 285']
+      ] }
+    ]);
+    await addPolicyCards('TabIdId', businessAssignmentTabId, [
+      { kind: 'Highlight', title: 'Air Travel Entitlement', icon: 'Airplane', description: 'Uses the same Zone 1/Zone 2 travel-class table and RSI & EJH (Al Wajh) airport-specific entitlement as Business Travel, including the excess-baggage rule.' },
+      { kind: 'Highlight', title: 'Accommodation Standard', icon: 'Bed', description: 'Minimum standard: 4-star accommodation. Hotel lounge access is not covered. For accommodation exceeding the applicable cap: up to 25% requires GCAO approval, above 25% requires GCEO approval. Room and breakfast are excluded from the Daily Cash Allowance. Corporate rates should be utilized through approved company travel providers.' },
+      { kind: 'Highlight', title: 'Daily Cash Allowance', icon: 'Money', description: 'No receipts are required. The Daily Cash Allowance covers meals, local transportation and incidental expenses during the assignment.' },
+      { kind: 'Highlight', title: 'Airport Transfer', icon: 'Car', description: 'Approved business-assignment travelers are eligible for airport transfers. Grade 13 and below: reimbursable up to SAR 100 per trip for standard/economy car services through ride-sharing applications or taxis. Where possible, employees should share airport transfers.' },
+      { kind: 'Highlight', title: 'Important Assignment Information', icon: 'Info', description: "Applies when travel exceeds 30 continuous days. Short interruptions of up to 4 days do not interrupt the assignment. A cash advance of up to one month's allowance may be provided, subject to applicable requirements. Assignment extensions require reapproval from the applicable authority." }
+    ]);
+
+    // --- 5. Expenses (Allowable & Non-Allowable) --------------------------
+    const expensesId = await addSubPage(7, {
+      Title: 'Expenses (Allowable & Non-Allowable)',
+      Slug: 'expenses',
+      HeroIcon: 'ReceiptCheck',
+      HeroTitle: 'Expenses (Allowable & Non-Allowable)',
+      HeroSubtitle: 'Understand which business travel expenses are eligible for reimbursement and what documentation is required.',
+      HeroDescription: 'Spend responsibly. Keep your receipts. Claim with confidence.',
+      HeroImageUrl: link(img('policy-expenses-hero', 1600, 500)),
+      SuggestedQuestions: ['Is this expense reimbursable?', 'What documents do I need for a business meal?', 'When must I submit my expense claim?'].join('\n')
+    });
+    await addPolicySection(expensesId, {
+      layout: 'Paragraph', order: 1, title: 'Expense Reimbursement Principles',
+      body: [
+        'Business travel expenses must be reasonable, necessary and related to company business. Eligible expenses must be supported by the required documentation and approvals.',
+        'Employees are responsible for retaining invoices and supporting documents and submitting their expense claim through SAP Concur within 30 business days after completion of the trip.'
+      ]
+    });
+    const allowableTableId = await addPolicySection(expensesId, { layout: 'Table', order: 2, title: 'Allowable Expenses' });
+    await addPolicyTables('SectionIdId', allowableTableId, [
+      { headers: ['Category', 'Allowable Items'], rows: [
+        ['Meals & Business Meals', 'Eligible meals within the applicable Daily Allowance limit. For business meals, provide the invoice and attendee details, including company and title.'],
+        ['Travel & Transportation', 'Taxi and eligible local transportation; car rental; parking and tolls; airport transfers in accordance with the applicable entitlement.'],
+        ['Business & Connectivity', 'Registration and seminar fees; data roaming for the duration of the business trip; necessary business-office expenses such as photocopying, internet and package delivery.'],
+        ['Other Eligible Expenses', 'Reasonable laundry/dry-cleaning for trips of 3 or more consecutive days; mineral water from the minibar; mandatory tipping up to 10% of restaurant service; currency-conversion fees; other necessary official-business expenses with appropriate explanation/documentation.']
+      ] }
+    ]);
+    const nonAllowableTableId = await addPolicySection(expensesId, { layout: 'Table', order: 3, title: 'Non-Allowable Expenses' });
+    await addPolicyTables('SectionIdId', nonAllowableTableId, [
+      { headers: ['Category', 'Non-Allowable Items'], rows: [
+        ['Personal & Lifestyle', 'Barber/hairdresser; clothing; health club/spa/lounge; gum/candy; cigarettes; alcohol; personal/vacation-day expenses.'],
+        ['Memberships & Personal Financial Costs', 'Airline club memberships; airline upgrades; annual personal credit-card fees.'],
+        ['Vehicle & Other Personal Costs', 'Car washes; locksmith expenses; cellular phone rental; monthly cellular data-roaming charges.'],
+        ['Other', 'Charitable contributions; excess baggage without sufficient business justification.']
+      ] }
+    ]);
+    const claimStepsId = await addPolicySection(expensesId, { layout: 'ProcessSteps', order: 4, title: 'Before You Submit Your Claim' });
+    let claimStepOrder = 1;
+    for (const [num, title, desc] of [
+      [1, 'Check Eligibility', 'Ensure the expense is allowable under the policy.'],
+      [2, 'Keep Documentation', 'Retain all required invoices and supporting documents.'],
+      [3, 'Submit in SAP Concur', 'Submit your expense claim with complete information.'],
+      [4, 'Manager Review', 'Approvers review eligibility, receipts and reasonableness.']
+    ]) {
       await addItem('TH_PolicyCards', {
-        Title: title,
-        PageIdId: benefitsId,
-        Kind: 'HelpStep',
-        Number: num,
-        Description: desc,
-        DisplayOrder: order++,
-        IsActive: true
+        Title: title, SectionIdId: claimStepsId, Kind: 'HelpStep', Number: num, Description: desc,
+        DisplayOrder: claimStepOrder++, IsActive: true
       });
     }
+    await addPolicySection(expensesId, {
+      layout: 'Callout', order: 5, icon: 'Info',
+      body: 'Submit your expense claim within 30 business days after the end of your business trip. Approvers should review and approve expense claims normally within 3 business days, while validating eligibility, receipts and reasonableness.'
+    });
+    await addPolicySection(expensesId, {
+      layout: 'Callout', order: 6, title: 'Important Reminder', icon: 'Lightbulb',
+      body: 'Not sure whether an expense is allowable? Check the policy before incurring the expense or use the Policy Assistant for guidance.'
+    });
+
+    // --- 6. Compliance & Responsibilities ----------------------------------
+    const complianceId = await addSubPage(8, {
+      Title: 'Compliance & Responsibilities',
+      Slug: 'compliance-responsibilities',
+      HeroIcon: 'Shield',
+      HeroTitle: 'Compliance & Responsibilities',
+      HeroSubtitle: 'Understand your responsibilities as a traveler or approver and help ensure every business trip complies with RSG policy.',
+      HeroDescription: 'Know your responsibility. Follow the policy. Travel with accountability.',
+      HeroImageUrl: link(img('policy-compliance-hero', 1600, 500)),
+      SuggestedQuestions: ['What are my responsibilities as a traveler?', 'What should an approver check?', 'What happens if the Travel Policy is not followed?'].join('\n')
+    });
+    await addPolicySection(complianceId, {
+      layout: 'Paragraph', order: 1, title: 'Shared Responsibility',
+      body: 'Travel policy compliance is a shared responsibility. Employees and approvers are responsible for understanding the applicable policy requirements, ensuring appropriate approvals are obtained, and maintaining accurate supporting documentation.'
+    });
+    const employeeRespId = await addPolicySection(complianceId, { layout: 'CardsGrid', cardVariant: 'Highlight', order: 2, title: 'Employee Responsibilities' });
+    await addPolicyCards('SectionIdId', employeeRespId, [
+      {
+        kind: 'Highlight', title: 'Employee Responsibilities', icon: 'Contact',
+        subPoints: [
+          'Confirm the need to travel and ensure the trip is necessary for business purposes.',
+          'Obtain approval before booking or making travel arrangements.',
+          'Follow the Travel Policy and applicable travel entitlements.',
+          'Manage costs responsibly and exercise reasonable judgment when incurring business travel expenses.',
+          'Retain invoices, receipts and supporting documentation required for reimbursement and audit.',
+          'Submit expense claims through SAP Concur within 30 business days after completion of the trip, with appropriate explanations and supporting documents.'
+        ]
+      }
+    ]);
+    const approverRespId = await addPolicySection(complianceId, { layout: 'CardsGrid', cardVariant: 'Highlight', order: 3, title: 'Approver Responsibilities' });
+    await addPolicyCards('SectionIdId', approverRespId, [
+      {
+        kind: 'Highlight', title: 'Approver Responsibilities', icon: 'AccountActivity',
+        subPoints: [
+          'Confirm the business necessity of the travel.',
+          'Understand the applicable Travel Policy requirements and employee entitlement.',
+          'Ensure expenses are legitimate, reasonable and supported by appropriate documentation.',
+          "Review requests and claims with sufficient knowledge of the employee's business travel.",
+          'Validate policy compliance, eligibility and reasonableness before approval.',
+          'Review and approve expense claims normally within 3 business days.'
+        ]
+      }
+    ]);
+    const complianceStagesId = await addPolicySection(complianceId, { layout: 'Table', order: 4, title: 'Compliance Starts Before Travel' });
+    await addPolicyTables('SectionIdId', complianceStagesId, [
+      { headers: ['Stage', 'Content'], rows: [
+        ['Plan Early', "Employees should request travel arrangements with RSG's travel agency as far in advance as possible in order to obtain the lowest possible cost/fare."],
+        ['Obtain Approval', "All business trips require prior authorization from the employee's Manager."],
+        ['Use Approved Travel Channels', 'Travel arrangements should be processed through the approved RSG travel process and channels.']
+      ] }
+    ]);
+    await addPolicySection(complianceId, {
+      layout: 'Callout', order: 5, title: 'Audit & Accountability', icon: 'Warning',
+      body: 'RSG reserves the right to audit business travel requests, bookings, supporting documents and expense claims to ensure compliance with the applicable policy. Employees and approvers are responsible for policy compliance. Non-compliance may result in accountability and appropriate disciplinary action in accordance with RSG requirements.'
+    });
+    const complianceCheckId = await addPolicySection(complianceId, { layout: 'Table', order: 6, title: 'Before You Travel - Quick Compliance Check' });
+    await addPolicyTables('SectionIdId', complianceCheckId, [
+      { headers: ['Check', 'Status'], rows: [
+        ['Business need confirmed', 'Yes'],
+        ['Manager approval obtained', 'Yes'],
+        ['Policy entitlement checked', 'Yes'],
+        ['Travel requested through approved channel', 'Yes'],
+        ['Required documentation understood', 'Yes']
+      ] }
+    ]);
   }
 
   async function seedFooter() {
@@ -817,13 +1202,13 @@
     ['TH_GreenTravel', seedGreen],
     ['TH_TravelTeam', seedTeam],
     ['TH_GlobalNavigation', seedGlobalNav],
-    ['TH_PolicyPages + TH_PolicyCards', seedPolicyPages],
+    ['TH_PolicyPages + TH_PolicySections + TH_PolicyCards + TH_PolicyTables + TH_PolicyTableRows + TH_PolicyTabs', seedPolicyPages],
     ['TH_FooterColumns + TH_FooterLinks', seedFooter]
   ];
 
   const RESETTABLE = [
     'TH_FooterLinks', 'TH_FooterColumns', 'TH_QuickPulseOptions', 'TH_QuickPulseResponses',
-    'TH_PolicyCards', 'TH_PolicyPages',
+    'TH_PolicyTableRows', 'TH_PolicyTables', 'TH_PolicyTabs', 'TH_PolicyCards', 'TH_PolicySections', 'TH_PolicyPages',
     'TH_QuickPulseQuestions', 'TH_HeroBanners', 'TH_TravelServices',
     'TH_BusinessTravelSteps', 'TH_BusinessTravelInfoCards', 'TH_TravelNews',
     'TH_TravelEvents', 'TH_TravelTips', 'TH_TravelerTestimonials', 'TH_DepartmentTravelSpend',

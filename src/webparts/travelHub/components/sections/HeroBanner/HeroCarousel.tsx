@@ -105,6 +105,10 @@ function HeroVideo({
 }
 
 function HeroSlide({ slide, eager, isActive = true, onVideoEnded, setSuspended }: IHeroSlideProps): React.ReactElement {
+  // Only slides with overlaid text need the scrim for contrast - an
+  // image/video-only slide shows at full original brightness/quality.
+  const hasOverlayText = slide.title.length > 0 || slide.description.length > 0;
+
   return (
     <div className={styles.slide}>
       <div className={styles.slideMedia}>
@@ -118,9 +122,10 @@ function HeroSlide({ slide, eager, isActive = true, onVideoEnded, setSuspended }
             aspectRatio="21 / 9"
             eager={eager}
             className={styles.image}
+            fit="fill"
           />
         )}
-        <div className={styles.scrim} aria-hidden="true" />
+        {hasOverlayText && <div className={styles.scrim} aria-hidden="true" />}
       </div>
 
       {(slide.title.length > 0 || slide.description.length > 0) && (

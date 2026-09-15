@@ -19,6 +19,7 @@ between the architecture and every future change. Read it before touching code.
 | [COMPONENTS.md](./COMPONENTS.md) | Common component library + section components, props, responsibilities |
 | [DATA-MODEL.md](./DATA-MODEL.md) | TypeScript interfaces, mapping rules, `any` policy |
 | [SHAREPOINT-SCHEMA.md](./SHAREPOINT-SCHEMA.md) | Lists, libraries, columns, content types, provisioning |
+| [POLICY-CONTENT-GUIDE.md](./POLICY-CONTENT-GUIDE.md) | Editor's guide: adding/editing Travel Policy pages, sections, tables and tabs via SharePoint lists |
 | [SECURITY.md](./SECURITY.md) | Permission model, URL/HTML sanitisation, Quick Pulse & spend data protection |
 | [PERFORMANCE.md](./PERFORMANCE.md) | Per-service API-call budget, caching, payload sizes, pagination, rendering |
 | [CONFIGURATION.md](./CONFIGURATION.md) | `TH_SiteConfiguration` keys, precedence, how components consume config |

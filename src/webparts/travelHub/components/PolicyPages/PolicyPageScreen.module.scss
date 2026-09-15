@@ -410,6 +410,180 @@
   }
 }
 
+/* --- Paragraph block -------------------------------------------------------- */
+.paragraphBody {
+  @include th-body;
+  color: var(--full-text, #04253c);
+  margin: 0;
+
+  & + & {
+    margin-top: var(--full-space-3, 12px);
+  }
+}
+
+/* --- Table block -------------------------------------------------------------- */
+.tableWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-2, 8px);
+}
+
+.tableWrap + .tableWrap {
+  margin-top: var(--full-space-4, 16px);
+}
+
+.tableTitle {
+  @include th-card-title;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.tableScroll {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--full-border, #e8e5e0);
+  border-radius: var(--full-radius-md, 8px);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 28rem;
+
+  th,
+  td {
+    padding: var(--full-space-2, 8px) var(--full-space-3, 12px);
+    text-align: start;
+    vertical-align: top;
+    @include th-body;
+  }
+
+  th {
+    background: var(--full-surface-alt, #faf8f4);
+    color: var(--full-heading, #04253c);
+    font-weight: var(--full-fw-semibold, 600);
+    white-space: nowrap;
+  }
+
+  td {
+    color: var(--full-text-muted, #4a5568);
+    border-top: 1px solid var(--full-border, #e8e5e0);
+  }
+
+  tr:first-child td {
+    border-top: none;
+  }
+}
+
+/* --- Tabs block --------------------------------------------------------------- */
+.tabList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--full-space-2, 8px);
+  border-bottom: 1px solid var(--full-border, #e8e5e0);
+}
+
+.tabButton {
+  padding: var(--full-space-2, 8px) var(--full-space-4, 16px);
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--full-text-muted, #4a5568);
+  font-family: var(--full-font-family, "Segoe UI", sans-serif);
+  font-size: var(--full-fs-link, 0.875rem);
+  font-weight: var(--full-fw-semibold, 600);
+  cursor: pointer;
+  @include th-focusable;
+
+  &:hover {
+    color: var(--full-heading, #04253c);
+  }
+}
+
+.tabButtonActive {
+  color: var(--full-primary, #b89c66);
+  border-bottom-color: var(--full-primary, #b89c66);
+}
+
+.tabPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-4, 16px);
+  padding-top: var(--full-space-4, 16px);
+}
+
+/* --- Callout / info box -------------------------------------------------------- */
+.callout {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--full-space-3, 12px);
+  padding: var(--full-space-4, 16px);
+  border-radius: var(--full-radius-md, 8px);
+  background: rgba(184, 156, 102, 0.12);
+  border: 1px solid rgba(184, 156, 102, 0.35);
+
+  svg,
+  i {
+    color: var(--full-primary, #b89c66);
+    flex-shrink: 0;
+  }
+}
+
+.calloutBody {
+  @include th-body;
+  color: var(--full-heading, #04253c);
+  margin: 0;
+}
+
+/* --- Image block ---------------------------------------------------------------- */
+.imageBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-2, 8px);
+}
+
+.imageBlockMedia {
+  border-radius: var(--full-radius-md, 8px);
+}
+
+.imageBlockCaption {
+  @include th-meta;
+  margin: 0;
+}
+
+/* --- Links list ------------------------------------------------------------------ */
+.linksList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--full-space-3, 12px);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.linkItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--full-space-2, 8px);
+  padding: var(--full-space-2, 8px) var(--full-space-4, 16px);
+  border: 1px solid var(--full-border, #e8e5e0);
+  border-radius: 999px;
+  background: var(--full-surface, #fff);
+  color: var(--full-heading, #04253c);
+  text-decoration: none;
+  font-family: var(--full-font-family, "Segoe UI", sans-serif);
+  font-size: var(--full-fs-link, 0.875rem);
+  font-weight: var(--full-fw-semibold, 600);
+  cursor: pointer;
+  transition: border-color var(--full-transition-fast, 120ms ease);
+  @include th-focusable;
+
+  &:hover {
+    border-color: var(--full-primary, #b89c66);
+    color: var(--full-primary, #b89c66);
+  }
+}
+
 /* --- CTA row -------------------------------------------------------------- */
 .ctaRow {
   display: flex;

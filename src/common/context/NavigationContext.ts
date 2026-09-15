@@ -14,13 +14,13 @@ import * as React from 'react';
  */
 export type ThView =
   | { kind: 'hub' }
-  | { kind: 'quickPulseSubmit' }
   | { kind: 'quickPulseResults' }
   | { kind: 'policyPage'; slug: string }
   | { kind: 'testimonialsAll' }
   | { kind: 'testimonialsSubmit' }
   | { kind: 'servicePage'; serviceId: number }
-  | { kind: 'businessTravel' };
+  | { kind: 'businessTravel' }
+  | { kind: 'teamAll' };
 
 export type ThViewKind = ThView['kind'];
 

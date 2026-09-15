@@ -4,28 +4,23 @@ import { useServices } from '../../../../common/context/ServiceContext';
 import { useNavigation } from '../../../../common/context/NavigationContext';
 import { useAsyncData } from '../../../../common/hooks';
 import { Badge, Button, LoadingState, ErrorState, EmptyState } from '../../../../common/components';
-import { CategoryCards, InfoCards, HighlightCards, RuleCards, HelpSteps } from './PolicyCardSections';
+import { PolicySectionBlock, HelpSteps } from './PolicyCardSections';
 import styles from './PolicyPageScreen.module.scss';
 
 export interface IPolicyPageScreenProps {
   slug: string;
 }
 
-// RSG_Travel_Policy_Pages_1_2_Content_Specifications.docx §4 "Approved suggested
-// questions" - decorative only (the assistant itself is a placeholder, deferred).
-const ASSISTANT_SUGGESTED_QUESTIONS = [
-  'What is my travel class entitlement?',
-  'How can I claim my business travel expenses?',
-  'What is my hotel accommodation cap?',
-  'What are my daily and transportation allowances?'
-];
-
 /**
  * One adaptive template for every Travel Policy page (landing page included)
- * - `PolicyService.getPage()` returns whichever fields/cards that page has,
- * and each section below only renders when its data is present. Reached via
- * `NavigationContext`'s `policyPage` view (GlobalNav's built-in "Travel
- * Policy" tab, or a policy card's `TargetSlug`), not a real second page.
+ * - `PolicyService.getPage()` returns the page's fixed fields (hero, CTA,
+ * Need Help, closing banner) plus `sections`, an ordered list of content
+ * blocks each rendered by `PolicySectionBlock` according to its own
+ * `layout`. This is what lets the same template serve pages with entirely
+ * different content shapes (paragraphs, tables, tabs, numbered steps, …)
+ * without page-specific code. Reached via `NavigationContext`'s
+ * `policyPage` view (GlobalNav's built-in "Travel Policy" tab, or a policy
+ * card's `TargetSlug`), not a real second page.
  */
 export const PolicyPageScreen: React.FC<IPolicyPageScreenProps> = ({ slug }) => {
   const { policy } = useServices();
@@ -52,13 +47,6 @@ export const PolicyPageScreen: React.FC<IPolicyPageScreenProps> = ({ slug }) => 
     );
   }
 
-  const categoryCards = data.cards.filter((c) => c.kind === 'category');
-  const infoCards = data.cards.filter((c) => c.kind === 'info');
-  const highlightCards = data.cards.filter((c) => c.kind === 'highlight');
-  const ruleCards = data.cards.filter((c) => c.kind === 'rule');
-  const helpStepCards = data.cards.filter((c) => c.kind === 'helpStep');
-  const isTopLevel = data.parent === undefined;
-
   return (
     <div className={styles.screen}>
       <nav className={styles.breadcrumb} aria-label="Breadcrumb">
@@ -71,6 +59,12 @@ export const PolicyPageScreen: React.FC<IPolicyPageScreenProps> = ({ slug }) => 
             <button type="button" onClick={() => navigate({ kind: 'policyPage', slug: (data.parent as { slug: string }).slug })}>
               {data.parent.title}
             </button>
+          </>
+        )}
+        {data.parentSectionLabel !== undefined && (
+          <>
+            <Icon iconName="ChevronRight" aria-hidden="true" />
+            <span>{data.parentSectionLabel}</span>
           </>
         )}
         <Icon iconName="ChevronRight" aria-hidden="true" />
@@ -102,25 +96,9 @@ export const PolicyPageScreen: React.FC<IPolicyPageScreenProps> = ({ slug }) => 
         </div>
       )}
 
-      <CategoryCards cards={categoryCards} />
-
-      {infoCards.length > 0 && (
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Explore Policy Information</h2>
-          <p className={styles.sectionSubtitle}>Select a topic to view detailed information, guidelines and examples.</p>
-          <InfoCards cards={infoCards} />
-        </section>
-      )}
-
-      {highlightCards.length > 0 && (
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Key Policy Highlights</h2>
-          <p className={styles.sectionSubtitle}>Quick guidance on important rules to keep in mind.</p>
-          <HighlightCards cards={highlightCards} />
-        </section>
-      )}
-
-      <RuleCards cards={ruleCards} />
+      {data.sections.map((section) => (
+        <PolicySectionBlock key={section.id} section={section} />
+      ))}
 
       {data.noteBannerText !== undefined && (
         <div className={styles.noteBanner}>
@@ -152,8 +130,11 @@ export const PolicyPageScreen: React.FC<IPolicyPageScreenProps> = ({ slug }) => 
 
       {/* AI assistant: a placeholder pending a decision on what it integrates
           with (Copilot Studio / Azure OpenAI / a plain FAQ search) - no
-          service, no config; shown only on top-level pages like the mock. */}
-      {isTopLevel && (
+          service, no config. Shown whenever the content owner has set
+          suggested questions for this page (the landing page and the 6
+          "Explore Policy Information" sub-pages, not the Annual Flight
+          Ticket Benefits page - Content Specifications §4/§PAGE 2). */}
+      {data.suggestedQuestions.length > 0 && (
         <div className={styles.assistant}>
           <span className={styles.assistantIcon} aria-hidden="true">
             <Icon iconName="Robot" />
@@ -172,7 +153,7 @@ export const PolicyPageScreen: React.FC<IPolicyPageScreenProps> = ({ slug }) => 
             </div>
             <div className={styles.assistantSuggestions}>
               <span className={styles.assistantSuggestionsLabel}>Try asking:</span>
-              {ASSISTANT_SUGGESTED_QUESTIONS.map((question) => (
+              {data.suggestedQuestions.map((question) => (
                 <span key={question} className={styles.assistantChip}>
                   {question}
                 </span>
@@ -196,7 +177,7 @@ export const PolicyPageScreen: React.FC<IPolicyPageScreenProps> = ({ slug }) => 
                 <Icon iconName="Mail" aria-hidden="true" /> {data.needHelp.email}
               </a>
             )}
-            <HelpSteps cards={helpStepCards} />
+            <HelpSteps cards={data.needHelp.steps} />
           </div>
         </div>
       )}

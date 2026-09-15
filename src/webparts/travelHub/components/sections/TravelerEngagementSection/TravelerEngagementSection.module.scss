@@ -16,11 +16,10 @@
   gap: var(--full-space-5, 24px);
   align-items: start;
 
-  /* Roughly 20/80 (mock): Quick Pulse is a compact teaser card, testimonials
-     needs the width to show up to testimonials.desktopVisibleCards (3) cards
-     side by side. */
+  /* Roughly 1:2 - Quick Pulse is sized to match one Travel News/Article card
+     (TravelUpdatesSection's 3-up grid, ~33%), testimonials takes the rest. */
   @include th-desktop-up {
-    grid-template-columns: minmax(15rem, 1fr) minmax(0, 4fr);
+    grid-template-columns: minmax(22rem, 1fr) minmax(0, 2fr);
   }
 }
 
@@ -70,12 +69,39 @@
   gap: var(--full-space-3, 12px);
 }
 
+/* Selectable (role="radio") - was a decorative aria-hidden preview, now the
+   actual inline Quick Pulse submission control. */
 .pulsePreviewOption {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
   gap: var(--full-space-1, 4px);
-  width: 3.75rem;
+  width: 4rem;
+  padding: var(--full-space-1, 4px);
+  border: none;
+  background: none;
+  font-family: var(--full-font-family, "Segoe UI", sans-serif);
+  cursor: pointer;
+  border-radius: var(--full-radius-md, 8px);
+  transition: background-color var(--full-transition-fast, 120ms ease);
+  @include th-focusable;
+
+  &:hover .pulsePreviewOptionIcon {
+    border-color: var(--full-primary, #b89c66);
+  }
+}
+
+.pulsePreviewOptionSelected {
+  .pulsePreviewOptionIcon {
+    background: var(--full-primary, #b89c66);
+    border-color: var(--full-primary, #b89c66);
+    color: var(--full-primary-contrast, #04253c);
+  }
+
+  .pulsePreviewOptionLabel {
+    color: var(--full-heading, #04253c);
+    font-weight: var(--full-fw-semibold, 600);
+  }
 }
 
 .pulsePreviewOptionIcon {
@@ -90,6 +116,9 @@
   border: 1px solid var(--full-border, #e8e5e0);
   color: var(--full-primary, #b89c66);
   font-size: 1.05rem;
+  transition: background-color var(--full-transition-fast, 120ms ease),
+    border-color var(--full-transition-fast, 120ms ease),
+    color var(--full-transition-fast, 120ms ease);
 }
 
 .pulsePreviewOptionLabel {
@@ -244,48 +273,6 @@
   @include th-body;
   color: var(--full-text-muted, #4a5568);
   margin: 0 0 var(--full-space-5, 24px);
-}
-
-.screenOptions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--full-space-3, 12px);
-}
-
-.screenOption {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--full-space-2, 8px);
-  flex: 1 1 8rem;
-  padding: var(--full-space-4, 16px) var(--full-space-3, 12px);
-  border: 1px solid var(--full-border, #e8e5e0);
-  border-radius: var(--full-radius-md, 8px);
-  background: var(--full-surface, #fff);
-  color: var(--full-heading, #04253c);
-  font-family: var(--full-font-family, "Segoe UI", sans-serif);
-  font-size: var(--full-fs-link, 0.875rem);
-  font-weight: var(--full-fw-semibold, 600);
-  text-align: center;
-  cursor: pointer;
-  transition: background-color var(--full-transition-fast, 120ms ease),
-    border-color var(--full-transition-fast, 120ms ease),
-    color var(--full-transition-fast, 120ms ease);
-  @include th-focusable;
-
-  &:hover {
-    border-color: var(--full-primary, #b89c66);
-  }
-}
-
-.screenOptionSelected {
-  background: var(--full-primary, #b89c66);
-  border-color: var(--full-primary, #b89c66);
-  color: var(--full-primary-contrast, #04253c);
-}
-
-.screenOptionIcon {
-  font-size: 1.5rem;
 }
 
 /* Wider variant of .screen for grid-based screens (View All Feedback), vs.

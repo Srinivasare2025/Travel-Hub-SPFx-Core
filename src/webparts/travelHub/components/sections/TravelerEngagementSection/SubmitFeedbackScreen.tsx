@@ -119,7 +119,7 @@ export const SubmitFeedbackScreen: React.FC = () => {
         </label>
 
         <label className={styles.formLabel}>
-          Your story
+          Your story (required)
           <textarea
             className={styles.formTextarea}
             value={comment}
@@ -127,6 +127,8 @@ export const SubmitFeedbackScreen: React.FC = () => {
             placeholder="Tell us about your experience…"
             rows={4}
             maxLength={1000}
+            required
+            aria-required="true"
           />
         </label>
 

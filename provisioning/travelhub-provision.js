@@ -433,6 +433,14 @@
         { name: 'Slug', xml: F.text('Slug', { indexed: true }) },
         { name: 'ParentSlug', xml: F.text('ParentSlug') },
         { name: 'ParentTitle', xml: F.text('ParentTitle') },
+        // Non-clickable breadcrumb crumb between the parent page and this
+        // page's title, e.g. "Explore Policy Information" for the 6 policy
+        // sub-pages (Home > Travel Policy > Explore Policy Information > …).
+        { name: 'ParentSectionLabel', xml: F.text('ParentSectionLabel') },
+        // Contextual "Ask Policy Assistant" suggested questions for this
+        // page - one per line. Decorative only (the assistant is a
+        // placeholder pending a real integration - PolicyPageScreen.tsx).
+        { name: 'SuggestedQuestions', xml: F.note('SuggestedQuestions', 4) },
         { name: 'HeroIcon', xml: F.text('HeroIcon') },
         { name: 'HeroTitle', xml: F.text('HeroTitle') },
         { name: 'HeroSubtitle', xml: F.text('HeroSubtitle') },
@@ -459,16 +467,58 @@
       ]
     },
     {
-      // Repeatable content blocks belonging to a TH_PolicyPages row - one
-      // Kind -> one rendering template (PolicyCardSections.tsx). The same
-      // shape covers policy-category cards, "Explore Policy Information"
-      // tiles, "Key Policy Highlights", numbered rule cards, and "Ask HR"
-      // help steps.
-      title: 'TH_PolicyCards',
-      description: 'Travel Policy page content blocks (category/info/highlight/rule/help cards).',
+      // One ordered content block on a TH_PolicyPages row - Layout picks the
+      // rendering template (PolicyCardSections.tsx' PolicySectionBlock).
+      // This is the unit a content owner adds/reorders/removes to build up a
+      // page: a paragraph, a grid of cards, a table, a tabbed group, a
+      // numbered/process step list, a callout, an image, or a links list.
+      title: 'TH_PolicySections',
+      description: 'Travel Policy page content sections - one ordered block per row.',
       fields: [
-        // PageId is a lookup -> TH_PolicyPages, added via LOOKUPS below (same pattern as TH_FooterLinks.ColumnId).
-        { name: 'Kind', xml: F.choice('Kind', ['Category', 'Info', 'Highlight', 'Rule', 'HelpStep'], 'Info') },
+        // PageId is a lookup -> TH_PolicyPages, added via LOOKUPS below.
+        { name: 'Subtitle', xml: F.note('Subtitle', 2) },
+        {
+          name: 'Layout',
+          xml: F.choice(
+            'Layout',
+            ['Paragraph', 'CardsGrid', 'Table', 'Tabs', 'NumberedSteps', 'ProcessSteps', 'Callout', 'ImageBlock', 'LinksList'],
+            'Paragraph'
+          )
+        },
+        // Only meaningful when Layout = CardsGrid - which of the 3 card visual treatments to use.
+        { name: 'CardVariant', xml: F.choice('CardVariant', ['Category', 'Info', 'Highlight'], 'Highlight') },
+        // Free text for Layout = Paragraph/Callout - one paragraph per line.
+        { name: 'Body', xml: F.note('Body', 6) },
+        // Decorative icon for Layout = Callout/ImageBlock.
+        { name: 'Icon', xml: F.text('Icon') },
+        { name: 'ImageUrl', xml: F.url('ImageUrl') },
+        { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
+        { name: 'IsActive', xml: F.bool('IsActive', true) }
+      ]
+    },
+    {
+      // One tab of a Layout = Tabs section, e.g. "Business Travel" vs
+      // "Business Assignment" on the Travel Entitlement page. Title = the
+      // tab label; its own cards/tables (TH_PolicyCards.TabId / TH_PolicyTables.TabId) render inside it.
+      title: 'TH_PolicyTabs',
+      description: 'Tabs inside a Layout = Tabs policy section.',
+      fields: [
+        // SectionId is a lookup -> TH_PolicySections, added via LOOKUPS below.
+        { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
+        { name: 'IsActive', xml: F.bool('IsActive', true) }
+      ]
+    },
+    {
+      // Repeatable content blocks belonging to a TH_PolicySections row (or,
+      // when TabId is set, to one tab within it) - one Kind -> one rendering
+      // template (PolicyCardSections.tsx). PageId (direct, no Section/Tab)
+      // is reserved for the fixed "Ask HR" style HelpStep process under a
+      // page's Need Help row, which isn't a reorderable content block.
+      title: 'TH_PolicyCards',
+      description: 'Travel Policy page content blocks (category/info/highlight/rule/help/link cards).',
+      fields: [
+        // PageId/SectionId/TabId are lookups, added via LOOKUPS below.
+        { name: 'Kind', xml: F.choice('Kind', ['Category', 'Info', 'Highlight', 'Rule', 'HelpStep', 'LinkItem'], 'Info') },
         { name: 'Number', xml: F.number('Number', {}) },
         { name: 'Icon', xml: F.text('Icon') },
         { name: 'IconColor', xml: F.text('IconColor') },
@@ -480,6 +530,33 @@
         { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
         { name: 'IsActive', xml: F.bool('IsActive', true) }
       ]
+    },
+    {
+      // A simple data table belonging to a TH_PolicySections row (or, when
+      // TabId is set, to one tab within it), e.g. "Air Travel Entitlement".
+      // Several may stack under the same section/tab (each with its own
+      // optional Title) - see TH_PolicyTableRows for the actual cell data.
+      title: 'TH_PolicyTables',
+      description: 'Data tables inside a Layout = Table (or Tabs) policy section.',
+      fields: [
+        // SectionId/TabId are lookups -> TH_PolicySections/TH_PolicyTabs, added via LOOKUPS below.
+        // One column header per line, e.g. "Job Grade\nZone 1\nZone 2".
+        { name: 'ColumnHeaders', xml: F.note('ColumnHeaders', 3) },
+        { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
+        { name: 'IsActive', xml: F.bool('IsActive', true) }
+      ]
+    },
+    {
+      // One row of a TH_PolicyTables table. Title is unused (blank) - the
+      // actual cell values live in CellValues, one per line matching the
+      // parent table's ColumnHeaders order.
+      title: 'TH_PolicyTableRows',
+      description: 'Rows of a TH_PolicyTables table.',
+      fields: [
+        // TableId is a lookup -> TH_PolicyTables, added via LOOKUPS below.
+        { name: 'CellValues', xml: F.note('CellValues', 4) },
+        { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) }
+      ]
     }
   ];
 
@@ -487,7 +564,15 @@
     { list: 'TH_QuickPulseOptions', name: 'QuestionId', target: 'TH_QuickPulseQuestions' },
     { list: 'TH_QuickPulseResponses', name: 'QuestionId', target: 'TH_QuickPulseQuestions' },
     { list: 'TH_FooterLinks', name: 'ColumnId', target: 'TH_FooterColumns' },
-    { list: 'TH_PolicyCards', name: 'PageId', target: 'TH_PolicyPages' }
+    { list: 'TH_PolicySections', name: 'PageId', target: 'TH_PolicyPages' },
+    { list: 'TH_PolicyTabs', name: 'SectionId', target: 'TH_PolicySections' },
+    // Kept for the page-level "Ask HR" HelpStep cards (see TH_PolicyCards' description above).
+    { list: 'TH_PolicyCards', name: 'PageId', target: 'TH_PolicyPages' },
+    { list: 'TH_PolicyCards', name: 'SectionId', target: 'TH_PolicySections' },
+    { list: 'TH_PolicyCards', name: 'TabId', target: 'TH_PolicyTabs' },
+    { list: 'TH_PolicyTables', name: 'SectionId', target: 'TH_PolicySections' },
+    { list: 'TH_PolicyTables', name: 'TabId', target: 'TH_PolicyTabs' },
+    { list: 'TH_PolicyTableRows', name: 'TableId', target: 'TH_PolicyTables' }
   ];
 
   const LIBRARIES = ['Travel Hub Images', 'Travel Hub Documents', 'Travel Hub Videos'];

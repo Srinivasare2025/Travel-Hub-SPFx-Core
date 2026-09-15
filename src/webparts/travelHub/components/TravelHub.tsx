@@ -9,13 +9,12 @@ import { TravelServicesCarousel } from './sections/TravelServicesCarousel';
 import { TravelUpdatesSection } from './sections/TravelUpdatesSection';
 import {
   TravelerEngagementSection,
-  QuickPulseSubmitScreen,
   QuickPulseResultsScreen,
   ViewAllFeedbackScreen,
   SubmitFeedbackScreen
 } from './sections/TravelerEngagementSection';
 import { TravelInsightsSection } from './sections/TravelInsightsSection';
-import { TravelTeamSection } from './sections/TravelTeamSection';
+import { TravelTeamSection, TravelTeamAllScreen } from './sections/TravelTeamSection';
 import { PolicyPageScreen } from './PolicyPages';
 import { ServicePageScreen } from './ServicePages';
 import { BusinessTravelPageScreen } from './BusinessTravelPage';
@@ -36,9 +35,6 @@ function readViewFromLocation(): ThView {
     const raw = new URLSearchParams(window.location.search).get(VIEW_PARAM);
     if (raw === null) {
       return { kind: 'hub' };
-    }
-    if (raw === 'quick-pulse') {
-      return { kind: 'quickPulseSubmit' };
     }
     if (raw === 'quick-pulse-results') {
       return { kind: 'quickPulseResults' };
@@ -64,6 +60,9 @@ function readViewFromLocation(): ThView {
     if (raw === 'business-travel') {
       return { kind: 'businessTravel' };
     }
+    if (raw === 'team-all') {
+      return { kind: 'teamAll' };
+    }
     return { kind: 'hub' };
   } catch {
     return { kind: 'hub' };
@@ -72,8 +71,6 @@ function readViewFromLocation(): ThView {
 
 function viewToParam(view: ThView): string | undefined {
   switch (view.kind) {
-    case 'quickPulseSubmit':
-      return 'quick-pulse';
     case 'quickPulseResults':
       return 'quick-pulse-results';
     case 'policyPage':
@@ -86,6 +83,8 @@ function viewToParam(view: ThView): string | undefined {
       return `service/${String(view.serviceId)}`;
     case 'businessTravel':
       return 'business-travel';
+    case 'teamAll':
+      return 'team-all';
     case 'hub':
     default:
       return undefined;
@@ -209,14 +208,6 @@ export default class TravelHub extends React.Component<ITravelHubProps, ITravelH
               </div>
             )}
 
-            {view.kind === 'quickPulseSubmit' && (
-              <div className={styles.page}>
-                <SectionBoundary name="QuickPulseSubmitScreen">
-                  <QuickPulseSubmitScreen />
-                </SectionBoundary>
-              </div>
-            )}
-
             {view.kind === 'quickPulseResults' && (
               <div className={styles.page}>
                 <SectionBoundary name="QuickPulseResultsScreen">
@@ -261,6 +252,14 @@ export default class TravelHub extends React.Component<ITravelHubProps, ITravelH
               <div className={styles.page}>
                 <SectionBoundary name="BusinessTravelPageScreen">
                   <BusinessTravelPageScreen />
+                </SectionBoundary>
+              </div>
+            )}
+
+            {view.kind === 'teamAll' && (
+              <div className={styles.page}>
+                <SectionBoundary name="TravelTeamAllScreen">
+                  <TravelTeamAllScreen />
                 </SectionBoundary>
               </div>
             )}

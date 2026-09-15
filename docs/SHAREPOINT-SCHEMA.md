@@ -293,8 +293,10 @@ GlobalNavigationService.ts and CONFIGURATION.md.
 | Column | Type |
 | --- | --- |
 | Title | Single line — the page name |
-| Slug | Single line, indexed — routing key (e.g. `travel-policy`, `annual-flight-ticket-benefits`) |
+| Slug | Single line, indexed — routing key (e.g. `travel-policy`, `travel-entitlement`) |
 | ParentSlug / ParentTitle | Single line — breadcrumb parent, denormalised (not a lookup); blank on the landing page |
+| ParentSectionLabel | Single line — a non-clickable breadcrumb crumb between the parent and this page's title, e.g. "Explore Policy Information" |
+| SuggestedQuestions | Multiple lines (plain) — newline list; the "Ask Policy Assistant" chips shown on this page (blank hides the assistant block) |
 | HeroIcon | Single line (Fluent icon name) |
 | HeroTitle / HeroSubtitle | Single line |
 | HeroDescription | Multiple lines (plain) |
@@ -316,12 +318,43 @@ GlobalNavigationService.ts and CONFIGURATION.md.
 
 One row per Travel Policy page, landing page included. See `PolicyService.ts`.
 
+### `TH_PolicySections`
+| Column | Type |
+| --- | --- |
+| Title / Subtitle | Single line / Multiple lines (plain) — this content block's own heading, if any |
+| PageId | Lookup → `TH_PolicyPages` |
+| Layout | Choice (`Paragraph`, `CardsGrid`, `Table`, `Tabs`, `NumberedSteps`, `ProcessSteps`, `Callout`, `ImageBlock`, `LinksList`) — picks the rendering template |
+| CardVariant | Choice (`Category`, `Info`, `Highlight`) — only meaningful when `Layout = CardsGrid`; which of the 3 card visual treatments to use |
+| Body | Multiple lines (plain) — free text for `Layout = Paragraph`/`Callout`, one paragraph per line |
+| Icon | Single line (Fluent icon name) — for `Layout = Callout`/`ImageBlock` |
+| ImageUrl | Hyperlink — for `Layout = ImageBlock` |
+| DisplayOrder | Number |
+| IsActive | Yes/No |
+
+One ordered content block on a page — this is the unit a content owner
+adds/reorders/removes to build up a page's body, between the hero and the
+CTA/Need Help/closing banner. See `PolicyService.ts` / `PolicyCardSections.tsx`.
+
+### `TH_PolicyTabs`
+| Column | Type |
+| --- | --- |
+| Title | Single line — the tab label, e.g. "Business Travel" |
+| SectionId | Lookup → `TH_PolicySections` — the parent `Layout = Tabs` section |
+| DisplayOrder | Number |
+| IsActive | Yes/No |
+
+One tab of a `Layout = Tabs` section (e.g. Travel Entitlement's "Business
+Travel" vs "Business Assignment"); its own cards/tables render inside it via
+`TH_PolicyCards.TabId` / `TH_PolicyTables.TabId`.
+
 ### `TH_PolicyCards`
 | Column | Type |
 | --- | --- |
 | Title | Single line |
-| PageId | Lookup → `TH_PolicyPages` |
-| Kind | Choice (`Category`, `Info`, `Highlight`, `Rule`, `HelpStep`) — one rendering template per kind |
+| PageId | Lookup → `TH_PolicyPages` — reserved for the fixed "Ask HR" style `HelpStep` process under a page's Need Help row (not a reorderable content block) |
+| SectionId | Lookup → `TH_PolicySections` — this card's parent section (when not inside a tab) |
+| TabId | Lookup → `TH_PolicyTabs` — this card's parent tab, if any (takes priority over `SectionId`'s direct placement) |
+| Kind | Choice (`Category`, `Info`, `Highlight`, `Rule`, `HelpStep`, `LinkItem`) — one rendering template per kind |
 | Number | Number — Rule/HelpStep badge |
 | Icon | Single line (Fluent icon name) |
 | IconColor | Single line (hex) |
@@ -333,10 +366,32 @@ One row per Travel Policy page, landing page included. See `PolicyService.ts`.
 | DisplayOrder | Number |
 | IsActive | Yes/No |
 
-Repeatable content blocks for a page — the same shape covers the landing
-page's 3 policy-category cards, 6 "Explore Policy Information" tiles, 4 "Key
-Policy Highlights", the benefits page's 8 numbered rule cards, and its 3
-"Ask HR" help steps.
+Repeatable content blocks — the same shape covers policy-category cards,
+"Explore Policy Information" tiles, "Key Policy Highlights"/comparison cards,
+numbered rule cards, "Ask HR"/process help steps, and link-pill items.
+
+### `TH_PolicyTables`
+| Column | Type |
+| --- | --- |
+| Title | Single line — optional sub-heading, e.g. distinguishing several tables in the same section/tab (e.g. "Air Travel Entitlement" vs "Accommodation Entitlement") |
+| SectionId | Lookup → `TH_PolicySections` — this table's parent section (when not inside a tab) |
+| TabId | Lookup → `TH_PolicyTabs` — this table's parent tab, if any |
+| ColumnHeaders | Multiple lines (plain) — one column header per line |
+| DisplayOrder | Number |
+| IsActive | Yes/No |
+
+A simple data table for `Layout = Table` (or inside a `Layout = Tabs`
+section/tab) — several may stack under the same section/tab. See
+`TH_PolicyTableRows` for the actual cell data.
+
+### `TH_PolicyTableRows`
+| Column | Type |
+| --- | --- |
+| TableId | Lookup → `TH_PolicyTables` |
+| CellValues | Multiple lines (plain) — one cell value per line, matching the parent table's `ColumnHeaders` order |
+| DisplayOrder | Number |
+
+One row of a `TH_PolicyTables` table.
 
 ---
 

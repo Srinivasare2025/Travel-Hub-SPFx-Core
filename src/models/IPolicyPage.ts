@@ -1,4 +1,4 @@
-export type PolicyCardKind = 'category' | 'info' | 'highlight' | 'rule' | 'helpStep';
+export type PolicyCardKind = 'category' | 'info' | 'highlight' | 'rule' | 'helpStep' | 'linkItem';
 
 /** One repeatable content block on a policy page (from TH_PolicyCards). */
 export interface IPolicyCard {
@@ -17,6 +17,73 @@ export interface IPolicyCard {
   /** Validated; `undefined` when invalid. */
   linkUrl: string | undefined;
   linkText: string | undefined;
+  displayOrder: number;
+}
+
+/** One row of a `IPolicyTable` (from TH_PolicyTableRows). */
+export interface IPolicyTableRow {
+  id: number;
+  /** One value per `IPolicyTable.columnHeaders`, same order. */
+  cells: string[];
+  displayOrder: number;
+}
+
+/** A simple data table inside a policy section, e.g. "Air Travel Entitlement" (from TH_PolicyTables). */
+export interface IPolicyTable {
+  id: number;
+  /** Optional sub-heading, e.g. distinguishing several tables in the same section/tab. */
+  title: string | undefined;
+  columnHeaders: string[];
+  rows: IPolicyTableRow[];
+  displayOrder: number;
+}
+
+/** One tab of a `Layout: 'tabs'` section, e.g. "Business Travel" vs "Business Assignment" (from TH_PolicyTabs). */
+export interface IPolicyTab {
+  id: number;
+  label: string;
+  cards: IPolicyCard[];
+  tables: IPolicyTable[];
+  displayOrder: number;
+}
+
+export type PolicySectionLayout =
+  | 'paragraph'
+  | 'cardsGrid'
+  | 'table'
+  | 'tabs'
+  | 'numberedSteps'
+  | 'processSteps'
+  | 'callout'
+  | 'imageBlock'
+  | 'linksList';
+
+/**
+ * One ordered content block on a policy page (from TH_PolicySections). This
+ * is the unit a content owner adds/reorders/removes to build up a page -
+ * `PolicyPageScreen` renders `IPolicyPageContent.sections` in order, picking
+ * the right visual treatment from `layout` (and `cardVariant` when
+ * `layout === 'cardsGrid'`). See PolicyCardSections.tsx.
+ */
+export interface IPolicySection {
+  id: number;
+  title: string | undefined;
+  subtitle: string | undefined;
+  layout: PolicySectionLayout;
+  /** Only meaningful when `layout === 'cardsGrid'` - picks which of the 3 card visual treatments to use. */
+  cardVariant: 'category' | 'info' | 'highlight' | undefined;
+  /** Free text for `layout === 'paragraph' | 'callout'`. */
+  body: string | undefined;
+  /** Decorative icon for `layout === 'callout' | 'imageBlock'`. */
+  icon: string | undefined;
+  /** For `layout === 'imageBlock'`. Validated; `undefined` when invalid/absent. */
+  imageUrl: string | undefined;
+  /** Cards not inside a tab - `cardsGrid` / `numberedSteps` / `processSteps` / `linksList`. */
+  cards: IPolicyCard[];
+  /** Tables not inside a tab - `layout === 'table'` (one or several stacked tables). */
+  tables: IPolicyTable[];
+  /** For `layout === 'tabs'` - each tab carries its own cards/tables. */
+  tabs: IPolicyTab[];
   displayOrder: number;
 }
 
@@ -53,13 +120,27 @@ export interface IPolicyNeedHelp {
   supportLabel: string | undefined;
   description: string;
   email: string | undefined;
+  /**
+   * The "Ask HR" style numbered process shown under this row, e.g. Annual
+   * Flight Ticket Benefits' 3 steps (Create Ticket → Service Category →
+   * Incident Category). Attached directly to the page (`TH_PolicyCards`
+   * with `PageId` set, no `SectionId`/`TabId`) since it's a fixed page-level
+   * feature, not a reorderable content block like `IPolicyPageContent.sections`.
+   */
+  steps: IPolicyCard[];
 }
 
-/** One page in the Travel Policy area (landing page included) — from TH_PolicyPages + TH_PolicyCards. */
+/** One page in the Travel Policy area (landing page included) — from TH_PolicyPages + TH_PolicySections + TH_PolicyCards/TH_PolicyTables/TH_PolicyTabs. */
 export interface IPolicyPageContent {
   slug: string;
   title: string;
   parent: IPolicyPageParent | undefined;
+  /**
+   * A non-clickable breadcrumb crumb between `parent` and this page's title,
+   * e.g. "Explore Policy Information" for the 6 policy sub-pages
+   * (`Home > Travel Policy > Explore Policy Information > [Sub-page]`).
+   */
+  parentSectionLabel: string | undefined;
   hero: {
     icon: string | undefined;
     title: string;
@@ -73,6 +154,8 @@ export interface IPolicyPageContent {
   cta: IPolicyCta | undefined;
   needHelp: IPolicyNeedHelp | undefined;
   closingBanner: IPolicyClosingBanner | undefined;
-  /** All active cards for this page, in DisplayOrder. Group by `kind` to render each section. */
-  cards: IPolicyCard[];
+  /** Decorative-only "Ask Policy Assistant" suggested questions, specific to this page. */
+  suggestedQuestions: string[];
+  /** Every content block on the page, in DisplayOrder. */
+  sections: IPolicySection[];
 }

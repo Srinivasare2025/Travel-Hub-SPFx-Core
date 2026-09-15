@@ -1,5 +1,7 @@
 import * as React from 'react';
+import { Icon } from '@fluentui/react/lib/Icon';
 import { useServices } from '../../../../../common/context/ServiceContext';
+import { useNavigation } from '../../../../../common/context/NavigationContext';
 import { useAsyncData } from '../../../../../common/hooks';
 import { SectionHeader, LoadingState, EmptyState, ErrorState } from '../../../../../common/components';
 import { ITravelTeamMember } from '../../../../../models';
@@ -13,6 +15,7 @@ export interface ITravelTeamSectionProps {
 /** "Meet the Travel Team" — up to `team.landingPageCount` member cards (ASSUMPTIONS A29/A30). */
 export const TravelTeamSection: React.FC<ITravelTeamSectionProps> = ({ title }) => {
   const { team, configuration } = useServices();
+  const { navigate } = useNavigation();
   const { status, data, retry } = useAsyncData(() => team.getTeamMembers(configuration), [configuration]);
 
   return (
@@ -21,7 +24,11 @@ export const TravelTeamSection: React.FC<ITravelTeamSectionProps> = ({ title }) 
         title={title}
         headingLevel={2}
         id="th-team-heading"
-        viewAll={{ ...configuration.team.viewAll, openInNewTab: false }}
+        actions={
+          <button type="button" className={styles.viewAllMembers} onClick={() => navigate({ kind: 'teamAll' })}>
+            {configuration.team.viewAll.text} <Icon iconName="ChevronRight" aria-hidden="true" />
+          </button>
+        }
       />
 
       {status === 'loading' && (

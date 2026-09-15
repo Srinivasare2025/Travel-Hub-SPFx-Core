@@ -89,9 +89,8 @@ These are pure, presentational, SharePoint-unaware, and reused everywhere.
 ### 3.4 TravelerEngagementSection — S
 | Component | Layer | Responsibility |
 | --- | --- | --- |
-| `TravelerEngagementSection` | S | Two-column layout (~20/80): Quick Pulse + testimonials. Both columns start with the same `SectionHeader` so the two cards line up. |
-| `QuickPulseCard` | P | Teaser: question + a decorative row of the configured option icons + "Submit Quick Pulse"/"View All Traveler Survey", each navigating (`NavigationContext`) to a dedicated in-app screen rather than an inline form or a `Modal`. |
-| `QuickPulseSubmitScreen` | P | The actual submission: text-labelled option buttons, optional comment, submit. Enforces "already responded". Never renders other users' responses. |
+| `TravelerEngagementSection` | S | Two-column layout: Quick Pulse (sized to match a Travel News/Article card) + testimonials. Both columns start with the same `SectionHeader` so the two cards line up. |
+| `QuickPulseCard` | P | Question + selectable option icons + an optional comment box, submitted in place (no separate screen) - "View All Traveler Survey" still navigates (`NavigationContext`) to the dedicated results screen. Enforces "already responded". Never renders other users' responses. |
 | `QuickPulseResultsScreen` | P | **Aggregate** counts only, and only fetched when permitted. |
 | `TravelerTestimonialsCarousel` | P | `Carousel` (~3 visible desktop) of testimonial cards: profile image, category tag (`Badge`), `Rating`, comment, name, and a configurable person-info line (see ASSUMPTIONS). "View All Stories" navigates to `ViewAllFeedbackScreen`. |
 | `ViewAllFeedbackScreen` | P | Every active testimonial (not just the carousel's page), each card tagged with its category, ending in a "Submit Feedback" button to `SubmitFeedbackScreen`. |
@@ -107,8 +106,9 @@ These are pure, presentational, SharePoint-unaware, and reused everywhere.
 ### 3.6 TravelTeamSection — S
 | Component | Layer | Responsibility |
 | --- | --- | --- |
-| `TravelTeamSection` | S | Loads `ITravelTeamMember[]`. `SectionHeader` ("Meet the Travel Team") + "View All" → configurable team page. Renders ~4 on the landing page (`landingPageCount` config). |
-| `TravelTeamCard` | P | Photo, name, designation, department/specialisation line, contact icons using `mailto:` / `tel:` only (via `ExternalLink`). |
+| `TravelTeamSection` | S | Loads `ITravelTeamMember[]`. `SectionHeader` ("Meet the Travel Team") + "View All Team Members" → in-app `TravelTeamAllScreen` (`NavigationContext`'s `teamAll` view), same pattern as testimonials' "View All Stories". Renders ~4 on the landing page (`landingPageCount` config). |
+| `TravelTeamCard` | P | Two-part card: rectangular rounded-corner photo on the left, name/designation/secondary line/contact icons (`mailto:`/`tel:` only, via `ExternalLink`) on the right. Fixed height so cards stay aligned regardless of how much optional contact info a member has. |
+| `TravelTeamAllScreen` | P | Every active team member (`TravelTeamService.getAllTeamMembers()`, uncapped) in a grid of `TravelTeamCard`. |
 
 ### 3.7 TravelHubFooter — S
 | Component | Layer | Responsibility |
@@ -122,8 +122,8 @@ Not one of the mock's original sections — reached via `GlobalNav`'s built-in
 
 | Component | Layer | Responsibility |
 | --- | --- | --- |
-| `PolicyPageScreen` | S | One adaptive template for every Travel Policy page (landing page included, via `PolicyService.getPage(slug)`) — breadcrumb, hero, info/note banners, CTA row, "Need Help", closing banner, and card sections, each rendered only when that page has the corresponding data. An AI-assistant section renders as a static "Coming Soon" placeholder on top-level pages only — no service, deferred pending a decision on what it integrates with. |
-| `PolicyCardSections` (`CategoryCards`/`InfoCards`/`HighlightCards`/`RuleCards`/`HelpSteps`) | P | One rendering template per `IPolicyCard.kind`. A `Category`/`Info` card navigates in-app via `TargetSlug` (priority) or an external `LinkUrl`. |
+| `PolicyPageScreen` | S | One adaptive template for every Travel Policy page (landing page included, via `PolicyService.getPage(slug)`) — breadcrumb (with an optional non-clickable section crumb, e.g. "Explore Policy Information"), hero, info/note banners, an ordered list of `IPolicySection` content blocks, CTA row, "Need Help" (+ its own fixed "Ask HR" step process), closing banner - each rendered only when that page has the corresponding data. An AI-assistant section renders as a static "Coming Soon" placeholder whenever the page has `SuggestedQuestions` set - no service, deferred pending a decision on what it integrates with. |
+| `PolicyCardSections` (`PolicySectionBlock` + `CategoryCards`/`InfoCards`/`HighlightCards`/`RuleCards`/`HelpSteps`/`ParagraphBlock`/`TableBlock`/`TabsBlock`/`Callout`/`ImageBlock`/`LinksList`) | P | `PolicySectionBlock` renders one `IPolicySection` by its `layout` (`Paragraph`/`CardsGrid`/`Table`/`Tabs`/`NumberedSteps`/`ProcessSteps`/`Callout`/`ImageBlock`/`LinksList`), picking one of the card-grid visual treatments via `cardVariant` when `layout = CardsGrid`. A `Category`/`Info`/`LinkItem` card navigates in-app via `TargetSlug` (priority) or an external `LinkUrl`. |
 
 ### 3.9 ServicePages — S
 Not one of the mock's original sections — reached via `GlobalNav`'s per-service

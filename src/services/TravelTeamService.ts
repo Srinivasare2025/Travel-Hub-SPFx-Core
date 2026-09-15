@@ -38,6 +38,8 @@ const SELECT = [
 export interface ITravelTeamService {
   /** Team members, capped at `team.landingPageCount` (ASSUMPTIONS A30). */
   getTeamMembers(config: ITravelHubConfiguration): Promise<ITravelTeamMember[]>;
+  /** Every active team member, uncapped - backs the "View All Team Members" page. */
+  getAllTeamMembers(): Promise<ITravelTeamMember[]>;
 }
 
 export class TravelTeamService implements ITravelTeamService {
@@ -63,6 +65,19 @@ export class TravelTeamService implements ITravelTeamService {
       });
       const mapped = raw.map((item) => this.mapMember(item));
       return orderBy(mapped, (m) => m.displayOrder).slice(0, count);
+    });
+  }
+
+  public async getAllTeamMembers(): Promise<ITravelTeamMember[]> {
+    return this.cache.getOrAdd('team:all', TTL_SECONDS, async () => {
+      const raw = await this.spo.getListItems<IRawTeamItem>({
+        list: LIST,
+        select: SELECT,
+        filter: 'IsActive eq 1',
+        orderBy: { field: 'DisplayOrder', ascending: true },
+        top: 500
+      });
+      return orderBy(raw.map((item) => this.mapMember(item)), (m) => m.displayOrder);
     });
   }
 
