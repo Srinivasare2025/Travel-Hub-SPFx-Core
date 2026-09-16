@@ -20,7 +20,9 @@ export type ThView =
   | { kind: 'testimonialsSubmit' }
   | { kind: 'servicePage'; serviceId: number }
   | { kind: 'businessTravel' }
-  | { kind: 'teamAll' };
+  | { kind: 'teamAll' }
+  | { kind: 'greenTravel' }
+  | { kind: 'spendDetail' };
 
 export type ThViewKind = ThView['kind'];
 

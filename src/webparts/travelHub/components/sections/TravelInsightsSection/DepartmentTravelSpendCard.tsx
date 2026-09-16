@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Icon } from '@fluentui/react/lib/Icon';
 import { useServices } from '../../../../../common/context/ServiceContext';
+import { useNavigation } from '../../../../../common/context/NavigationContext';
 import { useAsyncData } from '../../../../../common/hooks';
 import { Card, Badge, Button, LoadingState, ErrorState, EmptyState } from '../../../../../common/components';
 import { ITravelSpend, ITravelSpendAccess } from '../../../../../models';
@@ -39,6 +40,7 @@ function SpendTile({ label, amount, currency, locale }: { label: string; amount:
  */
 export const DepartmentTravelSpendCard: React.FC = () => {
   const { spend, configuration } = useServices();
+  const { navigate } = useNavigation();
   const { status, data, retry } = useAsyncData<ISpendResult>(async () => {
     const access = await spend.getAccess(configuration);
     if (!access.hasAccess) {
@@ -101,11 +103,24 @@ export const DepartmentTravelSpendCard: React.FC = () => {
           </div>
 
           {dashboardUrl !== undefined && (
-            <div className={styles.spendAction}>
-              <Button variant="secondary" href={dashboardUrl} openInNewTab>
-                View Travel Dashboard
-              </Button>
-            </div>
+            <>
+              {/* The configured Power BI report/dashboard link, embedded
+                  right in the card (a compact preview) rather than only
+                  linking out to it. */}
+              <div className={styles.spendEmbedWrap}>
+                <iframe
+                  className={styles.spendEmbed}
+                  src={dashboardUrl}
+                  title="Department Travel Spend report preview"
+                  loading="lazy"
+                />
+              </div>
+              <div className={styles.spendAction}>
+                <Button variant="secondary" onClick={() => navigate({ kind: 'spendDetail' })} iconAfter="ChevronRight">
+                  View Detailed
+                </Button>
+              </div>
+            </>
           )}
         </>
       )}

@@ -13,7 +13,7 @@ import {
   ViewAllFeedbackScreen,
   SubmitFeedbackScreen
 } from './sections/TravelerEngagementSection';
-import { TravelInsightsSection } from './sections/TravelInsightsSection';
+import { TravelInsightsSection, GreenTravelDetailScreen, TravelSpendDetailScreen } from './sections/TravelInsightsSection';
 import { TravelTeamSection, TravelTeamAllScreen } from './sections/TravelTeamSection';
 import { PolicyPageScreen } from './PolicyPages';
 import { ServicePageScreen } from './ServicePages';
@@ -63,6 +63,12 @@ function readViewFromLocation(): ThView {
     if (raw === 'team-all') {
       return { kind: 'teamAll' };
     }
+    if (raw === 'green-travel') {
+      return { kind: 'greenTravel' };
+    }
+    if (raw === 'spend-detail') {
+      return { kind: 'spendDetail' };
+    }
     return { kind: 'hub' };
   } catch {
     return { kind: 'hub' };
@@ -85,6 +91,10 @@ function viewToParam(view: ThView): string | undefined {
       return 'business-travel';
     case 'teamAll':
       return 'team-all';
+    case 'greenTravel':
+      return 'green-travel';
+    case 'spendDetail':
+      return 'spend-detail';
     case 'hub':
     default:
       return undefined;
@@ -260,6 +270,22 @@ export default class TravelHub extends React.Component<ITravelHubProps, ITravelH
               <div className={styles.page}>
                 <SectionBoundary name="TravelTeamAllScreen">
                   <TravelTeamAllScreen />
+                </SectionBoundary>
+              </div>
+            )}
+
+            {view.kind === 'greenTravel' && (
+              <div className={styles.page}>
+                <SectionBoundary name="GreenTravelDetailScreen">
+                  <GreenTravelDetailScreen />
+                </SectionBoundary>
+              </div>
+            )}
+
+            {view.kind === 'spendDetail' && (
+              <div className={styles.page}>
+                <SectionBoundary name="TravelSpendDetailScreen">
+                  <TravelSpendDetailScreen />
                 </SectionBoundary>
               </div>
             )}

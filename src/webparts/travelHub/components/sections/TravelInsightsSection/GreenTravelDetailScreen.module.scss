@@ -1,0 +1,88 @@
+@import '../../../../../common/styles/mixins';
+@import '../../../../../common/styles/typography';
+
+.screen {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-5, 24px);
+  padding-block: var(--full-space-5, 24px) var(--full-space-6, 32px);
+}
+
+/* Matches BusinessTravelPageScreen.module.scss / PolicyPageScreen.module.scss. */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-1, 4px);
+  @include th-meta;
+
+  button {
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--full-text-muted, #4a5568);
+    font: inherit;
+    cursor: pointer;
+    @include th-focusable;
+
+    &:hover {
+      color: var(--full-primary, #b89c66);
+      text-decoration: underline;
+    }
+  }
+
+  svg,
+  i {
+    font-size: 0.7rem;
+  }
+
+  [aria-current='page'] {
+    color: var(--full-heading, #04253c);
+    font-weight: var(--full-fw-semibold, 600);
+  }
+}
+
+.hero {
+  width: 100%;
+  aspect-ratio: 21 / 9;
+  border-radius: var(--full-radius-lg, 12px);
+  overflow: hidden;
+}
+
+.title {
+  @include th-page-title;
+  margin: 0;
+}
+
+.description {
+  @include th-body;
+  color: var(--full-text-muted, #4a5568);
+  max-width: 60rem;
+}
+
+.points {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--full-space-3, 12px);
+
+  @include th-tablet-up {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--full-space-2, 8px);
+    @include th-body;
+  }
+
+  svg,
+  i {
+    color: var(--full-success, #107c41);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+}

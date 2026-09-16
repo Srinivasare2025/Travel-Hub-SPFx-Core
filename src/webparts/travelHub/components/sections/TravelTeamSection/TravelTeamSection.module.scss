@@ -91,11 +91,16 @@
   height: 100%;
 }
 
+/* Inset on all but the right edge (`.cardRow`'s gap already separates it from
+   `.body`) so the photo reads as a framed portrait rather than a flush,
+   edge-to-edge crop - `align-items: stretch` on `.cardRow` still fills the
+   remaining height around this margin, it just no longer touches the card's
+   own top/bottom/left edges. */
 .avatar {
-  width: 40%;
-  height: 100%;
+  width: 38%;
   flex-shrink: 0;
-  border-radius: var(--full-radius-md, 8px) 0 0 var(--full-radius-md, 8px);
+  margin: var(--full-space-3, 12px) 0 var(--full-space-3, 12px) var(--full-space-3, 12px);
+  border-radius: var(--full-radius-md, 8px);
 }
 
 .body {
@@ -127,13 +132,16 @@
   @include th-line-clamp(1);
 }
 
-/* Location on its own row, email/call icons on the next row below it. */
+/* Location on its own row, email/call icons on the next row below it. Sits
+   close under the text above it (a small fixed gap) rather than being pushed
+   to the card's bottom edge via `margin-top: auto` - that left a large empty
+   gap above location whenever a card's name/designation/secondary text was
+   short. */
 .contactRows {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-top: auto;
-  padding-top: var(--full-space-2, 8px);
+  margin-top: var(--full-space-2, 8px);
 }
 
 .contactActions {

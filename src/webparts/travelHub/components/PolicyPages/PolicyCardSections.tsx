@@ -3,7 +3,16 @@ import { Icon } from '@fluentui/react/lib/Icon';
 import { useNavigation } from '../../../../common/context/NavigationContext';
 import { ImageWithFallback } from '../../../../common/components';
 import { IPolicyCard, IPolicySection, IPolicyTable, IPolicyTab } from '../../../../models';
+import { parseHighlightSubPoints, ParsedSubPoint } from './parseHighlightSubPoints';
 import styles from './PolicyPageScreen.module.scss';
+
+/**
+ * Sections whose `HighlightCards` get the icon-left/title-right header
+ * layout (mock) instead of the default icon-on-top layout - matched by exact
+ * section title so every other `cardVariant: 'highlight'` section elsewhere
+ * (subpages not covered by this pass) keeps rendering exactly as before.
+ */
+const ICON_LEFT_HEADER_SECTIONS: ReadonlySet<string> = new Set(['Key Policy Highlights', 'Which Policy Applies to Your Travel?']);
 
 /** A card that navigates in-app (TargetSlug) takes priority over an external LinkUrl. */
 function CardLink({ card, children, className }: { card: IPolicyCard; children: React.ReactNode; className: string }): React.ReactElement {
@@ -37,13 +46,15 @@ export const CategoryCards: React.FC<{ cards: IPolicyCard[] }> = ({ cards }) => 
           <span className={styles.categoryIcon} style={card.iconColor !== undefined ? { color: card.iconColor } : undefined} aria-hidden="true">
             <Icon iconName={card.icon} />
           </span>
-          <h3 className={styles.categoryTitle}>{card.title}</h3>
-          <p className={styles.categoryDescription}>{card.description}</p>
-          {card.linkText !== undefined && (
-            <span className={styles.categoryLink}>
-              {card.linkText} <Icon iconName="ChevronRight" aria-hidden="true" />
-            </span>
-          )}
+          <div className={styles.categoryBody}>
+            <h3 className={styles.categoryTitle}>{card.title}</h3>
+            <p className={styles.categoryDescription}>{card.description}</p>
+            {card.linkText !== undefined && (
+              <span className={styles.categoryLink}>
+                {card.linkText} <Icon iconName="ChevronRight" aria-hidden="true" />
+              </span>
+            )}
+          </div>
         </CardLink>
       ))}
     </div>
@@ -69,27 +80,118 @@ export const InfoCards: React.FC<{ cards: IPolicyCard[] }> = ({ cards }) => {
   );
 };
 
+/** One parsed `SubPoints` block - see parseHighlightSubPoints.ts. */
+const SubPointsBlocks: React.FC<{ subPoints: string[] }> = ({ subPoints }) => {
+  if (subPoints.length === 0) {
+    return null;
+  }
+  const blocks = parseHighlightSubPoints(subPoints);
+
+  const bullets = blocks.filter((b): b is Extract<ParsedSubPoint, { kind: 'bullet' }> => b.kind === 'bullet');
+  const nonBullets = blocks.filter((b) => b.kind !== 'bullet');
+
+  return (
+    <>
+      {bullets.length > 0 && (
+        <ul className={styles.highlightSubPoints}>
+          {bullets.map((b, index) => (
+            <li key={index}>{b.text}</li>
+          ))}
+        </ul>
+      )}
+      {nonBullets.map((block, index) => {
+        if (block.kind === 'table') {
+          return (
+            <div key={index} className={styles.highlightTableWrap}>
+              <table className={styles.highlightTable}>
+                <thead>
+                  <tr>
+                    {block.headers.map((h, i) => (
+                      <th key={i} scope="col">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {block.rows.map((row, r) => (
+                    <tr key={r}>
+                      {row.map((cell, c) => (
+                        <td key={c}>{cell}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        }
+        if (block.kind === 'callout') {
+          return (
+            <div key={index} className={styles.highlightCallout}>
+              <Icon iconName="Info" aria-hidden="true" />
+              <p>
+                {block.label !== undefined && <strong>{block.label} </strong>}
+                {block.text}
+              </p>
+            </div>
+          );
+        }
+        if (block.kind === 'iconBlock') {
+          return (
+            <div key={index} className={styles.highlightIconBlock}>
+              <Icon iconName={block.icon} aria-hidden="true" />
+              <div className={styles.highlightIconBlockBody}>
+                <strong>{block.heading}</strong>
+                <p>{block.text}</p>
+              </div>
+            </div>
+          );
+        }
+        // kind === 'numbered'
+        return (
+          <ol key={index} className={styles.highlightNumbered}>
+            {block.items.map((item, i) => (
+              <li key={i}>
+                <span className={styles.highlightNumberedBadge}>{i + 1}</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ol>
+        );
+      })}
+    </>
+  );
+};
+
 /** "Key Policy Highlights" style — icon + title + description cards, e.g. comparison cards too. */
-export const HighlightCards: React.FC<{ cards: IPolicyCard[] }> = ({ cards }) => {
+export const HighlightCards: React.FC<{ cards: IPolicyCard[]; sectionTitle?: string }> = ({ cards, sectionTitle }) => {
   if (cards.length === 0) {
     return null;
   }
+  const iconLeft = sectionTitle !== undefined && ICON_LEFT_HEADER_SECTIONS.has(sectionTitle);
+
   return (
     <div className={styles.highlightGrid}>
       {cards.map((card) => (
         <div key={card.id} className={styles.highlightCard}>
-          <span className={styles.highlightIcon} style={card.iconColor !== undefined ? { backgroundColor: card.iconColor } : undefined} aria-hidden="true">
-            <Icon iconName={card.icon} />
-          </span>
-          <h3 className={styles.highlightTitle}>{card.title}</h3>
-          {card.description.length > 0 && <p className={styles.highlightDescription}>{card.description}</p>}
-          {card.subPoints.length > 0 && (
-            <ul className={styles.highlightSubPoints}>
-              {card.subPoints.map((point, index) => (
-                <li key={index}>{point}</li>
-              ))}
-            </ul>
+          {iconLeft ? (
+            <div className={styles.highlightHeaderRow}>
+              <span className={styles.highlightIcon} style={card.iconColor !== undefined ? { backgroundColor: card.iconColor } : undefined} aria-hidden="true">
+                <Icon iconName={card.icon} />
+              </span>
+              <h3 className={styles.highlightTitle}>{card.title}</h3>
+            </div>
+          ) : (
+            <>
+              <span className={styles.highlightIcon} style={card.iconColor !== undefined ? { backgroundColor: card.iconColor } : undefined} aria-hidden="true">
+                <Icon iconName={card.icon} />
+              </span>
+              <h3 className={styles.highlightTitle}>{card.title}</h3>
+            </>
           )}
+          {card.description.length > 0 && <p className={styles.highlightDescription}>{card.description}</p>}
+          <SubPointsBlocks subPoints={card.subPoints} />
         </div>
       ))}
     </div>
@@ -288,13 +390,36 @@ const LinksList: React.FC<{ cards: IPolicyCard[] }> = ({ cards }) => {
  * for `cardsGrid` (which of the 3 card visual treatments to use); every
  * other layout has a single fixed treatment.
  */
-export const PolicySectionBlock: React.FC<{ section: IPolicySection }> = ({ section }) => (
-  <section className={styles.section}>
-    {section.title !== undefined && <h2 className={styles.sectionTitle}>{section.title}</h2>}
-    {section.subtitle !== undefined && <p className={styles.sectionSubtitle}>{section.subtitle}</p>}
-    {renderLayout(section)}
-  </section>
-);
+export const PolicySectionBlock: React.FC<{ section: IPolicySection }> = ({ section }) => {
+  // Opt-in: a `paragraph` section only takes this icon-left/tinted-background
+  // treatment when it has an `Icon` set - no existing paragraph section has
+  // one today (Icon is otherwise only used by `callout`/`imageBlock`), so
+  // this only changes a section a content editor deliberately sets an icon
+  // on (e.g. "Purpose" on the Purpose & Scope page), not paragraph sections
+  // generally.
+  if (section.layout === 'paragraph' && section.icon !== undefined) {
+    return (
+      <section className={styles.iconParagraphSection}>
+        <span className={styles.iconParagraphIcon} aria-hidden="true">
+          <Icon iconName={section.icon} />
+        </span>
+        <div className={styles.iconParagraphBody}>
+          {section.title !== undefined && <h2 className={styles.sectionTitle}>{section.title}</h2>}
+          {section.subtitle !== undefined && <p className={styles.sectionSubtitle}>{section.subtitle}</p>}
+          <ParagraphBlock body={section.body} />
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className={styles.section}>
+      {section.title !== undefined && <h2 className={styles.sectionTitle}>{section.title}</h2>}
+      {section.subtitle !== undefined && <p className={styles.sectionSubtitle}>{section.subtitle}</p>}
+      {renderLayout(section)}
+    </section>
+  );
+};
 
 function renderLayout(section: IPolicySection): React.ReactElement | undefined {
   switch (section.layout) {
@@ -307,7 +432,7 @@ function renderLayout(section: IPolicySection): React.ReactElement | undefined {
       if (section.cardVariant === 'info') {
         return <InfoCards cards={section.cards} />;
       }
-      return <HighlightCards cards={section.cards} />;
+      return <HighlightCards cards={section.cards} sectionTitle={section.title} />;
     case 'table':
       return <TableBlock tables={section.tables} />;
     case 'tabs':

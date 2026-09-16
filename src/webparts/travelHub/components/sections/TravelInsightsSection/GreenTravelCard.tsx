@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Icon } from '@fluentui/react/lib/Icon';
 import { useServices } from '../../../../../common/context/ServiceContext';
+import { useNavigation } from '../../../../../common/context/NavigationContext';
 import { useAsyncData } from '../../../../../common/hooks';
 import { Card, ExternalLink, LoadingState, ErrorState, EmptyState, ImageWithFallback } from '../../../../../common/components';
 import styles from './TravelInsightsSection.module.scss';
@@ -12,6 +13,7 @@ import styles from './TravelInsightsSection.module.scss';
  */
 export const GreenTravelCard: React.FC = () => {
   const { greenTravel } = useServices();
+  const { navigate } = useNavigation();
   const { status, data, retry } = useAsyncData(() => greenTravel.getContent(), []);
 
   if (status === 'loading') {
@@ -42,9 +44,17 @@ export const GreenTravelCard: React.FC = () => {
               ))}
             </ul>
           )}
-          {data.linkUrl !== undefined && (
-            <ExternalLink href={data.linkUrl} showArrow className={styles.greenLink}>
-              {data.linkText ?? 'Learn more'}
+          {data.linkUrl !== undefined ? (
+            // An external LinkUrl configured on TH_GreenTravel - always opens
+            // in a new window/tab so travelers don't lose the Hub.
+            <ExternalLink href={data.linkUrl} openInNewTab showArrow className={styles.greenLink}>
+              {data.linkText ?? 'Explore Green Travel'}
+            </ExternalLink>
+          ) : (
+            // No external link configured - fall back to the in-app detail
+            // page (GreenTravelDetailScreen) instead of hiding the action.
+            <ExternalLink href={undefined} onClick={() => navigate({ kind: 'greenTravel' })} showArrow className={styles.greenLink}>
+              {data.linkText ?? 'Explore Green Travel'}
             </ExternalLink>
           )}
         </div>
