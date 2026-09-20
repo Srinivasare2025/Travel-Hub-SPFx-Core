@@ -197,33 +197,17 @@
   margin: 0;
 }
 
+.greenSubtitle {
+  @include th-body;
+  font-weight: var(--full-fw-semibold, 600);
+  color: var(--full-heading, #04253c);
+  margin: 0;
+}
+
 .greenDescription {
   @include th-body;
   color: var(--full-text-muted, #4a5568);
   margin: 0;
-}
-
-.greenPoints {
-  list-style: none;
-  margin: var(--full-space-1, 4px) 0 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--full-space-1, 4px);
-
-  li {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--full-space-2, 8px);
-    @include th-body;
-  }
-
-  svg,
-  i {
-    color: var(--full-success, #107c41);
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
 }
 
 .greenLink {

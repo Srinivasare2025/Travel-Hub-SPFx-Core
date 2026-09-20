@@ -242,6 +242,11 @@
       description: 'Business Travel page - supporting info cards.',
       fields: [
         { name: 'Description', xml: F.note('Description', 3) },
+        { name: 'Icon', xml: F.text('Icon') },
+        // In-app navigation to a TH_PolicyPages row (e.g. "employee-relocation")
+        // - wins over LinkUrl when both are set. See BUSINESS_TRAVEL_SLUG's
+        // sibling pattern in PolicyCardSections.tsx.
+        { name: 'TargetSlug', xml: F.text('TargetSlug') },
         { name: 'LinkUrl', xml: F.url('LinkUrl') },
         { name: 'LinkText', xml: F.text('LinkText') },
         { name: 'OpenInNewTab', xml: F.bool('OpenInNewTab', false) },
@@ -364,6 +369,7 @@
       title: 'TH_GreenTravel',
       description: 'Green Travel content block (one active record).',
       fields: [
+        { name: 'Subtitle', xml: F.text('Subtitle') },
         { name: 'Description', xml: F.note('Description', 4) },
         { name: 'Points', xml: F.note('Points', 6) },
         { name: 'ImageUrl', xml: F.url('ImageUrl') },
@@ -441,6 +447,14 @@
         // page - one per line. Decorative only (the assistant is a
         // placeholder pending a real integration - PolicyPageScreen.tsx).
         { name: 'SuggestedQuestions', xml: F.note('SuggestedQuestions', 4) },
+        // Optional "Ask a Question" CTA for the assistant block. When set,
+        // the assistant renders as icon + title/description with this link
+        // as a button (opens in a new tab) instead of the inline search box
+        // - the layout the 6 "Explore Policy Information" sub-pages use.
+        // Leave both blank to keep the inline search box (e.g. the Travel
+        // Policy landing page) - PolicyPageScreen.tsx.
+        { name: 'AssistantLinkText', xml: F.text('AssistantLinkText') },
+        { name: 'AssistantLinkUrl', xml: F.url('AssistantLinkUrl') },
         { name: 'HeroIcon', xml: F.text('HeroIcon') },
         { name: 'HeroTitle', xml: F.text('HeroTitle') },
         { name: 'HeroSubtitle', xml: F.text('HeroSubtitle') },
@@ -504,6 +518,13 @@
       description: 'Tabs inside a Layout = Tabs policy section.',
       fields: [
         // SectionId is a lookup -> TH_PolicySections, added via LOOKUPS below.
+        // Optional selector icon/subtitle/description - set any of these to
+        // render the tab as a rich icon+title/subtitle/description selector
+        // card instead of a plain label pill, e.g. Travel Entitlement's
+        // "Select Your Travel Type" (Business Travel / Business Assignment).
+        { name: 'Icon', xml: F.text('Icon') },
+        { name: 'Subtitle', xml: F.text('Subtitle') },
+        { name: 'Description', xml: F.note('Description', 2) },
         { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
         { name: 'IsActive', xml: F.bool('IsActive', true) }
       ]

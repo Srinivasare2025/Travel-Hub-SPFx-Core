@@ -37,7 +37,10 @@
   --full-success: #107c41;
 
   // --- Typography --------------------------------------------------------
-  --full-font-family: "Segoe UI", -apple-system, BlinkMacSystemFont,
+  // Body face — self-hosted in _fonts-body.scss, same face/role as the
+  // sibling HR-Hub-SPFx solution's `--font-body` token. The system stack
+  // stays as the fallback chain (used if the self-hosted face fails to load).
+  --full-font-family: "Noto Sans", "Segoe UI", -apple-system, BlinkMacSystemFont,
     "Helvetica Neue", Arial, sans-serif;
   // Display face for the two largest heading tiers only (page/section titles) —
   // self-hosted in _fonts.scss, same face/role as the sibling HR-Hub-SPFx

@@ -4,6 +4,7 @@ import { useServices } from '../../../../../common/context/ServiceContext';
 import { useNavigation } from '../../../../../common/context/NavigationContext';
 import { useAsyncData } from '../../../../../common/hooks';
 import { Button, LoadingState, ErrorState, EmptyState, ImageWithFallback } from '../../../../../common/components';
+import { parseGreenPoint } from './parseGreenPoint';
 import styles from './GreenTravelDetailScreen.module.scss';
 
 /**
@@ -55,16 +56,26 @@ export const GreenTravelDetailScreen: React.FC = () => {
       )}
 
       <h1 className={styles.title}>{data.title}</h1>
+      {data.subtitle !== undefined && <p className={styles.subtitle}>{data.subtitle}</p>}
       <p className={styles.description}>{data.description}</p>
 
       {data.points.length > 0 && (
-        <ul className={styles.points}>
-          {data.points.map((point, index) => (
-            <li key={index}>
-              <Icon iconName="Leaf" aria-hidden="true" /> {point}
-            </li>
-          ))}
-        </ul>
+        <ol className={styles.points}>
+          {data.points.map((point, index) => {
+            const parsed = parseGreenPoint(point);
+            return (
+              <li key={index} className={styles.pointItem}>
+                <span className={styles.pointNumber} aria-hidden="true">
+                  {index + 1}
+                </span>
+                <span className={styles.pointBody}>
+                  {parsed.heading !== undefined && <strong className={styles.pointHeading}>{parsed.heading}: </strong>}
+                  {parsed.text}
+                </span>
+              </li>
+            );
+          })}
+        </ol>
       )}
     </div>
   );

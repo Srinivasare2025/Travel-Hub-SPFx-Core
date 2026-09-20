@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { Icon } from '@fluentui/react/lib/Icon';
 import { useServices } from '../../../../../common/context/ServiceContext';
 import { useNavigation } from '../../../../../common/context/NavigationContext';
 import { useAsyncData } from '../../../../../common/hooks';
@@ -34,16 +33,8 @@ export const GreenTravelCard: React.FC = () => {
       <div className={styles.greenLayout}>
         <div className={styles.greenBody}>
           <h3 className={styles.greenTitle}>{data.title}</h3>
+          {data.subtitle !== undefined && <p className={styles.greenSubtitle}>{data.subtitle}</p>}
           <p className={styles.greenDescription}>{data.description}</p>
-          {data.points.length > 0 && (
-            <ul className={styles.greenPoints}>
-              {data.points.map((point, index) => (
-                <li key={index}>
-                  <Icon iconName="Leaf" aria-hidden="true" /> {point}
-                </li>
-              ))}
-            </ul>
-          )}
           {data.linkUrl !== undefined ? (
             // An external LinkUrl configured on TH_GreenTravel - always opens
             // in a new window/tab so travelers don't lose the Hub.

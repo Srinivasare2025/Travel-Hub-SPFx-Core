@@ -4,11 +4,30 @@ import { useServices } from '../../../../common/context/ServiceContext';
 import { useNavigation } from '../../../../common/context/NavigationContext';
 import { useAsyncData } from '../../../../common/hooks';
 import { Badge, Button, LoadingState, ErrorState, EmptyState } from '../../../../common/components';
-import { PolicySectionBlock, HelpSteps } from './PolicyCardSections';
+import { PolicySectionBlock, HelpSteps, BUSINESS_TRAVEL_SLUG } from './PolicyCardSections';
 import styles from './PolicyPageScreen.module.scss';
 
 export interface IPolicyPageScreenProps {
   slug: string;
+}
+
+/**
+ * Picks a Fluent icon for a closing-banner badge from its label text (e.g.
+ * "Our People" / "Our Planet" / "Our Future") so content owners get the
+ * right icon just by typing the usual label, with no schema change needed.
+ */
+function closingBadgeIcon(label: string): string {
+  const l = label.toLowerCase();
+  if (l.includes('people')) {
+    return 'Group';
+  }
+  if (l.includes('planet')) {
+    return 'Leaf';
+  }
+  if (l.includes('future')) {
+    return 'BarChart4';
+  }
+  return 'CheckMark';
 }
 
 /**
@@ -56,7 +75,13 @@ export const PolicyPageScreen: React.FC<IPolicyPageScreenProps> = ({ slug }) => 
         {data.parent !== undefined && (
           <>
             <Icon iconName="ChevronRight" aria-hidden="true" />
-            <button type="button" onClick={() => navigate({ kind: 'policyPage', slug: (data.parent as { slug: string }).slug })}>
+            <button
+              type="button"
+              onClick={() => {
+                const parent = data.parent as { slug: string };
+                navigate(parent.slug === BUSINESS_TRAVEL_SLUG ? { kind: 'businessTravel' } : { kind: 'policyPage', slug: parent.slug });
+              }}
+            >
               {data.parent.title}
             </button>
           </>
@@ -133,32 +158,66 @@ export const PolicyPageScreen: React.FC<IPolicyPageScreenProps> = ({ slug }) => 
           service, no config. Shown whenever the content owner has set
           suggested questions for this page (the landing page and the 6
           "Explore Policy Information" sub-pages, not the Annual Flight
-          Ticket Benefits page - Content Specifications §4/§PAGE 2). */}
+          Ticket Benefits page - Content Specifications §4/§PAGE 2).
+          Two layouts, picked by whether `assistantLinkUrl` is configured:
+          unset keeps the inline search-box (Travel Policy landing page);
+          set switches to icon+title/description with an "Ask a Question"
+          button and the suggestions in their own row below (the 6 "Explore
+          Policy Information" sub-pages). */}
       {data.suggestedQuestions.length > 0 && (
         <div className={styles.assistant}>
           <span className={styles.assistantIcon} aria-hidden="true">
             <Icon iconName="Robot" />
           </span>
           <div className={styles.assistantBody}>
-            <div className={styles.assistantHeading}>
-              <h2 className={styles.sectionTitle}>Ask Our Policy Assistant</h2>
-              <Badge text="Coming Soon" tone="gold" />
-            </div>
-            <p className={styles.assistantDescription}>Get instant answers from RSG&rsquo;s Travel Policy.</p>
-            <div className={styles.assistantInputRow}>
-              <input className={styles.assistantInput} type="text" placeholder="Ask a question about the Travel Policy…" disabled />
-              <span className={styles.assistantSend} aria-hidden="true">
-                <Icon iconName="Send" />
-              </span>
-            </div>
-            <div className={styles.assistantSuggestions}>
-              <span className={styles.assistantSuggestionsLabel}>Try asking:</span>
-              {data.suggestedQuestions.map((question) => (
-                <span key={question} className={styles.assistantChip}>
-                  {question}
-                </span>
-              ))}
-            </div>
+            {data.assistantLinkUrl !== undefined ? (
+              <>
+                <div className={styles.assistantTopRow}>
+                  <div>
+                    <div className={styles.assistantHeading}>
+                      <h2 className={styles.sectionTitle}>Ask Policy Assistant</h2>
+                      <Badge text="AI Powered" tone="gold" />
+                    </div>
+                    <p className={styles.assistantDescription}>Get quick answers to your travel policy questions.</p>
+                  </div>
+                  <Button variant="primary" href={data.assistantLinkUrl} openInNewTab iconAfter="ChevronRight">
+                    {data.assistantLinkText ?? 'Ask a Question'}
+                  </Button>
+                </div>
+                <div className={styles.assistantSuggestions}>
+                  {data.suggestedQuestions.map((question) => (
+                    <span key={question} className={`${styles.assistantChip} ${styles.assistantChipIconed}`}>
+                      <Icon iconName="Search" aria-hidden="true" />
+                      {question}
+                    </span>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className={styles.assistantHeading}>
+                  <h2 className={styles.sectionTitle}>Ask Our Policy Assistant</h2>
+                  <Badge text="AI Powered" tone="gold" />
+                </div>
+                <p className={styles.assistantDescription}>Get instant answers from RSG&rsquo;s Travel Policy.</p>
+                <div className={styles.assistantRow}>
+                  <div className={styles.assistantInputRow}>
+                    <input className={styles.assistantInput} type="text" placeholder="Ask a question about the Travel Policy…" disabled />
+                    <span className={styles.assistantSend} aria-hidden="true">
+                      <Icon iconName="Send" />
+                    </span>
+                  </div>
+                  <div className={styles.assistantSuggestions}>
+                    <span className={styles.assistantSuggestionsLabel}>Try asking:</span>
+                    {data.suggestedQuestions.map((question) => (
+                      <span key={question} className={styles.assistantChip}>
+                        {question}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -169,15 +228,21 @@ export const PolicyPageScreen: React.FC<IPolicyPageScreenProps> = ({ slug }) => 
             <Icon iconName="Headset" />
           </span>
           <div className={styles.needHelpBody}>
-            {data.needHelp.supportLabel !== undefined && <span className={styles.needHelpLabel}>{data.needHelp.supportLabel}</span>}
-            <h2 className={styles.sectionTitle}>{data.needHelp.title}</h2>
-            {data.needHelp.description.length > 0 && <p className={styles.needHelpDescription}>{data.needHelp.description}</p>}
-            {data.needHelp.email !== undefined && (
-              <a className={styles.needHelpEmail} href={`mailto:${data.needHelp.email}`}>
-                <Icon iconName="Mail" aria-hidden="true" /> {data.needHelp.email}
-              </a>
+            <div className={styles.needHelpText}>
+              <h2 className={styles.sectionTitle}>{data.needHelp.title}</h2>
+              {data.needHelp.supportLabel !== undefined && <span className={styles.needHelpLabel}>{data.needHelp.supportLabel}</span>}
+              {data.needHelp.description.length > 0 && <p className={styles.needHelpDescription}>{data.needHelp.description}</p>}
+            </div>
+            {(data.needHelp.email !== undefined || data.needHelp.steps.length > 0) && (
+              <div className={styles.needHelpTrailing}>
+                {data.needHelp.email !== undefined && (
+                  <a className={styles.needHelpEmail} href={`mailto:${data.needHelp.email}`}>
+                    <Icon iconName="Mail" aria-hidden="true" /> {data.needHelp.email}
+                  </a>
+                )}
+                <HelpSteps cards={data.needHelp.steps} />
+              </div>
             )}
-            <HelpSteps cards={data.needHelp.steps} />
           </div>
         </div>
       )}
@@ -193,6 +258,9 @@ export const PolicyPageScreen: React.FC<IPolicyPageScreenProps> = ({ slug }) => 
             <div className={styles.closingBadges}>
               {data.closingBanner.badges.map((badge, index) => (
                 <span key={index} className={styles.closingBadge}>
+                  <span className={styles.closingBadgeIcon} aria-hidden="true">
+                    <Icon iconName={closingBadgeIcon(badge)} />
+                  </span>
                   {badge}
                 </span>
               ))}

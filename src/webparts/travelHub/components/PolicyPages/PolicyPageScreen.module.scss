@@ -104,11 +104,15 @@
   z-index: 1;
   top: var(--full-space-5, 24px);
   right: var(--full-space-6, 32px);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--full-font-family-display, "Cormorant Garamond", Georgia, serif);
   font-style: italic;
   color: #fff;
   text-align: right;
   line-height: 1.3;
+  // HeroTagline is a multi-line ("Note") field - editors enter real line
+  // breaks, which need this to actually render as separate lines instead of
+  // collapsing to one.
+  white-space: pre-line;
 }
 
 /* --- Banners ---------------------------------------------------------------- */
@@ -159,6 +163,25 @@
 .sectionTitle {
   @include th-section-title;
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-2, 8px);
+}
+
+/* Opt-in section number badge - see `renderSectionTitle` in
+   PolicyCardSections.tsx (a section's Title starting "1. " / "1) "). */
+.sectionNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--full-primary, #b89c66);
+  color: #fff;
+  font-weight: var(--full-fw-bold, 700);
+  font-size: 0.8125rem;
 }
 
 .sectionSubtitle {
@@ -350,11 +373,26 @@
 
 .highlightCard {
   @include th-card-surface;
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--full-space-2, 8px);
   padding: var(--full-space-4, 16px);
   height: 100%;
+}
+
+/* From a card's leading `%%Tag` SubPoints line - see PolicyCardSections.tsx. */
+.highlightTag {
+  position: absolute;
+  top: var(--full-space-3, 12px);
+  right: var(--full-space-3, 12px);
+  padding: 2px var(--full-space-2, 8px);
+  border-radius: 999px;
+  background: var(--full-surface-alt, #faf8f4);
+  border: 1px solid var(--full-border, #e8e5e0);
+  color: var(--full-text-muted, #4a5568);
+  font-size: var(--full-fs-meta, 0.8125rem);
+  font-weight: var(--full-fw-semibold, 600);
 }
 
 .highlightIcon {
@@ -395,6 +433,21 @@
   }
 }
 
+/* An `@Icon|text` bullet - its own icon instead of the shared disc marker. */
+.highlightSubPointIconed {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--full-space-2, 8px);
+  list-style: none;
+
+  svg,
+  i {
+    color: var(--full-primary, #b89c66);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+}
+
 /* --- Highlight cards, icon-left header variant ------------------------------
    Opt-in: only used when `PolicySectionBlock` passes a `sectionTitle` that
    `HighlightCards` recognises (Key Policy Highlights on the Travel Policy
@@ -413,6 +466,14 @@
 
 .highlightHeaderRow .highlightTitle {
   font-size: 1.0625rem;
+}
+
+/* Opt-in colored underline below the title (from `card.iconColor`) - e.g.
+   Guiding Principles' "How We Approach Business Travel" cards. */
+.highlightTitleUnderline {
+  padding-bottom: var(--full-space-1, 4px);
+  border-bottom: 2px solid var(--full-primary, #b89c66);
+  display: inline-block;
 }
 
 /* One parsed `SubPoints` block - see parseHighlightSubPoints.ts. */
@@ -541,21 +602,43 @@
 .ruleCard {
   @include th-card-surface;
   display: flex;
+  align-items: flex-start;
   gap: var(--full-space-3, 12px);
   padding: var(--full-space-4, 16px);
+}
+
+.ruleBadgeGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-1, 4px);
+  flex-shrink: 0;
 }
 
 .ruleNumber {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
   border-radius: 50%;
   background: var(--full-primary, #b89c66);
   color: #fff;
   font-weight: var(--full-fw-bold, 700);
+  font-size: 0.8125rem;
+}
+
+.ruleIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--full-surface-alt, #faf8f4);
+  color: var(--full-primary, #b89c66);
+  font-size: 1.25rem;
 }
 
 .ruleBody {
@@ -575,20 +658,6 @@
   @include th-body;
   color: var(--full-text-muted, #4a5568);
   margin: 0;
-}
-
-.ruleSubPoints {
-  margin: var(--full-space-2, 8px) 0 0;
-  padding: var(--full-space-2, 8px) var(--full-space-3, 12px);
-  border-radius: var(--full-radius-sm, 4px);
-  background: var(--full-surface-alt, #faf8f4);
-  list-style: disc;
-  padding-inline-start: calc(var(--full-space-3, 12px) + 1em);
-  @include th-meta;
-
-  li + li {
-    margin-top: 2px;
-  }
 }
 
 /* --- Paragraph block -------------------------------------------------------- */
@@ -617,6 +686,19 @@
   @include th-card-title;
   font-size: 1rem;
   margin: 0;
+}
+
+/* A first-column cell written as `IconName::Text` - see TableCell in PolicyCardSections.tsx. */
+.tableCellIconed {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--full-space-2, 8px);
+
+  svg,
+  i {
+    color: var(--full-primary, #b89c66);
+    flex-shrink: 0;
+  }
 }
 
 .tableScroll {
@@ -691,6 +773,82 @@
   flex-direction: column;
   gap: var(--full-space-4, 16px);
   padding-top: var(--full-space-4, 16px);
+}
+
+/* --- Rich tab selectors (a tab with Icon set) - e.g. Travel Entitlement's
+   "Select Your Travel Type" (Business Travel / Business Assignment). ------ */
+.tabSelectorList {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--full-space-3, 12px);
+  border-bottom: none;
+
+  @include th-tablet-up {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.tabSelector {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-3, 12px);
+  padding: var(--full-space-4, 16px);
+  border: 1px solid var(--full-border, #e8e5e0);
+  border-radius: var(--full-radius-md, 8px);
+  background: var(--full-surface, #fff);
+  text-align: start;
+  cursor: pointer;
+  @include th-focusable;
+
+  &:hover {
+    box-shadow: var(--full-shadow-card-hover, 0 8px 28px rgba(4, 37, 60, 0.14));
+  }
+}
+
+.tabSelectorActive {
+  border-color: var(--full-primary, #b89c66);
+  background: rgba(184, 156, 102, 0.08);
+}
+
+.tabSelectorIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: rgba(184, 156, 102, 0.16);
+  color: var(--full-primary, #b89c66);
+  font-size: 1.25rem;
+}
+
+.tabSelectorBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tabSelectorTitle {
+  @include th-card-title;
+  font-size: 1rem;
+}
+
+.tabSelectorSubtitle {
+  @include th-meta;
+  font-weight: var(--full-fw-semibold, 600);
+  color: var(--full-heading, #04253c);
+}
+
+.tabSelectorDescription {
+  @include th-meta;
+}
+
+.tabSelectorArrow {
+  flex-shrink: 0;
+  color: var(--full-primary, #b89c66);
 }
 
 /* --- Callout / info box -------------------------------------------------------- */
@@ -848,6 +1006,26 @@
   margin: var(--full-space-1, 4px) 0 var(--full-space-3, 12px);
 }
 
+/* Travel Policy landing page layout: input box + "Try asking" chips beside
+   it in the same row, each side taking equal height. */
+.assistantRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: var(--full-space-4, 16px);
+}
+
+/* Explore Policy Information sub-page layout: title/description left,
+   "Ask a Question" button right, in the same row. */
+.assistantTopRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--full-space-3, 12px);
+}
+
 .assistantInputRow {
   display: flex;
   align-items: center;
@@ -903,6 +1081,17 @@
   @include th-meta;
 }
 
+.assistantChipIconed {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--full-space-1, 4px);
+
+  svg {
+    font-size: 0.875rem;
+    color: var(--full-text-muted, #4a5568);
+  }
+}
+
 /* --- Need help ------------------------------------------------------------ */
 .needHelp {
   display: flex;
@@ -928,6 +1117,16 @@
 .needHelpBody {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--full-space-4, 16px);
+}
+
+.needHelpText {
+  flex: 1;
+  min-width: 220px;
 }
 
 .needHelpLabel {
@@ -937,12 +1136,23 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--full-primary, #b89c66);
-  margin-bottom: 2px;
+  margin: 2px 0;
 }
 
 .needHelpDescription {
   @include th-meta;
-  margin: var(--full-space-1, 4px) 0 var(--full-space-2, 8px);
+  margin: var(--full-space-1, 4px) 0 0;
+}
+
+/* The email and/or "Ask HR" steps, set off from the title/description with
+   a divider and pinned to the row's trailing edge. */
+.needHelpTrailing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--full-space-4, 16px);
+  padding-inline-start: var(--full-space-4, 16px);
+  border-inline-start: 1px solid var(--full-border, #e8e5e0);
 }
 
 .needHelpEmail {
@@ -958,7 +1168,7 @@
   align-items: center;
   gap: var(--full-space-3, 12px);
   list-style: none;
-  margin: var(--full-space-4, 16px) 0 0;
+  margin: 0;
   padding: 0;
 }
 
@@ -1029,15 +1239,28 @@
 .closingBadges {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--full-space-2, 8px);
+  gap: var(--full-space-4, 16px);
   margin-inline-start: auto;
 }
 
 .closingBadge {
-  padding: var(--full-space-1, 4px) var(--full-space-3, 12px);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.16);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--full-space-1, 4px);
   font-size: var(--full-fs-meta, 0.8125rem);
   font-weight: var(--full-fw-semibold, 600);
   white-space: nowrap;
+}
+
+.closingBadgeIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #fff;
+  color: #0f6b3f;
+  font-size: 1.25rem;
 }

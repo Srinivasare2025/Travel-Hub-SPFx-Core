@@ -51,6 +51,8 @@ interface IRawPage {
   NeedHelpDescription: string | null;
   NeedHelpEmail: string | null;
   SuggestedQuestions: string | null;
+  AssistantLinkText: string | null;
+  AssistantLinkUrl: { Url: string } | null;
 }
 
 interface IRawSection {
@@ -70,6 +72,9 @@ interface IRawTab {
   Id: number;
   Title: string | null;
   SectionIdId: number | null;
+  Subtitle: string | null;
+  Description: string | null;
+  Icon: string | null;
   DisplayOrder: number | null;
 }
 
@@ -112,11 +117,12 @@ const PAGE_SELECT = [
   'HeroDescription', 'HeroImageUrl', 'HeroTagline', 'InfoBannerText', 'NoteBannerText',
   'CtaTitle', 'CtaDescription', 'CtaLinkText', 'CtaLinkUrl', 'CtaPrimaryText', 'CtaPrimaryUrl',
   'ClosingBannerTitle', 'ClosingBannerDescription', 'ClosingBadges',
-  'NeedHelpTitle', 'NeedHelpSupportLabel', 'NeedHelpDescription', 'NeedHelpEmail', 'SuggestedQuestions'
+  'NeedHelpTitle', 'NeedHelpSupportLabel', 'NeedHelpDescription', 'NeedHelpEmail', 'SuggestedQuestions',
+  'AssistantLinkText', 'AssistantLinkUrl'
 ];
 
 const SECTION_SELECT = ['Id', 'Title', 'PageIdId', 'Subtitle', 'Layout', 'CardVariant', 'Body', 'Icon', 'ImageUrl', 'DisplayOrder'];
-const TAB_SELECT = ['Id', 'Title', 'SectionIdId', 'DisplayOrder'];
+const TAB_SELECT = ['Id', 'Title', 'SectionIdId', 'Subtitle', 'Description', 'Icon', 'DisplayOrder'];
 const CARD_SELECT = [
   'Id', 'Title', 'PageIdId', 'SectionIdId', 'TabIdId', 'Kind', 'Number', 'Icon', 'IconColor', 'Description', 'SubPoints',
   'TargetSlug', 'LinkUrl', 'LinkText', 'DisplayOrder'
@@ -283,6 +289,9 @@ export class PolicyService implements IPolicyService {
         const tab: IPolicyTab = {
           id: raw.Id,
           label: toStringOr(raw.Title, ''),
+          subtitle: toOptionalString(raw.Subtitle),
+          description: toOptionalString(raw.Description),
+          icon: toOptionalString(raw.Icon),
           cards: cardsByTab.get(raw.Id) ?? [],
           tables: tablesByTab.get(raw.Id) ?? [],
           displayOrder: toNumber(raw.DisplayOrder, 0)
@@ -430,6 +439,8 @@ export class PolicyService implements IPolicyService {
       needHelp,
       closingBanner,
       suggestedQuestions: this.splitLines(page.SuggestedQuestions),
+      assistantLinkUrl: sanitizeUrl(page.AssistantLinkUrl?.Url),
+      assistantLinkText: toOptionalString(page.AssistantLinkText),
       sections
     };
   }

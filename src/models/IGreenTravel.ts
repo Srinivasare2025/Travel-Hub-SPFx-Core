@@ -2,6 +2,7 @@
 export interface IGreenTravel {
   id: number;
   title: string;
+  subtitle: string | undefined;
   description: string;
   /** Bullet points, split from the newline-delimited `Points` field. */
   points: string[];

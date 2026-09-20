@@ -54,6 +54,13 @@
   margin: 0;
 }
 
+.subtitle {
+  @include th-body;
+  font-weight: var(--full-fw-semibold, 600);
+  color: var(--full-heading, #04253c);
+  margin: -12px 0 0;
+}
+
 .description {
   @include th-body;
   color: var(--full-text-muted, #4a5568);
@@ -66,23 +73,38 @@
   padding: 0;
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--full-space-3, 12px);
+  gap: var(--full-space-4, 16px);
 
   @include th-tablet-up {
     grid-template-columns: repeat(2, 1fr);
   }
+}
 
-  li {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--full-space-2, 8px);
-    @include th-body;
-  }
+.pointItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--full-space-3, 12px);
+}
 
-  svg,
-  i {
-    color: var(--full-success, #107c41);
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
+.pointNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--full-success, #107c41);
+  color: #fff;
+  font-weight: var(--full-fw-bold, 700);
+  font-size: 0.875rem;
+}
+
+.pointBody {
+  @include th-body;
+  padding-top: 3px;
+}
+
+.pointHeading {
+  color: var(--full-heading, #04253c);
 }

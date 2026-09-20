@@ -42,6 +42,11 @@ export interface IPolicyTable {
 export interface IPolicyTab {
   id: number;
   label: string;
+  /** Optional, e.g. "Less than 30 days" under the "Business Travel" tab label. */
+  subtitle: string | undefined;
+  description: string | undefined;
+  /** Optional selector icon; the tab renders as a plain pill button without it. */
+  icon: string | undefined;
   cards: IPolicyCard[];
   tables: IPolicyTable[];
   displayOrder: number;
@@ -156,6 +161,16 @@ export interface IPolicyPageContent {
   closingBanner: IPolicyClosingBanner | undefined;
   /** Decorative-only "Ask Policy Assistant" suggested questions, specific to this page. */
   suggestedQuestions: string[];
+  /**
+   * Optional "Ask a Question" CTA for the assistant block. When set, the
+   * assistant renders as icon + title/description with this link as a
+   * button (opens in a new tab) and the suggested questions below it - the
+   * layout the 6 "Explore Policy Information" sub-pages use. Leave both
+   * unset to keep the inline search-box layout (e.g. the Travel Policy
+   * landing page).
+   */
+  assistantLinkUrl: string | undefined;
+  assistantLinkText: string | undefined;
   /** Every content block on the page, in DisplayOrder. */
   sections: IPolicySection[];
 }

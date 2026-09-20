@@ -5,7 +5,7 @@ import { Logger } from './base/Logger';
 import type { ICache } from './base/MemoryCache';
 import { sanitizeUrl } from '../common/utils/urlValidation';
 import { safeColor } from '../common/utils/color';
-import { orderBy, toBool, toNumber, toStringOr } from '../common/utils/collection';
+import { orderBy, toBool, toNumber, toOptionalString, toStringOr } from '../common/utils/collection';
 
 const STEPS_LIST = 'TH_BusinessTravelSteps';
 const INFO_LIST = 'TH_BusinessTravelInfoCards';
@@ -24,6 +24,8 @@ interface IRawInfoCard {
   Id: number;
   Title: string | null;
   Description: string | null;
+  Icon: string | null;
+  TargetSlug: string | null;
   LinkUrl: { Url: string } | null;
   LinkText: string | null;
   OpenInNewTab: boolean | null;
@@ -31,7 +33,7 @@ interface IRawInfoCard {
 }
 
 const STEP_SELECT = ['Id', 'Title', 'Description', 'Number', 'BackgroundColor', 'DisplayOrder'];
-const INFO_SELECT = ['Id', 'Title', 'Description', 'LinkUrl', 'LinkText', 'OpenInNewTab', 'DisplayOrder'];
+const INFO_SELECT = ['Id', 'Title', 'Description', 'Icon', 'TargetSlug', 'LinkUrl', 'LinkText', 'OpenInNewTab', 'DisplayOrder'];
 
 export interface IBusinessTravelService {
   /** The 5 process-step cards (Raise Request, Approval, Book, Travel, Expense, …). */
@@ -96,6 +98,8 @@ export class BusinessTravelService implements IBusinessTravelService {
       id: item.Id,
       title: toStringOr(item.Title, 'Untitled'),
       description: toStringOr(item.Description, ''),
+      icon: toOptionalString(item.Icon),
+      targetSlug: toOptionalString(item.TargetSlug)?.trim().toLowerCase(),
       linkUrl,
       linkText: toStringOr(item.LinkText, 'View'),
       openInNewTab: toBool(item.OpenInNewTab, false),

@@ -10,11 +10,14 @@ export interface IBusinessTravelStep {
   displayOrder: number;
 }
 
-/** One of the 3 info cards below the steps, e.g. "Policy reminders" (from TH_BusinessTravelInfoCards). */
+/** One of the info cards below the steps, e.g. "Policy reminders" or "Employee Relocation" (from TH_BusinessTravelInfoCards). */
 export interface IBusinessTravelInfoCard {
   id: number;
   title: string;
   description: string;
+  icon: string | undefined;
+  /** In-app navigation to a TH_PolicyPages row (e.g. "employee-relocation") - wins over `linkUrl` when both are set. */
+  targetSlug: string | undefined;
   /** Validated destination for the "View" link; `undefined` hides the link. */
   linkUrl: string | undefined;
   linkText: string;

@@ -267,16 +267,22 @@
     }
 
     const infoCards = [
-      ['Policy reminders', 'A quick refresher on approval limits, per-diem rules and booking classes before you travel.', 'View'],
-      ['Useful Documents', 'Download travel request templates, expense forms and the mobile app guide.', 'View'],
-      ['Need further help?', 'Reach the Travel Care team for support with requests, approvals or urgent changes.', 'View']
+      ['Policy reminders', 'A quick refresher on approval limits, per-diem rules and booking classes before you travel.', 'Info', undefined, 'View'],
+      ['Useful Documents', 'Download travel request templates, expense forms and the mobile app guide.', 'KnowledgeArticle', undefined, 'View'],
+      ['Need further help?', 'Reach the Travel Care team for support with requests, approvals or urgent changes.', 'Headset', undefined, 'View'],
+      // Employee/Family Relocation - separate TH_PolicyPages rows (see
+      // seedRelocationPages()), navigated to in-app via TargetSlug.
+      ['Employee Relocation', 'Relocating between Riyadh Headquarters and a Project Site? Explore your travel entitlement, shipping assistance and mobilization requirements.', 'HomeSolid', 'employee-relocation', 'View'],
+      ['Family Relocation', 'Explore relocation benefits available for eligible new joiners and accompanying dependents.', 'Family', 'family-relocation', 'View']
     ];
     let infoOrder = 1;
-    for (const [title, desc, linkText] of infoCards) {
+    for (const [title, desc, icon, targetSlug, linkText] of infoCards) {
       await addItem('TH_BusinessTravelInfoCards', {
         Title: title,
         Description: desc,
-        LinkUrl: link('#'),
+        Icon: icon,
+        TargetSlug: targetSlug || null,
+        LinkUrl: targetSlug ? null : link('#'),
         LinkText: linkText,
         OpenInNewTab: false,
         DisplayOrder: infoOrder++,
@@ -671,7 +677,10 @@
       {
         kind: 'Category', title: 'Business Travel Policy', icon: 'Airplane',
         description: 'Guidance for approved business travel of less than 30 days, covering travel arrangements, entitlements, expenses and reimbursement requirements.',
-        linkText: 'View Policy', linkUrl: '#'
+        // Reserved TargetSlug value - navigates to the dedicated Business
+        // Travel hub screen (not a TH_PolicyPages row) - see
+        // BUSINESS_TRAVEL_SLUG in PolicyCardSections.tsx.
+        linkText: 'View Policy', targetSlug: 'business-travel'
       },
       {
         kind: 'Category', title: 'Business Assignment Policy', icon: 'Suitcase',
@@ -706,21 +715,26 @@
     });
     await addPolicyCards('SectionIdId', highlightSectionId, [
       {
+        // First 2 SubPoints lines are the mini-table markup (see
+        // parseHighlightSubPoints.ts): `##Header|Header` then `Cell|Cell`
+        // rows, followed by a `!!Label|Text` callout for the policy note.
         kind: 'Highlight', title: 'Plan Before Your Travel', icon: 'Calendar',
         description: 'To ensure adequate time for travel arrangements, employees shall submit travel requests as follows:',
         subPoints: [
-          'GCC Countries: at least 5 business days before travel',
-          'Rest of the World: at least 10 business days before travel',
-          'Conferences & Events: at least 30 days before travel',
-          "Policy note: business travel shall not normally be combined with an employee's annual vacation. However, this may be permitted with the approval of the Group Chief Administrative Officer."
+          '##Travel Type|Submit Request',
+          'GCC Countries|At least 5 business days before travel',
+          'Rest of the World|At least 10 business days before travel',
+          'Conferences & Events|At least 30 days before travel',
+          "!!Policy note:|Business travel shall not normally be combined with an employee's annual vacation. However, this may be permitted with the approval of the Group Chief Administrative Officer."
         ]
       },
       {
         kind: 'Highlight', title: 'Exceeding Accommodation Cap Limits', icon: 'Bed',
         description: 'Accommodation above the applicable policy cap requires an approved exception.',
         subPoints: [
-          'Up to 25% over cap: GCAO Approval',
-          'Above 25% over cap: GCEO Approval',
+          '##Excess Over Cap|Required Approval',
+          'Up to 25%|GCAO Approval',
+          'Above 25%|GCEO Approval',
           'You may use your daily transportation allowance, or part of it, to increase the hotel cap, provided the overall daily transportation amount is not exceeded.',
           'Raise accommodation-cap exception requests through SAP Concur.'
         ]
@@ -906,40 +920,43 @@
       SuggestedQuestions: ['How early should I submit my travel request?', 'Who approves my business trip?', 'What if I need an urgent travel change?'].join('\n')
     });
     const planningTableId = await addPolicySection(planningId, {
-      layout: 'Table', order: 1, title: 'Plan Before You Travel',
+      layout: 'Table', order: 1, title: '1. Plan Before You Travel',
       subtitle: "All business trips require prior authorization from the employee's Manager. To ensure adequate time for travel arrangements, employees shall submit travel requests as follows:"
     });
     await addPolicyTables('SectionIdId', planningTableId, [
       { headers: ['Travel Type', 'Submit Request'], rows: [
-        ['GCC Countries', 'At least 5 business days before travel'],
-        ['Rest of the World', 'At least 10 business days before travel'],
-        ['International Conferences & Events', 'At least 30 days before travel']
+        ['MapPin::GCC Countries', 'At least 5 business days before travel'],
+        ['Globe::Rest of the World', 'At least 10 business days before travel'],
+        ['Group::International Conferences & Events', 'At least 30 days before travel']
       ] }
     ]);
     await addPolicySection(planningId, {
-      layout: 'Callout', order: 2, icon: 'Lightbulb',
-      body: "Plan Early for Better Value: employees should request travel arrangements with RSG's travel agency as far in advance as possible in order to obtain the lowest possible cost/fare."
+      layout: 'Callout', order: 2, icon: 'Info',
+      body: "**Plan Early for Better Value:** employees should request travel arrangements with RSG's travel agency as far in advance as possible in order to obtain the lowest possible cost/fare."
     });
-    const urgentTableId = await addPolicySection(planningId, { layout: 'Table', order: 3, title: 'Urgent Changes to Travel Plans' });
+    const urgentTableId = await addPolicySection(planningId, { layout: 'Table', order: 3, title: '2. Urgent Changes to Travel Plans' });
     await addPolicyTables('SectionIdId', urgentTableId, [
       { headers: ['Travel Type', 'Urgent Change Request'], rows: [
-        ['GCC Countries', 'At least 3 business days before travel'],
-        ['Rest of the World', 'At least 5 business days before travel'],
-        ['International Conferences & Events', 'At least 15 days before travel']
+        ['MapPin::GCC Countries', 'At least 3 business days before travel'],
+        ['Globe::Rest of the World', 'At least 5 business days before travel'],
+        ['Group::International Conferences & Events', 'At least 15 days before travel']
       ] }
     ]);
     await addPolicySection(planningId, {
-      layout: 'Callout', order: 4, icon: 'Warning',
-      body: 'Exception: travel-plan exceptions require approval from the Group Chief Administrative Officer (GCAO).'
+      layout: 'Callout', order: 4, icon: 'Info',
+      body: '**Exception:** Travel-plan exceptions require approval from the Group Chief Administrative Officer (GCAO).'
     });
-    const beforeArrangingId = await addPolicySection(planningId, { layout: 'CardsGrid', cardVariant: 'Highlight', order: 5, title: 'Before Making Travel Arrangements' });
+    const beforeArrangingId = await addPolicySection(planningId, {
+      layout: 'CardsGrid', cardVariant: 'Highlight', order: 5, title: '3. Before Making Travel Arrangements',
+      subtitle: 'Ensure the following steps are completed before proceeding with your travel:'
+    });
     await addPolicyCards('SectionIdId', beforeArrangingId, [
       { kind: 'Highlight', title: 'Get Manager Approval', icon: 'AccountActivity', description: 'Obtain prior authorization from your Manager before proceeding with business travel.' },
       { kind: 'Highlight', title: 'Check Visa Requirements', icon: 'Certificate', description: 'Employees are responsible for verifying applicable entry visa requirements. RSG will cover required visa documentation costs in accordance with the policy.' },
       { kind: 'Highlight', title: 'Use the Approved Travel Channel', icon: 'Airplane', description: 'Once approved, proceed with travel arrangements through the approved RSG travel process/channel.' }
     ]);
     await addPolicySection(planningId, {
-      layout: 'Callout', order: 6, title: 'Business Travel + Annual Vacation', icon: 'Info',
+      layout: 'Callout', order: 6, title: '4. Business Travel + Annual Vacation', icon: 'Sunny',
       body: "Business travel shall not normally be combined with an employee's annual vacation. However, it may be permitted with approval from the Group Chief Administrative Officer (GCAO), subject to the applicable policy conditions."
     });
 
@@ -1132,6 +1149,164 @@
         ['Required documentation understood', 'Yes']
       ] }
     ]);
+
+    // -------------------------------------------------------------------
+    // Employee Relocation / Family Relocation - reached from the Business
+    // Travel hub screen (TH_BusinessTravelInfoCards' TargetSlug, see
+    // seedBusinessTravel()), not from Travel Policy's "Explore Policy
+    // Information" - so ParentSlug/ParentTitle point at the reserved
+    // "business-travel" slug (BUSINESS_TRAVEL_SLUG in PolicyCardSections.tsx)
+    // instead of 'travel-policy', and there is no ParentSectionLabel or
+    // SuggestedQuestions (this content baseline is from the "Business Travel
+    // Policy - Home + 2 Sub Pages" mockup, not the Explore Policy Information one).
+    // -------------------------------------------------------------------
+    const employeeRelocationId = await addItem('TH_PolicyPages', {
+      Title: 'Employee Relocation',
+      Slug: 'employee-relocation',
+      ParentSlug: 'business-travel',
+      ParentTitle: 'Business Travel',
+      HeroIcon: 'HomeSolid',
+      HeroTitle: 'Employee Relocation',
+      HeroSubtitle: 'Riyadh Headquarters ↔ Project Site',
+      HeroDescription: "New location. New opportunities. We're with you all the way.",
+      HeroImageUrl: link(img('policy-employee-relocation-hero', 1600, 500)),
+      HeroTagline: 'Same Team\nNew Horizons',
+      NeedHelpTitle: 'Contact HR Support',
+      NeedHelpSupportLabel: 'Onboard',
+      NeedHelpDescription: 'For more details, see the Employee Handbook, or contact HR Support.',
+      NeedHelpEmail: 'onboarding@RedSeaGlobal.com',
+      ClosingBannerTitle: 'People move the world forward.',
+      ClosingBannerDescription: 'We make the journey smoother. A more connected and sustainable tomorrow.',
+      ClosingBadges: ['Our People', 'Our Planet', 'Our Future'].join('\n'),
+      DisplayOrder: 1,
+      IsActive: true
+    });
+
+    const employeeOverviewId = await addPolicySection(employeeRelocationId, {
+      layout: 'CardsGrid', cardVariant: 'Highlight', order: 1, title: 'Support While You Relocate'
+    });
+    await addPolicyCards('SectionIdId', employeeOverviewId, [
+      {
+        kind: 'Highlight', title: 'Job Mobility', icon: 'ConnectContacts',
+        description: 'In the event of a relocation between Riyadh Headquarters and Project Site, your HRBP will be your primary point of contact and will guide you through your relocation journey.'
+      },
+      {
+        kind: 'Highlight', title: 'Site Allowance', icon: 'Money',
+        description: 'To support with the cost of flying to your loved ones, all site-based colleagues whose point of origin is not Umluj, Dhiba or Al Wajh cities, will receive the Site Allowance, a cash allowance paid monthly.'
+      }
+    ]);
+
+    await addPolicySection(employeeRelocationId, {
+      layout: 'Callout', order: 2, icon: 'Info',
+      body: '**Flight Tickets:** Once the mobilization date is confirmed, relocating employees need to book their relocation flight ticket through SAP Concur. In case of unavailability of the eligible travel class, the employee can be upgraded to Business Class, subject to HR approval.'
+    });
+
+    const employeeFlightTableId = await addPolicySection(employeeRelocationId, {
+      layout: 'Table', order: 3, title: 'Employee Relocation - Flight Ticket Class',
+      subtitle: 'Entitlement for direct flight bookings via RSI/EJH.'
+    });
+    await addPolicyTables('SectionIdId', employeeFlightTableId, [
+      { headers: ['Grade', 'Entitlement'], rows: [
+        ['C-Level', 'Business Class ticket'],
+        ['Executive Director / Group Head', 'Business Class ticket'],
+        ['Senior Director / Director', 'Economy Class ticket'],
+        ['Associate Director / Senior Manager', 'Economy Class ticket'],
+        ['Manager and below', 'Economy Class ticket']
+      ] }
+    ]);
+
+    const employeeShippingId = await addPolicySection(employeeRelocationId, { layout: 'CardsGrid', cardVariant: 'Highlight', order: 4 });
+    await addPolicyCards('SectionIdId', employeeShippingId, [
+      {
+        kind: 'Highlight', title: 'Shipping Assistance', icon: 'Package',
+        description: 'The Company will provide Shipping Assistance to cover the cost of freight of your personal items from Headquarters to Project Site or vice versa up to SAR 25,000 based on submission of actual paid receipts, along with a copy of the bank transaction as proof of payment. Cash payments will not be accepted.',
+        subPoints: ['You will arrange for your shipment directly with your preferred shipping partner and submit your receipts through SAP SuccessFactors for reimbursement.']
+      },
+      {
+        kind: 'Highlight', title: 'Transportation', icon: 'Car',
+        description: 'The Facilities Management team will arrange the airport pick-up to the assigned accommodation drop-off.',
+        subPoints: ['!!Note:|Airport pick up and drop off from and to Yanbu or Al Wajh should be requested through Base Camp Helpdesk (IT Help Desk), a minimum of 48 hours prior to the arrival or departure date. Personal cars are welcomed on-site.']
+      },
+      {
+        kind: 'Highlight', title: 'Work Assets Transportation', icon: 'Devices3',
+        description: "Relocating employees' work assets such as monitor and docking station will be shipped to site by our Administration team, taking two to three days to reach the site."
+      }
+    ]);
+
+    await addPolicySection(employeeRelocationId, {
+      layout: 'Callout', order: 5, title: 'Effective Date', icon: 'Calendar',
+      body: 'The effective date for the relocation will be considered as the day of arrival to site or to our Riyadh offices and will reflect on SAP SuccessFactors.'
+    });
+
+    const familyRelocationId = await addItem('TH_PolicyPages', {
+      Title: 'Family Relocation',
+      Slug: 'family-relocation',
+      ParentSlug: 'business-travel',
+      ParentTitle: 'Business Travel',
+      HeroIcon: 'Family',
+      HeroTitle: 'Family Relocation',
+      HeroSubtitle: 'A Smooth Move for You and Your Family',
+      HeroDescription: "New beginnings. Greater opportunities. We're with you all the way.",
+      HeroImageUrl: link(img('policy-family-relocation-hero', 1600, 500)),
+      HeroTagline: 'New Home\nNew Opportunities',
+      NeedHelpTitle: 'Contact HR Support',
+      NeedHelpSupportLabel: 'Onboard',
+      NeedHelpDescription: 'For more details, see the Employee Handbook, or contact HR Support.',
+      NeedHelpEmail: 'onboarding@RedSeaGlobal.com',
+      ClosingBannerTitle: 'People move the world forward.',
+      ClosingBannerDescription: 'We make the journey smoother. A more connected and sustainable tomorrow.',
+      ClosingBadges: ['Our People', 'Our Planet', 'Our Future'].join('\n'),
+      DisplayOrder: 2,
+      IsActive: true
+    });
+
+    const relocationTypesId = await addPolicySection(familyRelocationId, {
+      layout: 'CardsGrid', cardVariant: 'Highlight', order: 1, title: 'Types of Relocation',
+      subtitle: 'We have two types of relocations:'
+    });
+    await addPolicyCards('SectionIdId', relocationTypesId, [
+      { kind: 'Highlight', title: 'Domestic', icon: 'HomeSolid', description: 'Relocation of a new hire moving within KSA.' },
+      { kind: 'Highlight', title: 'International', icon: 'Globe', description: 'Relocation of a new hire moving from outside KSA.' }
+    ]);
+
+    const familyFlightTableId = await addPolicySection(familyRelocationId, {
+      layout: 'Table', order: 2, title: 'Flight Tickets',
+      subtitle: 'We provide flight tickets for new joiners and accompanying dependents eligible for domestic and international relocation, from the nearest airport from the point of origin to their relocation destination in the Kingdom as follows:'
+    });
+    await addPolicyTables('SectionIdId', familyFlightTableId, [
+      { headers: ['Grade', 'Class of Travel'], rows: [
+        ['C-Level to Director', 'Business Class'],
+        ['Associate Director and below', 'Economy Class']
+      ] }
+    ]);
+
+    const familyShippingTableId = await addPolicySection(familyRelocationId, {
+      layout: 'Table', order: 3, title: 'Shipping Assistance',
+      subtitle: 'All domestic and international new joiners relocating from outside their employment location will benefit from Shipping Assistance to cover the cost of freight of personal items to their employment location upon joining, as follows:'
+    });
+    await addPolicyTables('SectionIdId', familyShippingTableId, [
+      { headers: ['Relocation Type', 'Maximum Shipping Assistance Allowance'], rows: [
+        ['Domestic', 'SAR 25,000'],
+        ['International', 'SAR 75,000']
+      ] }
+    ]);
+    await addPolicySection(familyRelocationId, {
+      layout: 'Callout', order: 4, icon: 'Info',
+      body: 'You will be eligible for reimbursement of expenses related to the shipment of your personal effects and household goods, upon submission of actual receipts via SAP SuccessFactors within the first nine months of your joining date. Pro-format invoices and cash payment will not be accepted.'
+    });
+
+    await addPolicySection(familyRelocationId, {
+      layout: 'Paragraph', order: 5, title: 'Temporary Accommodation', icon: 'CityNext',
+      body: [
+        'We will provide temporary accommodation assistance to new joiners and their accompanying eligible dependents from their first employment day, for a maximum of 30 nights.',
+        'Employees and accompanying dependents relocating from Project Site to Riyadh will be provided with accommodation up to two weeks.'
+      ]
+    });
+
+    await addPolicySection(familyRelocationId, {
+      layout: 'Callout', order: 6, title: 'Important Notes', icon: 'Warning',
+      body: 'New joiners hired from Riyadh and joining our Riyadh Headquarters do not qualify for relocation. Similarly, new joiners to be located at site and hired from Umluj, Dhiba or Al Wajh do not qualify for relocation either. Foreign currency transaction fees are not included in any benefits provided.'
+    });
   }
 
   async function seedFooter() {

@@ -19,16 +19,39 @@
  *   with an optional bold leading label.
  * - `@IconName|Sub-heading|Description` — a small icon + bold sub-heading,
  *   with a description below (e.g. "Less than 30 days").
+ * - `@IconName|Bullet text` (only 2 parts) — a plain bullet with its own
+ *   icon instead of the usual disc marker, e.g. a responsibilities list
+ *   where every line has a different icon.
  * - Any other line — a plain bullet, unless *every* line in the card matches
  *   `1. …` / `1) …` (and none use the markers above), in which case the whole
  *   list renders as colored numbered circles instead of bullets.
+ *
+ * A leading `%%Tag text` line (checked separately, via `extractTag` below,
+ * before the rest is parsed) is pulled out as a small pill badge for the
+ * card's header, e.g. "Traveler" / "Approver" — it never appears in the
+ * card body itself.
  */
 export type ParsedSubPoint =
   | { kind: 'bullet'; text: string }
+  | { kind: 'iconBullet'; icon: string; text: string }
   | { kind: 'table'; headers: string[]; rows: string[][] }
   | { kind: 'callout'; label: string | undefined; text: string }
   | { kind: 'iconBlock'; icon: string; heading: string; text: string }
   | { kind: 'numbered'; items: string[] };
+
+/**
+ * Pulls a leading `%%Tag text` line out of a card's `SubPoints` lines (a
+ * header badge, e.g. "Traveler" / "Approver"), returning it separately from
+ * the remaining lines to parse normally. `undefined` when no such line is
+ * present.
+ */
+export function extractTag(lines: string[]): { tag: string | undefined; rest: string[] } {
+  const index = lines.findIndex((l) => l.startsWith('%%'));
+  if (index === -1) {
+    return { tag: undefined, rest: lines };
+  }
+  return { tag: lines[index].slice(2).trim(), rest: [...lines.slice(0, index), ...lines.slice(index + 1)] };
+}
 
 const NUMBERED_RE = /^\d+[.)]\s+(.*)$/;
 
@@ -58,7 +81,10 @@ export function parseHighlightSubPoints(lines: string[]): ParsedSubPoint[] {
       activeTable = { headers: line.slice(2).split('|').map((c) => c.trim()), rows: [] };
       continue;
     }
-    if (line.includes('|') && activeTable !== undefined) {
+    // A `|` alone isn't enough - a `!!`/`@` line can legitimately contain one
+    // too (e.g. `!!Policy note:|text`), and must still be caught by its own
+    // marker check below rather than being swallowed as a stray table row.
+    if (line.includes('|') && activeTable !== undefined && !line.startsWith('!!') && !line.startsWith('@')) {
       activeTable.rows.push(line.split('|').map((c) => c.trim()));
       continue;
     }
@@ -79,6 +105,10 @@ export function parseHighlightSubPoints(lines: string[]): ParsedSubPoint[] {
       const parts = line.slice(1).split('|').map((p) => p.trim());
       if (parts.length >= 3) {
         result.push({ kind: 'iconBlock', icon: parts[0], heading: parts[1], text: parts.slice(2).join('|') });
+        continue;
+      }
+      if (parts.length === 2) {
+        result.push({ kind: 'iconBullet', icon: parts[0], text: parts[1] });
         continue;
       }
     }

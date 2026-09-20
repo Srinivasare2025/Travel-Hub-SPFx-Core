@@ -3,7 +3,7 @@ import { Icon } from '@fluentui/react/lib/Icon';
 import { useNavigation } from '../../../../common/context/NavigationContext';
 import { ImageWithFallback } from '../../../../common/components';
 import { IPolicyCard, IPolicySection, IPolicyTable, IPolicyTab } from '../../../../models';
-import { parseHighlightSubPoints, ParsedSubPoint } from './parseHighlightSubPoints';
+import { parseHighlightSubPoints, extractTag, ParsedSubPoint } from './parseHighlightSubPoints';
 import styles from './PolicyPageScreen.module.scss';
 
 /**
@@ -12,14 +12,57 @@ import styles from './PolicyPageScreen.module.scss';
  * section title so every other `cardVariant: 'highlight'` section elsewhere
  * (subpages not covered by this pass) keeps rendering exactly as before.
  */
-const ICON_LEFT_HEADER_SECTIONS: ReadonlySet<string> = new Set(['Key Policy Highlights', 'Which Policy Applies to Your Travel?']);
+const ICON_LEFT_HEADER_SECTIONS: ReadonlySet<string> = new Set([
+  'Key Policy Highlights',
+  'Which Policy Applies to Your Travel?',
+  'How We Approach Business Travel',
+  'Shared Responsibility',
+  'Audit & Accountability',
+  'Important Reminder',
+  'Support While You Relocate',
+  'Types of Relocation'
+]);
+
+/** Within `ICON_LEFT_HEADER_SECTIONS`, sections whose card title also gets a colored underline (from `card.iconColor`) below it, e.g. Guiding Principles' 6 approach cards. */
+const UNDERLINE_TITLE_SECTIONS: ReadonlySet<string> = new Set(['How We Approach Business Travel']);
+
+const SECTION_NUMBER_RE = /^(\d+)[.)]\s*(.+)$/;
+
+/**
+ * Opt-in section number badge: a section whose Title is typed as "1. Shared
+ * Responsibility" (the way a content editor would naturally write it, no
+ * schema change) renders a numbered circle badge followed by the rest of
+ * the title; any other title renders as plain text.
+ */
+function renderSectionTitle(title: string): React.ReactNode {
+  const match = SECTION_NUMBER_RE.exec(title);
+  if (match === null) {
+    return title;
+  }
+  return (
+    <>
+      <span className={styles.sectionNumber} aria-hidden="true">
+        {match[1]}
+      </span>
+      {match[2]}
+    </>
+  );
+}
+
+/** The reserved TargetSlug value that links a card to the dedicated Business Travel hub screen instead of a Policy page - see BUSINESS_TRAVEL_SLUG usage in PolicyPageScreen.tsx too. */
+export const BUSINESS_TRAVEL_SLUG = 'business-travel';
 
 /** A card that navigates in-app (TargetSlug) takes priority over an external LinkUrl. */
 function CardLink({ card, children, className }: { card: IPolicyCard; children: React.ReactNode; className: string }): React.ReactElement {
   const { navigate } = useNavigation();
   if (card.targetSlug !== undefined) {
+    const slug = card.targetSlug;
     return (
-      <button type="button" className={className} onClick={() => navigate({ kind: 'policyPage', slug: card.targetSlug as string })}>
+      <button
+        type="button"
+        className={className}
+        onClick={() => navigate(slug === BUSINESS_TRAVEL_SLUG ? { kind: 'businessTravel' } : { kind: 'policyPage', slug })}
+      >
         {children}
       </button>
     );
@@ -80,6 +123,26 @@ export const InfoCards: React.FC<{ cards: IPolicyCard[] }> = ({ cards }) => {
   );
 };
 
+const TABLE_CELL_ICON_RE = /^([A-Za-z]+)::(.+)$/;
+
+/**
+ * A table's first-column cell. Written as plain text, or as `IconName::Text`
+ * (e.g. `MapPin::GCC Countries`) to render a small icon before the text -
+ * e.g. a per-Travel-Type icon in "Plan Before Your Travel"'s table. No
+ * schema change (still the same `CellValues`/mini-table row text).
+ */
+const TableCell: React.FC<{ value: string }> = ({ value }) => {
+  const match = TABLE_CELL_ICON_RE.exec(value);
+  if (match === null) {
+    return <>{value}</>;
+  }
+  return (
+    <span className={styles.tableCellIconed}>
+      <Icon iconName={match[1]} aria-hidden="true" /> {match[2]}
+    </span>
+  );
+};
+
 /** One parsed `SubPoints` block - see parseHighlightSubPoints.ts. */
 const SubPointsBlocks: React.FC<{ subPoints: string[] }> = ({ subPoints }) => {
   if (subPoints.length === 0) {
@@ -87,16 +150,24 @@ const SubPointsBlocks: React.FC<{ subPoints: string[] }> = ({ subPoints }) => {
   }
   const blocks = parseHighlightSubPoints(subPoints);
 
-  const bullets = blocks.filter((b): b is Extract<ParsedSubPoint, { kind: 'bullet' }> => b.kind === 'bullet');
-  const nonBullets = blocks.filter((b) => b.kind !== 'bullet');
+  const bullets = blocks.filter(
+    (b): b is Extract<ParsedSubPoint, { kind: 'bullet' | 'iconBullet' }> => b.kind === 'bullet' || b.kind === 'iconBullet'
+  );
+  const nonBullets = blocks.filter((b) => b.kind !== 'bullet' && b.kind !== 'iconBullet');
 
   return (
     <>
       {bullets.length > 0 && (
         <ul className={styles.highlightSubPoints}>
-          {bullets.map((b, index) => (
-            <li key={index}>{b.text}</li>
-          ))}
+          {bullets.map((b, index) =>
+            b.kind === 'iconBullet' ? (
+              <li key={index} className={styles.highlightSubPointIconed}>
+                <Icon iconName={b.icon} aria-hidden="true" /> {b.text}
+              </li>
+            ) : (
+              <li key={index}>{b.text}</li>
+            )
+          )}
         </ul>
       )}
       {nonBullets.map((block, index) => {
@@ -117,7 +188,7 @@ const SubPointsBlocks: React.FC<{ subPoints: string[] }> = ({ subPoints }) => {
                   {block.rows.map((row, r) => (
                     <tr key={r}>
                       {row.map((cell, c) => (
-                        <td key={c}>{cell}</td>
+                        <td key={c}>{c === 0 ? <TableCell value={cell} /> : cell}</td>
                       ))}
                     </tr>
                   ))}
@@ -170,30 +241,41 @@ export const HighlightCards: React.FC<{ cards: IPolicyCard[]; sectionTitle?: str
     return null;
   }
   const iconLeft = sectionTitle !== undefined && ICON_LEFT_HEADER_SECTIONS.has(sectionTitle);
+  const underlineTitle = iconLeft && sectionTitle !== undefined && UNDERLINE_TITLE_SECTIONS.has(sectionTitle);
 
   return (
     <div className={styles.highlightGrid}>
-      {cards.map((card) => (
-        <div key={card.id} className={styles.highlightCard}>
-          {iconLeft ? (
-            <div className={styles.highlightHeaderRow}>
-              <span className={styles.highlightIcon} style={card.iconColor !== undefined ? { backgroundColor: card.iconColor } : undefined} aria-hidden="true">
-                <Icon iconName={card.icon} />
-              </span>
-              <h3 className={styles.highlightTitle}>{card.title}</h3>
-            </div>
-          ) : (
-            <>
-              <span className={styles.highlightIcon} style={card.iconColor !== undefined ? { backgroundColor: card.iconColor } : undefined} aria-hidden="true">
-                <Icon iconName={card.icon} />
-              </span>
-              <h3 className={styles.highlightTitle}>{card.title}</h3>
-            </>
-          )}
-          {card.description.length > 0 && <p className={styles.highlightDescription}>{card.description}</p>}
-          <SubPointsBlocks subPoints={card.subPoints} />
-        </div>
-      ))}
+      {cards.map((card) => {
+        // A leading `%%Tag` line in SubPoints (e.g. "Traveler" / "Approver")
+        // becomes a header badge instead of body text - see parseHighlightSubPoints.ts.
+        const { tag, rest } = extractTag(card.subPoints);
+        const titleClassName = underlineTitle ? `${styles.highlightTitle} ${styles.highlightTitleUnderline}` : styles.highlightTitle;
+        const titleStyle = underlineTitle && card.iconColor !== undefined ? { borderColor: card.iconColor } : undefined;
+        return (
+          <div key={card.id} className={styles.highlightCard}>
+            {tag !== undefined && <span className={styles.highlightTag}>{tag}</span>}
+            {iconLeft ? (
+              <div className={styles.highlightHeaderRow}>
+                <span className={styles.highlightIcon} style={card.iconColor !== undefined ? { backgroundColor: card.iconColor } : undefined} aria-hidden="true">
+                  <Icon iconName={card.icon} />
+                </span>
+                <h3 className={titleClassName} style={titleStyle}>
+                  {card.title}
+                </h3>
+              </div>
+            ) : (
+              <>
+                <span className={styles.highlightIcon} style={card.iconColor !== undefined ? { backgroundColor: card.iconColor } : undefined} aria-hidden="true">
+                  <Icon iconName={card.icon} />
+                </span>
+                <h3 className={styles.highlightTitle}>{card.title}</h3>
+              </>
+            )}
+            {card.description.length > 0 && <p className={styles.highlightDescription}>{card.description}</p>}
+            <SubPointsBlocks subPoints={rest} />
+          </div>
+        );
+      })}
     </div>
   );
 };
@@ -207,19 +289,23 @@ export const RuleCards: React.FC<{ cards: IPolicyCard[] }> = ({ cards }) => {
     <div className={styles.ruleGrid}>
       {cards.map((card) => (
         <div key={card.id} className={styles.ruleCard}>
-          <span className={styles.ruleNumber} style={card.iconColor !== undefined ? { backgroundColor: card.iconColor } : undefined}>
-            {card.number ?? '•'}
-          </span>
+          <div className={styles.ruleBadgeGroup}>
+            <span className={styles.ruleNumber} style={card.iconColor !== undefined ? { backgroundColor: card.iconColor } : undefined}>
+              {card.number ?? '•'}
+            </span>
+            <span className={styles.ruleIcon} aria-hidden="true">
+              <Icon iconName={card.icon} />
+            </span>
+          </div>
           <div className={styles.ruleBody}>
             <h3 className={styles.ruleTitle}>{card.title}</h3>
             {card.description.length > 0 && <p className={styles.ruleDescription}>{card.description}</p>}
-            {card.subPoints.length > 0 && (
-              <ul className={styles.ruleSubPoints}>
-                {card.subPoints.map((point, index) => (
-                  <li key={index}>{point}</li>
-                ))}
-              </ul>
-            )}
+            {/* Same SubPoints markup convention as HighlightCards (see
+                parseHighlightSubPoints.ts) - lets a Rule card's sub-bullets
+                opt into a mini table, a callout or an icon+heading block,
+                e.g. "Seasonal periods include:" (`!!Seasonal periods
+                include:` followed by its bullet lines). */}
+            <SubPointsBlocks subPoints={card.subPoints} />
           </div>
         </div>
       ))}
@@ -227,7 +313,13 @@ export const RuleCards: React.FC<{ cards: IPolicyCard[] }> = ({ cards }) => {
   );
 };
 
-/** The "Ask HR" style numbered process under the Need Help row, or any `processSteps` section. */
+/**
+ * The "Ask HR" style numbered process under the Need Help row, or any
+ * `processSteps` section, e.g. "Compliance Starts Before Travel". A card
+ * with `Number` set (Ask HR) shows that number badge; a card left without
+ * one (a general process-steps section) shows its icon in the badge
+ * instead, e.g. "Plan Early" → "Obtain Approval" → "Use Approved Channels".
+ */
 export const HelpSteps: React.FC<{ cards: IPolicyCard[] }> = ({ cards }) => {
   if (cards.length === 0) {
     return null;
@@ -237,7 +329,9 @@ export const HelpSteps: React.FC<{ cards: IPolicyCard[] }> = ({ cards }) => {
       {cards.map((card, index) => (
         <React.Fragment key={card.id}>
           <li className={styles.helpStep}>
-            <span className={styles.helpStepNumber}>{card.number ?? index + 1}</span>
+            <span className={styles.helpStepNumber}>
+              {card.number !== undefined ? card.number : <Icon iconName={card.icon} aria-hidden="true" />}
+            </span>
             <div>
               <div className={styles.helpStepTitle}>{card.title}</div>
               {card.description.length > 0 && <div className={styles.helpStepDescription}>{card.description}</div>}
@@ -292,7 +386,7 @@ const TableBlock: React.FC<{ tables: IPolicyTable[] }> = ({ tables }) => {
                 {table.rows.map((row) => (
                   <tr key={row.id}>
                     {row.cells.map((cell, index) => (
-                      <td key={index}>{cell}</td>
+                      <td key={index}>{index === 0 ? <TableCell value={cell} /> : cell}</td>
                     ))}
                   </tr>
                 ))}
@@ -320,36 +414,80 @@ const TabsBlock: React.FC<{ tabs: IPolicyTab[] }> = ({ tabs }) => {
     return null;
   }
   const active = tabs.find((t) => t.id === activeId) ?? tabs[0];
+  // A tab with an Icon set (e.g. Travel Entitlement's "Select Your Travel
+  // Type") renders as a rich icon+title/subtitle/description+arrow selector
+  // card instead of a plain label pill - opt-in, so a section that never
+  // sets Icon on its tabs keeps the plain pill row unchanged.
+  const rich = tabs.some((t) => t.icon !== undefined);
   return (
     <div>
-      <div className={styles.tabList} role="tablist">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            role="tab"
-            aria-selected={tab.id === active.id}
-            className={`${styles.tabButton} ${tab.id === active.id ? styles.tabButtonActive : ''}`}
-            onClick={() => setActiveId(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className={rich ? styles.tabSelectorList : styles.tabList} role="tablist">
+        {tabs.map((tab) =>
+          rich ? (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={tab.id === active.id}
+              className={`${styles.tabSelector} ${tab.id === active.id ? styles.tabSelectorActive : ''}`}
+              onClick={() => setActiveId(tab.id)}
+            >
+              {tab.icon !== undefined && (
+                <span className={styles.tabSelectorIcon} aria-hidden="true">
+                  <Icon iconName={tab.icon} />
+                </span>
+              )}
+              <span className={styles.tabSelectorBody}>
+                <span className={styles.tabSelectorTitle}>{tab.label}</span>
+                {tab.subtitle !== undefined && <span className={styles.tabSelectorSubtitle}>{tab.subtitle}</span>}
+                {tab.description !== undefined && <span className={styles.tabSelectorDescription}>{tab.description}</span>}
+              </span>
+              <Icon iconName="ChevronRight" className={styles.tabSelectorArrow} aria-hidden="true" />
+            </button>
+          ) : (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={tab.id === active.id}
+              className={`${styles.tabButton} ${tab.id === active.id ? styles.tabButtonActive : ''}`}
+              onClick={() => setActiveId(tab.id)}
+            >
+              {tab.label}
+            </button>
+          )
+        )}
       </div>
       <TabPanel tab={active} />
     </div>
   );
 };
 
-/** A callout/info-box notice inline within page content, e.g. "Important: …". */
+const CALLOUT_HEADING_RE = /^\*\*(.+?)\*\*\s*:?\s*(.*)$/;
+
+/**
+ * A callout/info-box notice inline within page content, e.g. "Important: …".
+ * `body` written as `**Sub-heading:** rest of the text` bolds the leading
+ * phrase, e.g. "Plan Early for Better Value".
+ */
 const Callout: React.FC<{ icon: string | undefined; body: string | undefined }> = ({ icon, body }) => {
   if (body === undefined || body.length === 0) {
     return null;
   }
+  const match = CALLOUT_HEADING_RE.exec(body);
   return (
     <div className={styles.callout}>
       <Icon iconName={icon ?? 'Info'} aria-hidden="true" />
-      <p className={styles.calloutBody}>{body}</p>
+      <p className={styles.calloutBody}>
+        {match !== null ? (
+          <>
+            <strong>{match[1]}: </strong>
+            {match[2]}
+          </>
+        ) : (
+          body
+        )}
+      </p>
     </div>
   );
 };
@@ -404,7 +542,7 @@ export const PolicySectionBlock: React.FC<{ section: IPolicySection }> = ({ sect
           <Icon iconName={section.icon} />
         </span>
         <div className={styles.iconParagraphBody}>
-          {section.title !== undefined && <h2 className={styles.sectionTitle}>{section.title}</h2>}
+          {section.title !== undefined && <h2 className={styles.sectionTitle}>{renderSectionTitle(section.title)}</h2>}
           {section.subtitle !== undefined && <p className={styles.sectionSubtitle}>{section.subtitle}</p>}
           <ParagraphBlock body={section.body} />
         </div>
@@ -414,7 +552,7 @@ export const PolicySectionBlock: React.FC<{ section: IPolicySection }> = ({ sect
 
   return (
     <section className={styles.section}>
-      {section.title !== undefined && <h2 className={styles.sectionTitle}>{section.title}</h2>}
+      {section.title !== undefined && <h2 className={styles.sectionTitle}>{renderSectionTitle(section.title)}</h2>}
       {section.subtitle !== undefined && <p className={styles.sectionSubtitle}>{section.subtitle}</p>}
       {renderLayout(section)}
     </section>

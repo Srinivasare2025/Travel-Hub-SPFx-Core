@@ -137,6 +137,18 @@
   padding: var(--full-space-5, 24px);
 }
 
+.infoIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(184, 156, 102, 0.16);
+  color: var(--full-primary, #b89c66);
+  font-size: 1.125rem;
+}
+
 .infoTitle {
   @include th-card-title;
   margin: 0;
@@ -147,4 +159,16 @@
   color: var(--full-text-muted, #4a5568);
   margin: 0;
   flex: 1;
+}
+
+.infoLinkButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  align-self: flex-start;
+  @include th-link;
 }

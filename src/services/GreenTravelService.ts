@@ -12,6 +12,7 @@ const TTL_SECONDS = 600;
 interface IRawGreenTravelItem {
   Id: number;
   Title: string | null;
+  Subtitle: string | null;
   Description: string | null;
   Points: string | null;
   ImageUrl: { Url: string } | null;
@@ -19,7 +20,7 @@ interface IRawGreenTravelItem {
   LinkText: string | null;
 }
 
-const SELECT = ['Id', 'Title', 'Description', 'Points', 'ImageUrl', 'LinkUrl', 'LinkText'];
+const SELECT = ['Id', 'Title', 'Subtitle', 'Description', 'Points', 'ImageUrl', 'LinkUrl', 'LinkText'];
 
 export interface IGreenTravelService {
   /** The one active `TH_GreenTravel` record (ASSUMPTIONS A27), or `undefined` if none is active. */
@@ -58,6 +59,7 @@ export class GreenTravelService implements IGreenTravelService {
       return {
         id: item.Id,
         title: toStringOr(item.Title, 'Green Travel'),
+        subtitle: toOptionalString(item.Subtitle),
         description: toStringOr(item.Description, ''),
         points: toOptionalString(item.Points)
           ?.split('\n')

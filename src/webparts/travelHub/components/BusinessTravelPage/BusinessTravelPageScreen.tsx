@@ -52,16 +52,29 @@ const InfoCardsGrid: React.FC = () => {
     return <EmptyState message="No additional information is configured yet." iconName="Info" />;
   }
 
+  const { navigate } = useNavigation();
+
   return (
     <div className={styles.infoGrid}>
       {data.map((card: IBusinessTravelInfoCard) => (
         <div key={card.id} className={styles.infoCard}>
+          {card.icon !== undefined && (
+            <span className={styles.infoIcon} aria-hidden="true">
+              <Icon iconName={card.icon} />
+            </span>
+          )}
           <h3 className={styles.infoTitle}>{card.title}</h3>
           <p className={styles.infoDescription}>{card.description}</p>
-          {card.linkUrl !== undefined && (
-            <ExternalLink href={card.linkUrl} openInNewTab={card.openInNewTab} showArrow>
-              {card.linkText}
-            </ExternalLink>
+          {card.targetSlug !== undefined ? (
+            <button type="button" className={styles.infoLinkButton} onClick={() => navigate({ kind: 'policyPage', slug: card.targetSlug as string })}>
+              {card.linkText} <Icon iconName="ChevronRight" aria-hidden="true" />
+            </button>
+          ) : (
+            card.linkUrl !== undefined && (
+              <ExternalLink href={card.linkUrl} openInNewTab={card.openInNewTab} showArrow>
+                {card.linkText}
+              </ExternalLink>
+            )
           )}
         </div>
       ))}

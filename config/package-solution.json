@@ -3,7 +3,7 @@
   "solution": {
     "name": "travel-hub-client-side-solution",
     "id": "dc8ca96a-e980-4257-a7a5-27f85c069a27",
-    "version": "1.0.0.6",
+    "version": "1.0.0.7",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
     "isDomainIsolated": false,
@@ -30,7 +30,7 @@
         "title": "travel-hub Feature",
         "description": "The feature that activates elements of the travel-hub solution.",
         "id": "25be6cf2-631b-4e3d-9047-63fe070dff7f",
-        "version": "1.0.0.0"
+        "version": "1.0.0.1"
       }
     ]
   },
