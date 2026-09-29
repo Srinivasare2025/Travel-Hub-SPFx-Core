@@ -1,0 +1,174 @@
+@import '../../../../common/styles/mixins';
+@import '../../../../common/styles/typography';
+
+.screen {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-block: var(--full-space-5, 24px) var(--full-space-6, 32px);
+}
+
+/* --- Breadcrumb (matches PolicyPageScreen.module.scss) --------------------- */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-1, 4px);
+  margin-bottom: calc(-1 * var(--full-space-3, 12px));
+  @include th-meta;
+
+  button {
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--full-text-muted, #4a5568);
+    font: inherit;
+    cursor: pointer;
+    @include th-focusable;
+
+    &:hover {
+      color: var(--full-accent-text, #816630);
+      text-decoration: underline;
+    }
+  }
+
+  svg,
+  i {
+    font-size: 0.7rem;
+  }
+
+  [aria-current='page'] {
+    color: var(--full-heading, #04253c);
+    font-weight: var(--full-fw-semibold, 600);
+  }
+}
+
+/* --- Header: title/description left, "Access SAP Concur" right ------------- */
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--full-space-4, 16px);
+}
+
+.headerText {
+  flex: 1 1 20rem;
+  min-width: 0;
+}
+
+.title {
+  @include th-page-title;
+  margin: 0 0 var(--full-space-2, 8px);
+}
+
+.description {
+  @include th-body;
+  color: var(--full-text-muted, #4a5568);
+  margin: 0;
+  max-width: 44rem;
+}
+
+/* --- Row 2: the 5 process steps --------------------------------------------- */
+.stepsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--full-space-4, 16px);
+
+  @include th-tablet-up {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include th-desktop-up {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.stepCard {
+  @include th-card-surface;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--full-space-2, 8px);
+  padding: var(--full-space-4, 16px);
+}
+
+.stepNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: var(--full-radius-sm, 4px);
+  color: #fff;
+  font-weight: var(--full-fw-bold, 700);
+  font-size: 1rem;
+}
+
+.stepTitle {
+  @include th-card-title;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.stepDescription {
+  @include th-body;
+  color: var(--full-text-muted, #4a5568);
+  margin: 0;
+}
+
+/* --- Row 3: the 3 info cards ------------------------------------------------ */
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--full-space-4, 16px);
+
+  @include th-tablet-up {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.infoCard {
+  @include th-card-surface;
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-2, 8px);
+  padding: var(--full-space-5, 24px);
+}
+
+.infoIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(195, 161, 94, 0.16);
+  color: var(--full-accent-text, #816630);
+  font-size: 1.125rem;
+}
+
+.infoTitle {
+  @include th-card-title;
+  margin: 0;
+}
+
+.infoDescription {
+  @include th-body;
+  color: var(--full-text-muted, #4a5568);
+  margin: 0;
+  flex: 1;
+}
+
+.infoLinkButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  align-self: flex-start;
+  @include th-link;
+}

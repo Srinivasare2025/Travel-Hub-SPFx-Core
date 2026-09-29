@@ -1,0 +1,177 @@
+@import '../../../../common/styles/mixins';
+@import '../../../../common/styles/typography';
+
+// HR Hub Topbar recipe: raised canvas band, 64px min height, soft drop shadow
+// and a gold hairline underneath (hub.css `[data-hub-topbar]`).
+.root {
+  position: relative;
+  z-index: 6;
+  width: 100%;
+  background: var(--full-canvas-raised, #ebf6fa);
+  border-bottom: 1px solid var(--full-accent-line, rgba(195, 161, 94, 0.32));
+  box-shadow: 0 7px 24px rgba(8, 28, 50, 0.045);
+}
+
+// Two rows below 1500px: [brand ........ actions] then the tabs on their own
+// full-width row, so the theme / bell / profile cluster never squeezes tabs
+// out of view. One row (brand · tabs · actions) on wide screens. Either way
+// the tab row scrolls sideways (visible thin scrollbar) if it still overflows.
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: var(--full-space-5, 24px);
+  min-height: 64px;
+  @include th-container;
+
+  @include th-desktop-up {
+    padding-inline: 28px;
+  }
+
+  @media (min-width: 1500px) {
+    flex-wrap: nowrap;
+  }
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  flex: none;
+  min-height: 64px;
+  margin-inline-start: auto;
+}
+
+/* Matches TravelHub.module.scss `.fullBleed .page` - same edge-to-edge choice. */
+.fullBleedBar {
+  max-width: none;
+}
+
+// --- Brand ------------------------------------------------------------------
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  @include th-focusable;
+}
+
+.brandMark {
+  font-family: var(--full-font-family, "Noto Sans", sans-serif);
+  font-size: 1.125rem;
+  font-weight: var(--full-fw-bold, 700);
+  letter-spacing: 0.04em;
+  color: var(--full-heading, #081c32);
+}
+
+.brandDivider {
+  width: 1px;
+  height: 22px;
+  background: var(--full-accent-line, rgba(195, 161, 94, 0.32));
+}
+
+/* The HR Hub eyebrow: display face, italic, spaced small caps. */
+.brandName {
+  font-family: var(--full-font-family-display, "Cormorant Garamond", Georgia, serif);
+  font-size: 15px;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--full-text-muted, #3c5573);
+}
+
+// --- Tabs -------------------------------------------------------------------
+
+.nav {
+  order: 3;
+  flex: 1 1 100%;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--full-border-strong, #aabed2) transparent;
+  border-top: 1px solid var(--full-border, #c8d7e6);
+
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background: var(--full-border-strong, #aabed2);
+  }
+
+  @media (min-width: 1500px) {
+    order: 0;
+    flex: 1 1 auto;
+    border-top: 0;
+  }
+}
+
+.list {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-1, 4px);
+  list-style: none;
+  margin: 0;
+  padding: var(--full-space-2, 8px) 0;
+  white-space: nowrap;
+}
+
+.navLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--full-space-1, 4px);
+  @include th-font-base;
+  padding: 8px 12px;
+  border: none;
+  border-radius: var(--full-radius-pill, 9999px);
+  background: none;
+  font-size: 13px;
+  font-weight: var(--full-fw-semibold, 600);
+  color: var(--full-text-muted, #3c5573);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--full-transition-fast, 120ms ease),
+    color var(--full-transition-fast, 120ms ease);
+  @include th-focusable;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--full-accent-wash, rgba(195, 161, 94, 0.08));
+    color: var(--full-text, #081c32);
+    text-decoration: none;
+  }
+
+  &:focus-visible {
+    border-radius: var(--full-radius-pill, 9999px);
+  }
+}
+
+/* Active tab: HR Hub sidebar "on" state - gold wash + AA gold text. */
+.navLinkActive {
+  background: rgba(195, 161, 94, 0.14);
+  color: var(--full-accent-text, #816630);
+}
+
+.navLinkIcon {
+  font-size: 0.6875rem;
+  color: var(--full-text-muted, #3c5573);
+}
+
+@media (max-width: 640px) {
+  .brandDivider,
+  .brandName {
+    display: none;
+  }
+
+  .bar {
+    gap: var(--full-space-3, 12px);
+  }
+}

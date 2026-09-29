@@ -132,19 +132,48 @@ Icon names: see the Fluent UI icon list (`Airplane`, `Suitcase`, `Financial`,
 
 ---
 
-## Lists used by later phases (7–10)
+## Phase 7–10 + navigation lists
 
-These are created and seeded now, but the web-part sections that read them ship
-in later phases.
+All of these are live (not "future phase" placeholders) — every one is read by
+a real section or in-app screen on the home page.
 
 | List | Renders in | Key fields |
 | --- | --- | --- |
-| `TH_QuickPulseQuestions` / `TH_QuickPulseOptions` / `TH_QuickPulseResponses` | Phase 7 | Question (Title); Options: Title, **QuestionId** (lookup), Icon, OptionValue (5→1), DisplayOrder; Responses are written by the web part — do not edit by hand |
-| `TH_TravelerTestimonials` | Phase 7 | Title (person name), Rating (1–5), Comment, Designation, Department, Location, ProfileImage, PersonInfoLine (optional override for the sub-line), DisplayOrder |
-| `TH_DepartmentTravelSpend` | Phase 8 | Department (Title), Period, Currency (ISO code), TotalSpend / AirSpend / HotelSpend / GroundTransportSpend / BookingSpend, DashboardUrl — **display only, no maths in the web part** |
-| `TH_GreenTravel` | Phase 8 | Title, Description, **Points** (one bullet per line), ImageUrl, LinkUrl, LinkText — one active record |
-| `TH_TravelTeam` | Phase 9 | Name (Title), Designation, Department, Specialization, ProfileImage, Email (→ `mailto:` only), Phone (→ `tel:` only), Location, DisplayOrder |
-| `TH_FooterColumns` / `TH_FooterLinks` | Phase 10 | Column: Title, DisplayOrder. Link: Title, **ColumnId** (lookup), Url, Icon, OpenInNewTab, DisplayOrder |
+| `TH_QuickPulseQuestions` / `TH_QuickPulseOptions` / `TH_QuickPulseResponses` | Quick Pulse card + its Submit/Results screens | Question (Title); Options: Title, **QuestionId** (lookup), Icon, OptionValue (5→1), DisplayOrder; Responses are written by the web part — do not edit by hand |
+| `TH_TravelerTestimonials` | "What Our Travellers Say" carousel + the View All / Submit Feedback screens | Title (person name), Rating (1–5), Comment, **Category** (free-text tag, e.g. "Business Travel"/"Travel Care"), Designation, Department, Location, ProfileImage, PersonInfoLine (optional override for the sub-line), DisplayOrder. Rows submitted through the web part's "Submit Feedback" screen land here with `IsActive = No` — **review and flip to Yes to publish them** |
+| `TH_DepartmentTravelSpend` | Department Travel Spend card | Department (Title), Period, Currency (ISO code), TotalSpend / AirSpend / HotelSpend / GroundTransportSpend / BookingSpend, DashboardUrl — **display only, no maths in the web part** |
+| `TH_GreenTravel` | Green Travel card | Title, Description, **Points** (one bullet per line), ImageUrl, LinkUrl, LinkText — one active record |
+| `TH_TravelTeam` | Meet the Travel Team | Name (Title), Designation, Department, Specialization, ProfileImage, Email (→ `mailto:` only), Phone (→ `tel:` only), Location, DisplayOrder |
+| `TH_FooterColumns` / `TH_FooterLinks` | Footer | Column: Title, DisplayOrder. Link: Title, **ColumnId** (lookup), Url, Icon, OpenInNewTab, DisplayOrder |
+| `TH_GlobalNavigation` | Global nav bar (admin-added tabs only — see note below) | Title, Url, Kind (`App` same-tab / `External` new-tab), DisplayOrder |
+| `TH_PolicyPages` | Travel Policy landing page + every detail page (one adaptive template) | Title, **Slug** (routing key), ParentSlug/ParentTitle (breadcrumb), Hero\* fields, InfoBannerText/NoteBannerText, Cta\* fields, ClosingBanner\* fields, NeedHelp\* fields |
+| `TH_PolicyCards` | Content blocks on a `TH_PolicyPages` row | Title, **PageId** (lookup), **Kind** (`Category`/`Info`/`Highlight`/`Rule`/`HelpStep`), Number, Icon, IconColor, Description, SubPoints, TargetSlug (internal nav) or LinkUrl/LinkText (external), DisplayOrder |
+
+**The global nav bar is not fully driven by `TH_GlobalNavigation`.** Most of its
+tabs come from elsewhere so there's one source of truth per link:
+
+- **Home** is always first — it's how a visitor gets back to the hub from
+  any sub-screen. Not configurable, not stored anywhere.
+- One tab per active `TH_TravelServices` row (Business Travel, Personal
+  Travel, SAP Concur, Catering Services, Meetings & Events, …). Unlike that
+  row's own card on the home page, the nav tab does **not** follow its
+  `LinkUrl` — it opens an in-app placeholder page reusing that row's
+  title/description/icon/image (`ServicePageScreen`; content/layout still
+  TBD — DEMO-READINESS.md §7). Add/edit/reorder services there, not in
+  `TH_GlobalNavigation`, to change these tabs.
+- The "Travel Policy" row among those services becomes the real in-app
+  Travel Policy tab automatically — you don't need (and shouldn't add) a
+  separate row for it anywhere.
+- The Help Desk / Travel Care links come from `TH_SiteConfiguration`
+  (`hero.quickLink.*`), same as the hero cards — labelled "Help Desk" in the
+  nav specifically (the hero card keeps its full configured title). Travel
+  Care opens the same in-app image viewer the hero card does when its
+  `type` is `image`, never a raw navigation to the file.
+- `TH_GlobalNavigation` is **only** for extra tabs beyond the above (the
+  sample data adds one placeholder example, "RSG Intranet" → `#`). Adding a
+  row here with the same title as an existing Travel Service or the Travel
+  Policy tab produces a **duplicate** tab — edit the Travel Service (or the
+  Travel Policy landing page) instead.
 
 ---
 

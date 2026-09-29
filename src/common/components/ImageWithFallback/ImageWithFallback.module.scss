@@ -14,7 +14,13 @@
 .img {
   width: 100%;
   height: 100%;
-  object-fit: fill;
+  /* `cover`, not `fill` - `fill` stretched every image non-uniformly to
+     exactly match the frame's aspect-ratio box, which is what caused the
+     "elastic"/stretched look (worst at zoom levels where the box's computed
+     size didn't match the source image's own proportions). `cover` crops
+     instead of distorting, so the picture's proportions - and quality -
+     stay intact at every viewport width and zoom level. */
+  object-fit: cover;
   display: block;
 }
 

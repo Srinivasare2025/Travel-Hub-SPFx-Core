@@ -47,16 +47,21 @@ shown).
 | Key | Type | Default | Used by |
 | --- | --- | --- | --- |
 | `brand.name` | string | `RSG` | Footer, Quick Pulse copy, aria labels |
-| `layout.fullBleed` | boolean | `true` | `TravelHub` root — breaks the web part out of SharePoint's centred canvas to the full viewport width and removes the inner content max-width. See DEPLOYMENT.md "Full-width page" for the page setup this expects. Set `false` to sit inside a normal centred section. |
+| `layout.fullBleed` | boolean | `true` | `TravelHub` root — breaks the web part out of SharePoint's centred canvas to the full viewport width and removes the inner content max-width. On a live page it also hides the SharePoint suite/command bar and neutralizes the canvas's zone/section/control-zone wrappers (`chromeOverride.ts`, `:has()`-scoped to this web part) for every visitor of that page. See DEPLOYMENT.md "Full-width page" for the page setup this expects and the trade-offs. Set `false` to keep the site chrome and sit inside a normal centred section. |
+
+### Theme
+| Key | Type | Default | Used by |
+| --- | --- | --- | --- |
+| `theme.canvas` | enum `sky` \| `cream` \| `dark` | `sky` | `TravelHub` root (`data-th-canvas`) — the page canvas palette (`src/common/styles/_tokens.scss`). `sky` is the standard light theme, `cream` a warm ivory alternative, `dark` a dark navy canvas with light text. The gold/navy brand colours (buttons, links, the hero's own photo-overlay chrome) stay constant across all three — only backgrounds, borders, and card/section text swap, so nothing loses contrast in any theme. This is the **site default**: each viewer can override it for themselves from the top bar's theme menu (saved in their browser, key `th-canvas`); a viewer who never picks one sees this value. |
 
 ### Hero
 | Key | Type | Default | Used by |
 | --- | --- | --- | --- |
 | `hero.autoPlay` | boolean | `true` | HeroCarousel |
-| `hero.intervalSeconds` | number (3–20) | `6` | HeroCarousel (fallback when a slide has no `DurationSeconds`) |
+| `hero.intervalSeconds` | number (3–20) | `6` | HeroCarousel — how long each **image** slide is shown before advancing. Video slides ignore it and advance when the video finishes playing (`TH_HeroBanners.DurationSeconds`, 3–600s, is unused for video). |
 | `hero.supportingMessage` | string | `Travel Care — Your Partner in Every Journey` | HeroQuickLinks |
 | `hero.quickLinks.layout` | enum `inline` \| `stack` | `inline` | `inline` = the two cards on one row (side by side); `stack` = a narrow single-column list |
-| `hero.quickLink.helpDesk.title` | string | `Travel Services Help Desk` | HeroQuickLinks |
+| `hero.quickLink.helpDesk.title` | string | `Help Desk` | HeroQuickLinks |
 | `hero.quickLink.helpDesk.description` | string | `General travel guidance and non-urgent assistance` | " |
 | `hero.quickLink.helpDesk.url` | string (safe URL) | `#` | destination — a page |
 | `hero.quickLink.helpDesk.type` | enum `page` \| `image` | `page` | `page` = normal link; `image` = the URL is an image and opens in an **in-app image viewer** (the file URL never appears in the address bar, so viewers aren't dropped into the document library) |
@@ -75,6 +80,23 @@ shown).
 | `services.tabletVisibleCards` | number (1–4) | `2` | " |
 | `services.mobileVisibleCards` | number (1–2) | `1` | " |
 | `services.defaultLinkText` | string | `Learn More` | TravelServiceCard (when a row has no `LinkText`) |
+| `services.autoPlay` | boolean | `true` | TravelServicesCarousel auto-advances, same as the hero |
+| `services.intervalSeconds` | number (3–20) | `5` | " |
+
+### Business Travel page
+The dedicated page reached from the "Business Travel" service card and its
+matching global nav tab (`NavigationContext`'s `businessTravel` view,
+`BusinessTravelPageScreen`). Its 5 process-step cards and 3 info cards come
+from `TH_BusinessTravelSteps` / `TH_BusinessTravelInfoCards`
+(SHAREPOINT-SCHEMA.md), not these config keys.
+
+| Key | Type | Default | Used by |
+| --- | --- | --- | --- |
+| `businessTravel.title` | string | `Business Travel` | BusinessTravelPageScreen |
+| `businessTravel.description` | string | `Everything you need to raise a request, get it approved, and book your trip — all in one place.` | " |
+| `businessTravel.concurUrl` | string (safe URL) | `https://www.concursolutions.com` | destination for the "Access SAP Concur" button; invalid/blank hides the button |
+| `businessTravel.concurLinkText` | string | `Access SAP Concur` | " |
+| `businessTravel.concurOpenInNewTab` | boolean | `true` | " |
 
 ### Travel Updates – View All
 | Key | Type | Default |
@@ -83,7 +105,7 @@ shown).
 | `viewAll.events.text` / `viewAll.events.url` | string / safe URL | `View All` / `#` |
 | `viewAll.tips.text` / `viewAll.tips.url` | string / safe URL | `View All` / `#` |
 | `updates.news.count` | number (2–8) | `4` |
-| `updates.events.count` | number (2–8) | `4` |
+| `updates.events.count` | number (1–3) | `3` — business rule: at most 3 upcoming events show on the hub page, the rest are behind "View All" |
 | `updates.tips.count` | number (3–12) | `7` |
 
 ### Testimonials
@@ -95,7 +117,7 @@ shown).
 | `testimonials.tabletVisibleCards` | number (1–3) | `2` | " |
 | `testimonials.mobileVisibleCards` | number (1–2) | `1` | " |
 | `testimonials.personInfoTemplate` | string | `{designation} – {location}` | composes the ambiguous line when a row has no explicit `PersonInfoLine` (see ASSUMPTIONS) |
-| `viewAll.testimonials.text` / `.url` | string / safe URL | `View All Stories` / `#` |
+| `viewAll.testimonials.text` / `.url` | string / safe URL | `View All Stories` / `#` — **not currently read by the UI**: "View All Stories" always navigates in-app to `ViewAllFeedbackScreen` (COMPONENTS.md §3.4) rather than this external URL. Kept resolved for possible future re-use. |
 
 ### Quick Pulse
 | Key | Type | Default | Used by |

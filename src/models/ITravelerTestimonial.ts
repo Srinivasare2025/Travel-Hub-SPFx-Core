@@ -6,6 +6,8 @@ export interface ITravelerTestimonial {
   /** 1..5. */
   rating: number;
   comment: string;
+  /** Free-text tag shown top-left of the card, e.g. "Business Travel" / "Travel Care" / "Personal Travel". */
+  category: string | undefined;
   designation: string | undefined;
   department: string | undefined;
   location: string | undefined;
@@ -16,4 +18,14 @@ export interface ITravelerTestimonial {
    */
   personInfoLine: string | undefined;
   displayOrder: number;
+}
+
+/** Write model for a new testimonial submitted from `SubmitFeedbackScreen`. */
+export interface ITestimonialSubmissionInput {
+  rating: number;
+  comment: string;
+  category: string | undefined;
+  designation: string | undefined;
+  department: string | undefined;
+  location: string | undefined;
 }

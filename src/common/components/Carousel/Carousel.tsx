@@ -5,9 +5,19 @@ import { useResponsiveValue } from '../../hooks/useBreakpoint';
 import { IconButton } from '../IconButton';
 import styles from './Carousel.module.scss';
 
+/** Passed as the third argument to `renderItem` for slide-driven autoplay. */
+export interface ICarouselRenderHelpers {
+  /** Whether this item is the currently-showing slide (always true when `visibleCards` > 1 covers it). */
+  isActive: boolean;
+  /** Advance to the next slide immediately (e.g. a video's `onEnded`). */
+  next: () => void;
+  /** Suspend/resume the autoplay timer regardless of hover/focus (e.g. while a video plays). */
+  setSuspended: (suspended: boolean) => void;
+}
+
 export interface ICarouselProps<T> {
   items: readonly T[];
-  renderItem: (item: T, index: number) => React.ReactNode;
+  renderItem: (item: T, index: number, helpers: ICarouselRenderHelpers) => React.ReactNode;
   getKey: (item: T, index: number) => string | number;
   /** Cards visible per page, by breakpoint. */
   visibleCards: IResponsive<number>;
@@ -42,7 +52,7 @@ export function Carousel<T>(props: ICarouselProps<T>): React.ReactElement {
   } = props;
 
   const visibleCount = Math.max(1, useResponsiveValue(visibleCards));
-  const { page, pageCount, next, prev, goTo, atStart, atEnd, pauseHandlers } = useCarousel({
+  const { page, pageCount, next, prev, goTo, atStart, atEnd, pauseHandlers, setSuspended } = useCarousel({
     itemCount: items.length,
     visibleCount,
     autoPlay,
@@ -83,7 +93,7 @@ export function Carousel<T>(props: ICarouselProps<T>): React.ReactElement {
         >
           {items.map((item, index) => (
             <li className={styles.slide} key={getKey(item, index)} style={{ flexBasis: `calc(100% / ${visibleCount})` }}>
-              {renderItem(item, index)}
+              {renderItem(item, index, { isActive: index === page, next, setSuspended })}
             </li>
           ))}
         </ul>

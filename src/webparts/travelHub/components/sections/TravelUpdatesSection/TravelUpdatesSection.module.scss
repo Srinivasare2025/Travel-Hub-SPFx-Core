@@ -88,7 +88,15 @@
 .newsRowTitle {
   @include th-card-title;
   font-size: 0.95rem;
-  color: var(--full-secondary, #04253c);
+  color: var(--full-heading, #04253c);
+  transition: color var(--full-transition-fast, 120ms ease);
+}
+
+/* Only a clickable link shifts to the gold accent on hover — the inert
+   (invalid-URL) fallback keeps its muted colour. */
+a.newsRowTitle:hover,
+a.newsRowTitle:focus-visible {
+  color: var(--full-accent-text, #816630);
 }
 
 .newsRowText {
@@ -113,7 +121,7 @@
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  color: var(--full-primary, #b89c66);
+  color: var(--full-accent-text, #816630);
 }
 
 /* --- Events --------------------------------------------------------- */
@@ -154,14 +162,14 @@
 .dateDay {
   font-size: 1.25rem;
   font-weight: var(--full-fw-bold, 700);
-  color: var(--full-secondary, #04253c);
+  color: var(--full-heading, #04253c);
   line-height: 1;
 }
 
 .dateMonth {
   font-size: var(--full-fs-meta, 0.8125rem);
   font-weight: var(--full-fw-semibold, 600);
-  color: var(--full-primary, #b89c66);
+  color: var(--full-accent-text, #816630);
   letter-spacing: 0.04em;
 }
 
@@ -224,8 +232,8 @@
   height: 32px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: rgba(184, 156, 102, 0.16);
-  color: var(--full-primary, #b89c66);
+  background: rgba(195, 161, 94, 0.16);
+  color: var(--full-accent-text, #816630);
   font-size: 0.85rem;
 }
 
@@ -239,6 +247,14 @@
   @include th-body;
   font-weight: var(--full-fw-medium, 500);
   color: var(--full-text, #04253c);
+  transition: color var(--full-transition-fast, 120ms ease);
+}
+
+/* Only a clickable link shifts to the gold accent on hover — the plain-text
+   fallback (no linkUrl) keeps its normal body colour. */
+a.tipText:hover,
+a.tipText:focus-visible {
+  color: var(--full-accent-text, #816630);
 }
 
 .tipDesc {

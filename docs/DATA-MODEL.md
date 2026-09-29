@@ -58,7 +58,7 @@ No other `any`. `unknown` + narrowing is the default for genuinely dynamic data.
 | Field | Type | Notes |
 | --- | --- | --- |
 | key | `'helpDesk' \| 'travelCare'` | |
-| title | `string` | e.g. "Travel Services Help Desk" |
+| title | `string` | e.g. "Help Desk" |
 | description | `string` | e.g. "General travel guidance and non-urgent assistance" |
 | url | `string` | validated |
 | openInNewTab | `boolean` | |

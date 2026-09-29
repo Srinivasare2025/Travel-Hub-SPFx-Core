@@ -1,0 +1,215 @@
+@import '../../../../../common/styles/mixins';
+@import '../../../../../common/styles/typography';
+
+.root {
+  width: 100%;
+}
+
+.sectionTitle {
+  @include th-section-title;
+  margin-bottom: var(--full-space-5, 24px);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--full-space-5, 24px);
+  align-items: start;
+
+  @include th-desktop-up {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* --- Spend ---------------------------------------------------------------- */
+.spendCard {
+  height: 100%;
+}
+
+.spendHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-3, 12px);
+  margin-bottom: var(--full-space-4, 16px);
+}
+
+.spendHeaderText {
+  flex: 1;
+  min-width: 0;
+}
+
+.spendDenied {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--full-space-3, 12px);
+  padding: var(--full-space-6, 32px) var(--full-space-4, 16px);
+}
+
+.spendLockIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--full-surface-alt, #faf8f4);
+  color: var(--full-text-muted, #4a5568);
+  font-size: 1.5rem;
+}
+
+.spendDeniedMessage {
+  @include th-body;
+  color: var(--full-text-muted, #4a5568);
+  max-width: 32ch;
+  margin: 0;
+}
+
+.spendIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: rgba(195, 161, 94, 0.16);
+  color: var(--full-accent-text, #816630);
+  font-size: 1.125rem;
+}
+
+.spendTitle {
+  @include th-card-title;
+  margin: 0;
+}
+
+.spendSubtitle {
+  @include th-meta;
+  margin: 2px 0 0;
+}
+
+.spendTiles {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--full-space-3, 12px);
+
+  @include th-tablet-up {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.spendTile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--full-space-3, 12px);
+  border-radius: var(--full-radius-md, 8px);
+  background: var(--full-surface-alt, #faf8f4);
+  border: 1px solid var(--full-border, #e8e5e0);
+}
+
+.spendTileLabel {
+  @include th-meta;
+}
+
+.spendTileValue {
+  font-family: var(--full-font-family, "Segoe UI", sans-serif);
+  font-size: 1.125rem;
+  font-weight: var(--full-fw-bold, 700);
+  color: var(--full-heading, #04253c);
+}
+
+.spendAction {
+  margin-top: var(--full-space-4, 16px);
+}
+
+.spendEmbedWrap {
+  margin-top: var(--full-space-4, 16px);
+  border: 1px solid var(--full-border, #e2e8f0);
+  border-radius: var(--full-radius-md, 8px);
+  overflow: hidden;
+}
+
+.spendEmbed {
+  display: block;
+  width: 100%;
+  height: 15rem;
+  border: none;
+}
+
+/* --- Green Travel ----------------------------------------------------------- */
+.greenCard {
+  height: 100%;
+}
+
+/* Content left, image right (mock). */
+.greenLayout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  @include th-tablet-up {
+    flex-direction: row;
+  }
+}
+
+.greenImageWrap {
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
+
+  @include th-tablet-up {
+    width: 42%;
+  }
+
+  /* `ImageWithFallback`'s own frame sizes itself from `aspect-ratio` (right
+     for a standalone image slot), which made it shrink-wrap shorter than
+     this flex row's stretched height whenever the body's title/description/
+     bullets were tall - leaving a gap at the bottom of the image and letting
+     the row look like content spilled past the image's real edge. Forcing
+     the frame to the wrap's full height here (scoped to Green Travel only)
+     makes the photo reliably fill the right-hand side with no gap. */
+  > div {
+    height: 100%;
+  }
+}
+
+/* CSS-only gradient overlay, from the top-left corner - the source image is
+   never modified (A28). */
+.greenImageOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(15, 44, 74, 0.35) 0%, rgba(15, 44, 74, 0) 45%);
+}
+
+.greenBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-2, 8px);
+  flex: 1;
+  min-width: 0;
+  padding: var(--full-space-5, 24px);
+}
+
+.greenTitle {
+  @include th-card-title;
+  margin: 0;
+}
+
+.greenSubtitle {
+  @include th-body;
+  font-weight: var(--full-fw-semibold, 600);
+  color: var(--full-heading, #04253c);
+  margin: 0;
+}
+
+.greenDescription {
+  @include th-body;
+  color: var(--full-text-muted, #4a5568);
+  margin: 0;
+}
+
+.greenLink {
+  margin-top: var(--full-space-2, 8px);
+}

@@ -62,7 +62,7 @@ One row per key. See CONFIGURATION.md for the full key list.
 | AccessibilityText | Single line |
 | DisplayOrder | Number |
 | AutoPlay | Yes/No |
-| DurationSeconds | Number (default 6) |
+| DurationSeconds | Number (default 6, 3–600) — image slides only; video slides advance on their own end |
 | IsActive | Yes/No |
 | StartDate | DateTime |
 | EndDate | DateTime |
@@ -73,6 +73,7 @@ One row per key. See CONFIGURATION.md for the full key list.
 | Title | Single line |
 | Description | Multiple lines (plain) |
 | ImageUrl | Hyperlink |
+| ImageFit | Choice (`Cover`, `Contain`) - `Cover` (default) crops to fill the card image, right for photography; use `Contain` for a logo/wordmark image (e.g. a partner brand image with text) so it isn't cropped |
 | Icon | Single line (Fluent icon name or asset key) |
 | IconBackgroundColor | Single line (hex or token name) |
 | LinkUrl | Hyperlink |
@@ -82,6 +83,33 @@ One row per key. See CONFIGURATION.md for the full key list.
 | DisplayOrder | Number |
 | IsActive | Yes/No |
 | StartDate / EndDate | DateTime |
+
+### `TH_BusinessTravelSteps`
+The dedicated Business Travel page's request-to-expense process row (5 cards:
+Raise Request, Approval, Book, Travel, Expense). Title = step title.
+
+| Column | Type |
+| --- | --- |
+| Title | Single line |
+| Description | Multiple lines (plain) |
+| Number | Number - shown in the small coloured square |
+| BackgroundColor | Single line (hex or `--full-*` token name) - the square's background |
+| DisplayOrder | Number |
+| IsActive | Yes/No |
+
+### `TH_BusinessTravelInfoCards`
+The same page's supporting info-card row (e.g. Policy reminders, Useful
+Documents, Need further help?). Title = card title.
+
+| Column | Type |
+| --- | --- |
+| Title | Single line |
+| Description | Multiple lines (plain) |
+| LinkUrl | Hyperlink |
+| LinkText | Single line (e.g. "View") |
+| OpenInNewTab | Yes/No |
+| DisplayOrder | Number |
+| IsActive | Yes/No |
 
 ### `TH_TravelNews`
 | Column | Type |
@@ -167,12 +195,13 @@ Permissions: **broken inheritance.** Members get **Contribute-add-only**
 | ProfileImage | Hyperlink |
 | Rating | Number (1–5) |
 | Comment | Multiple lines (plain) |
+| Category | Single line — free-text tag shown top-left of the card, e.g. "Business Travel" / "Travel Care" |
 | Designation | Single line |
 | Department | Single line |
 | Location | Single line |
 | PersonInfoLine | Single line (optional explicit override) |
 | DisplayOrder | Number |
-| IsActive | Yes/No |
+| IsActive | Yes/No — rows submitted through the web part's "Submit Feedback" screen land here as `No`, pending review |
 
 ### `TH_DepartmentTravelSpend`  (restricted — optional; may be replaced by Power BI/Concur)
 | Column | Type |
@@ -246,6 +275,133 @@ other implementation. **No spend calculation happens in TravelHub.**
 > Splitting keeps editing simple and lets a column exist with zero links during
 > setup.
 
+### `TH_GlobalNavigation`
+| Column | Type |
+| --- | --- |
+| Title | Single line — the tab label |
+| Url | Hyperlink |
+| Kind | Choice (`App`, `External`) — `App` opens in the same tab; `External` always opens in a new tab |
+| DisplayOrder | Number |
+| IsActive | Yes/No |
+
+Admin-added tabs only — shown above the hero banner alongside 4 always-present
+built-in tabs (Our Services, Travel Policy, and the same Help Desk / Travel
+Care links configured on the hero quick links) that don't need a row here. See
+GlobalNavigationService.ts and CONFIGURATION.md.
+
+### `TH_PolicyPages`
+| Column | Type |
+| --- | --- |
+| Title | Single line — the page name |
+| Slug | Single line, indexed — routing key (e.g. `travel-policy`, `travel-entitlement`) |
+| ParentSlug / ParentTitle | Single line — breadcrumb parent, denormalised (not a lookup); blank on the landing page |
+| ParentSectionLabel | Single line — a non-clickable breadcrumb crumb between the parent and this page's title, e.g. "Explore Policy Information" |
+| SuggestedQuestions | Multiple lines (plain) — newline list; the "Ask Policy Assistant" chips shown on this page (blank hides the assistant block) |
+| HeroIcon | Single line (Fluent icon name) |
+| HeroTitle / HeroSubtitle | Single line |
+| HeroDescription | Multiple lines (plain) |
+| HeroImageUrl | Hyperlink |
+| HeroTagline | Multiple lines (plain) — the italic script-style line |
+| InfoBannerText / NoteBannerText | Multiple lines (plain) |
+| CtaTitle / CtaLinkText / CtaPrimaryText | Single line |
+| CtaDescription | Multiple lines (plain) |
+| CtaLinkUrl / CtaPrimaryUrl | Hyperlink |
+| ClosingBannerTitle | Single line |
+| ClosingBannerDescription | Multiple lines (plain) |
+| ClosingBadges | Multiple lines (plain) — newline list, e.g. "Our People" |
+| NeedHelpTitle | Single line |
+| NeedHelpSupportLabel | Single line — small eyebrow label, e.g. "Contact Travel Services" / "ASK HR" |
+| NeedHelpDescription | Multiple lines (plain) |
+| NeedHelpEmail | Single line — leave blank to omit (e.g. the benefits page intentionally shows none) |
+| DisplayOrder | Number |
+| IsActive | Yes/No |
+
+One row per Travel Policy page, landing page included. See `PolicyService.ts`.
+
+### `TH_PolicySections`
+| Column | Type |
+| --- | --- |
+| Title / Subtitle | Single line / Multiple lines (plain) — this content block's own heading, if any |
+| PageId | Lookup → `TH_PolicyPages` |
+| Layout | Choice (`Paragraph`, `CardsGrid`, `Table`, `Tabs`, `NumberedSteps`, `ProcessSteps`, `Callout`, `ImageBlock`, `LinksList`, `Split`, `Checklist`, `Banner`, `ImageCards`, `Feature`, `Faq`, `Search`) — picks the rendering template |
+| CardVariant | Choice (`Category`, `Info`, `Highlight`) — only meaningful when `Layout = CardsGrid`; which of the 3 card visual treatments to use |
+| Body | Multiple lines (plain) — free text for `Layout = Paragraph`/`Callout`, one paragraph per line |
+| Icon | Single line (Fluent icon name) — for `Layout = Callout`/`ImageBlock` |
+| ImageUrl | Hyperlink — for `Layout = ImageBlock` |
+| DisplayOrder | Number |
+| IsActive | Yes/No |
+| TabId | Lookup → `TH_PolicyTabs` — set to place this section INSIDE a tab (the tab then shows its nested sections instead of its own cards/tables). Also set PageId. |
+| Columns | Number (1–6) — cards per row for `Layout = CardsGrid` (Highlight); blank = responsive default |
+| CardStyle | Choice (`Default`, `IconHeader`, `IconMedia`, `Stacked`, `ImageTop`, `ImageLeft`, `ImageTile`, `ImageBanner`) — card look per layout (see POLICY-CONTENT-GUIDE.md §5); `Default` = unchanged |
+| Width | Choice (`Full`, `Half`, `OneThird`, `TwoThirds`) — consecutive non-Full sections share a row |
+| LinkText / LinkUrl / TargetSlug | Single line / Hyperlink / Single line — header button; Feature button; Search address (`{query}`) |
+| TintCards | Yes/No — wash each card with its own `IconColor` |
+| SectionStyle | Choice (`Plain`, `Card`, `Tinted`) — the section's container; `Plain` = unchanged |
+| Theme | Choice (`Gold`, `Blue`, `Green`, `Amber`, `Red`, `Purple`, `Teal`) — colour of a `Tinted` panel, number badge, header icon and `Banner` |
+| HideTitle | Yes/No (default No) — `Yes` = `Title` is an internal name only and is not shown on the page. Give every section a Title: cards/tables/tabs pick their parent through a `SectionId` lookup that displays Title, and a blank Title can clear a card's `SectionId` when it is edited in the list form (the card then disappears). |
+
+One ordered content block on a page — this is the unit a content owner
+adds/reorders/removes to build up a page's body, between the hero and the
+CTA/Need Help/closing banner. See `PolicyService.ts` / `PolicyCardSections.tsx`.
+
+### `TH_PolicyTabs`
+| Column | Type |
+| --- | --- |
+| Title | Single line — the tab label, e.g. "Business Travel" |
+| SectionId | Lookup → `TH_PolicySections` — the parent `Layout = Tabs` section |
+| DisplayOrder | Number |
+| IsActive | Yes/No |
+
+One tab of a `Layout = Tabs` section (e.g. Travel Entitlement's "Business
+Travel" vs "Business Assignment"); its own cards/tables render inside it via
+`TH_PolicyCards.TabId` / `TH_PolicyTables.TabId`.
+
+### `TH_PolicyCards`
+| Column | Type |
+| --- | --- |
+| Title | Single line |
+| PageId | Lookup → `TH_PolicyPages` — reserved for the fixed "Ask HR" style `HelpStep` process under a page's Need Help row (not a reorderable content block) |
+| SectionId | Lookup → `TH_PolicySections` — this card's parent section (when not inside a tab) |
+| TabId | Lookup → `TH_PolicyTabs` — this card's parent tab, if any (takes priority over `SectionId`'s direct placement) |
+| Kind | Choice (`Category`, `Info`, `Highlight`, `Rule`, `HelpStep`, `LinkItem`) — one rendering template per kind |
+| Number | Number — Rule/HelpStep badge |
+| Icon | Single line (Fluent icon name) |
+| IconColor | Single line (hex) |
+| Description | Multiple lines (plain) |
+| SubPoints | Multiple lines (plain) — newline list, e.g. a Rule card's "Seasonal periods include" bullets |
+| TargetSlug | Single line — internal navigation to another `TH_PolicyPages` row; takes priority over `LinkUrl` |
+| LinkUrl | Hyperlink |
+| LinkText | Single line |
+| DisplayOrder | Number |
+| IsActive | Yes/No |
+
+Repeatable content blocks — the same shape covers policy-category cards,
+"Explore Policy Information" tiles, "Key Policy Highlights"/comparison cards,
+numbered rule cards, "Ask HR"/process help steps, and link-pill items.
+
+### `TH_PolicyTables`
+| Column | Type |
+| --- | --- |
+| Title | Single line — optional sub-heading, e.g. distinguishing several tables in the same section/tab (e.g. "Air Travel Entitlement" vs "Accommodation Entitlement") |
+| SectionId | Lookup → `TH_PolicySections` — this table's parent section (when not inside a tab) |
+| TabId | Lookup → `TH_PolicyTabs` — this table's parent tab, if any |
+| ColumnHeaders | Multiple lines (plain) — one column header per line |
+| DisplayOrder | Number |
+| IsActive | Yes/No |
+
+A simple data table for `Layout = Table` (or inside a `Layout = Tabs`
+section/tab) — several may stack under the same section/tab. See
+`TH_PolicyTableRows` for the actual cell data.
+
+### `TH_PolicyTableRows`
+| Column | Type |
+| --- | --- |
+| TableId | Lookup → `TH_PolicyTables` |
+| CellValues | Multiple lines (plain) — one cell value per line, matching the parent table's `ColumnHeaders` order |
+| DisplayOrder | Number |
+
+One row of a `TH_PolicyTables` table.
+
 ---
 
 ## Libraries
@@ -284,3 +440,21 @@ Keeps `filter`/`orderBy` under the list view threshold.
 - No separate "categories" lists unless the business needs managed category
   governance — `Choice` columns suffice initially.
 - No audit/log list — use SPFx `Log` + tenant audit.
+
+### Newer optional columns (added by `travelhub-provision.js`)
+
+| List | Column | Type — purpose |
+| --- | --- | --- |
+| `TH_PolicyPages` | HeroEyebrow | Single line — small caps line above the hero title |
+| `TH_PolicyPages` | HeroStyle | Choice `Dark` / `Light` — hero look |
+| `TH_PolicyPages` | HeroLinkText, HeroLinkUrl, HeroLinkTargetSlug, HeroLink2Text, HeroLink2Url, HeroLink2TargetSlug | Hero buttons (TargetSlug wins over Url) |
+| `TH_PolicyCards` | ImageUrl | Hyperlink — photo / QR / step image |
+| `TH_PolicyCards` | Subtitle, Badge | Single line — line under the title; pill on the photo |
+| `TH_PolicyCards` | Value, ValueLabel, ValueNote | Single line — highlighted figure with captions ("Starting From / SAR 5,999 / per person") |
+| `TH_PolicyCards` | OpenInNewTab | Yes/No — open `LinkUrl` in a new tab |
+| `TH_TravelServices` | PageSlug | Single line — a `TH_PolicyPages` Slug; the service's nav tab and card open that page |
+
+Every page is read with a fallback: a site where these columns don't exist
+yet still loads (the options are simply off). Full editor guidance:
+`POLICY-CONTENT-GUIDE.md`.
+

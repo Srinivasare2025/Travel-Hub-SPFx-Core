@@ -120,7 +120,12 @@ export class HeroBannerService implements IHeroBannerService {
       accessibilityText: toStringOr(item.AccessibilityText, toStringOr(item.Title, 'Travel Hub banner')),
       displayOrder: toNumber(item.DisplayOrder, 0),
       autoPlay: toBool(item.AutoPlay, true),
-      durationSeconds: toNumber(item.DurationSeconds, 6, { min: 3, max: 30 })
+      // Only meaningful for image slides (how long they stay on screen before
+      // the shared hero.intervalSeconds timer advances). Video slides ignore
+      // this and instead advance on the video's own `ended` event, so a long
+      // video always plays out fully — that's why the ceiling is well above
+      // the old 30s (which used to clamp a configured value pointlessly).
+      durationSeconds: toNumber(item.DurationSeconds, 6, { min: 3, max: 600 })
     };
   }
 }

@@ -21,9 +21,13 @@ export const SectionHeader: React.FC<ISectionHeaderProps> = ({
   id
 }) => {
   const Heading = `h${headingLevel}` as 'h2' | 'h3' | 'h4';
+  // h2 gets the larger, page-level title style; h3/h4 (card-level titles,
+  // e.g. the three Travel Updates cards) get the smaller card-title style so
+  // they reliably fit on one line — see SectionHeader.module.scss.
+  const sizeClass = headingLevel === 2 ? styles.level2 : styles.level3;
   return (
     <div className={styles.root}>
-      <Heading className={styles.title} id={id}>
+      <Heading className={`${styles.title} ${sizeClass}`} id={id}>
         {title}
       </Heading>
       {actions !== undefined ? (

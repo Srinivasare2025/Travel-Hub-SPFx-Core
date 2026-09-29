@@ -13,6 +13,16 @@ export interface IImageWithFallbackProps {
   aspectRatio?: string;
   /** Fallback icon shown when there is no valid src or the image errors. */
   fallbackIcon?: string;
+  /**
+   * `cover` (default) crops to fill the frame - right for full-bleed
+   * photography. `contain` letterboxes instead, showing the whole image
+   * uncropped - use it for logos/wordmarks (e.g. a partner brand image)
+   * where cropping would cut off text. `fill` stretches to exactly match the
+   * frame with no cropping/letterboxing - only when the caller has already
+   * sized the frame close to the source media's own aspect ratio (e.g. the
+   * hero banner), since `fill` otherwise visibly distorts the image.
+   */
+  fit?: 'cover' | 'contain' | 'fill';
   className?: string;
   eager?: boolean;
 }
@@ -27,6 +37,7 @@ export const ImageWithFallback: React.FC<IImageWithFallbackProps> = ({
   alt,
   aspectRatio = '16 / 9',
   fallbackIcon = 'Photo2',
+  fit = 'cover',
   className,
   eager = false
 }) => {
@@ -47,6 +58,7 @@ export const ImageWithFallback: React.FC<IImageWithFallbackProps> = ({
           {safeMobile !== undefined && <source media="(max-width: 639px)" srcSet={safeMobile} />}
           <img
             className={styles.img}
+            style={fit !== 'cover' ? { objectFit: fit } : undefined}
             src={safeSrc}
             alt={alt}
             loading={eager ? 'eager' : 'lazy'}

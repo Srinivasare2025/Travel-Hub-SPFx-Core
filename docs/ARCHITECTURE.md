@@ -87,6 +87,8 @@ src/
 ├── models/                         # Phase 2 – pure interfaces, no logic
 │   ├── IHeroBanner.ts
 │   ├── ITravelService.ts
+│   ├── IGlobalNav.ts
+│   ├── IPolicyPage.ts
 │   ├── … one per entity …
 │   ├── ITravelHubConfiguration.ts
 │   └── index.ts                    # barrel re-export
@@ -104,12 +106,14 @@ src/
 │   ├── NewsService.ts
 │   ├── EventService.ts
 │   ├── TravelTipsService.ts
+│   ├── GlobalNavigationService.ts
 │   ├── QuickPulseService.ts
-│   ├── TestimonialService.ts
-│   ├── ITravelSpendService.ts      # interface only
-│   ├── SharePointTravelSpendService.ts  # one implementation
+│   ├── TestimonialsService.ts
+│   ├── TravelSpendService.ts       # ITravelSpendService; only the `sharepoint` source is implemented (Q16 open)
+│   ├── GreenTravelService.ts
 │   ├── TravelTeamService.ts
-│   └── FooterService.ts
+│   ├── FooterService.ts
+│   └── PolicyService.ts
 │
 ├── common/                         # Phase 2–3 – reusable, presentational
 │   ├── components/

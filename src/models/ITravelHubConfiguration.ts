@@ -36,6 +36,17 @@ export interface ITravelHubConfiguration {
     fullBleed: boolean;
   };
 
+  theme: {
+    /**
+     * The page canvas palette. `sky` (default) is the standard light theme;
+     * `cream` is a warm ivory alternative; `dark` is a dark navy canvas with
+     * light text. The gold/navy brand colours stay constant across all three -
+     * only backgrounds, borders and body/heading text swap. See
+     * `src/common/styles/_tokens.scss`.
+     */
+    canvas: 'sky' | 'cream' | 'dark';
+  };
+
   hero: {
     autoPlay: boolean;
     intervalSeconds: number;
@@ -45,7 +56,16 @@ export interface ITravelHubConfiguration {
     quickLinksLayout: 'stack' | 'inline';
   };
 
-  services: IResponsiveCounts & { defaultLinkText: string };
+  services: IResponsiveCounts & { defaultLinkText: string; autoPlay: boolean; intervalSeconds: number };
+
+  businessTravel: {
+    title: string;
+    description: string;
+    /** Validated; `undefined` hides the "Access SAP Concur" button. */
+    concurUrl: string | undefined;
+    concurLinkText: string;
+    concurOpenInNewTab: boolean;
+  };
 
   updates: {
     newsCount: number;

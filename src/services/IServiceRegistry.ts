@@ -4,6 +4,15 @@ import { ITravelServicesService } from './TravelServicesService';
 import { INewsService } from './NewsService';
 import { IEventService } from './EventService';
 import { ITravelTipsService } from './TravelTipsService';
+import { IGlobalNavigationService } from './GlobalNavigationService';
+import { IQuickPulseService } from './QuickPulseService';
+import { ITestimonialsService } from './TestimonialsService';
+import { ITravelSpendService } from './TravelSpendService';
+import { IGreenTravelService } from './GreenTravelService';
+import { ITravelTeamService } from './TravelTeamService';
+import { IFooterService } from './FooterService';
+import { IPolicyService } from './PolicyService';
+import { IBusinessTravelService } from './BusinessTravelService';
 
 /**
  * The set of services + resolved configuration handed to the React tree via
@@ -20,4 +29,13 @@ export interface IServiceRegistry {
   news: INewsService;
   events: IEventService;
   tips: ITravelTipsService;
+  globalNav: IGlobalNavigationService;
+  quickPulse: IQuickPulseService;
+  testimonials: ITestimonialsService;
+  spend: ITravelSpendService;
+  greenTravel: IGreenTravelService;
+  team: ITravelTeamService;
+  footer: IFooterService;
+  policy: IPolicyService;
+  businessTravel: IBusinessTravelService;
 }

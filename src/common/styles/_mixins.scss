@@ -5,7 +5,7 @@
 
 // Accessible visible focus ring, consistent across all interactive elements.
 @mixin th-focus-ring {
-  outline: 2px solid var(--full-focus-ring, #04253c);
+  outline: 2px solid var(--full-focus-ring, #816630);
   outline-offset: 2px;
   border-radius: var(--full-radius-sm, 4px);
 }
@@ -33,12 +33,13 @@
   border: 0;
 }
 
-// Standard surface card.
+// Standard surface card - HR Hub's one bordered-card recipe (`.hub-card`):
+// surface-1 · radius-lg (14px) · 1px line-soft hairline · shadow-card.
 @mixin th-card-surface {
   background: var(--full-surface, #fff);
-  border: 1px solid var(--full-border, #e8e5e0);
-  border-radius: var(--full-radius-md, 8px);
-  box-shadow: var(--full-shadow-card, 0 4px 16px rgba(4, 37, 60, 0.08));
+  border: 1px solid var(--full-border, #c8d7e6);
+  border-radius: var(--full-radius-lg, 14px);
+  box-shadow: var(--full-shadow-card, 0 4px 12px rgba(8, 28, 50, 0.08));
 }
 
 // Clamp text to N lines with an ellipsis.

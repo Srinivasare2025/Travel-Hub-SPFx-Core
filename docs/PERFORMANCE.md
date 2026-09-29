@@ -128,3 +128,23 @@ where the URL supports it, and uses `srcset` for mobile vs desktop.
 Each section phase records: number of API calls, payload size, cap, pagination
 approach, cache TTL, and any memoisation added (with the reason). Phase 12
 re-measures the whole page against the targets above.
+
+## Start-up: tiny entry bundle + splash
+
+The web part's entry bundle (`TravelHubWebPart.ts`) deliberately imports only
+the SPFx externals, `hostChrome.ts` and `splash.ts` (~12 KB minified). On
+evaluation it immediately hides SharePoint's chrome in view mode (M365 suite
+bar `#SuiteNavWrapper`, site header, page title, breadcrumb/hub nav, command
+bar, comments, footer, and every other canvas section) and paints a branded
+loading screen in the viewer's saved canvas. React, Fluent, PnPjs, the
+service layer and all components live in the lazily-loaded
+`chunk.travel-hub-app` (`mount.tsx`), whose download starts in `onInit()` in
+parallel with SharePoint's own start-up; `createServiceRegistry` now runs
+inside that chunk. In edit mode (`?Mode=Edit` / `DisplayMode.Edit`) the chrome
+is left visible so authors can edit and publish.
+
+Rule: never add a value import of React, a component or a service to
+`TravelHubWebPart.ts` (`import type` is fine) - it would pull the whole app
+back into the entry bundle and bring back the "SharePoint page shows first"
+delay.
+

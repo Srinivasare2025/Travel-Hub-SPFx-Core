@@ -167,6 +167,9 @@ export class ConfigurationService implements IConfigurationService {
       layout: {
         fullBleed: bool('layout.fullBleed', true)
       },
+      theme: {
+        canvas: enumVal('theme.canvas', ['sky', 'cream', 'dark'] as const, 'sky')
+      },
       hero: {
         autoPlay: bool('hero.autoPlay', true),
         intervalSeconds: num('hero.intervalSeconds', 6, 3, 20),
@@ -175,7 +178,7 @@ export class ConfigurationService implements IConfigurationService {
         quickLinks: [
           {
             key: 'helpDesk' as const,
-            title: str('hero.quickLink.helpDesk.title', 'Travel Services Help Desk'),
+            title: str('hero.quickLink.helpDesk.title', 'Help Desk'),
             description: str(
               'hero.quickLink.helpDesk.description',
               'General travel guidance and non-urgent assistance'
@@ -209,11 +212,28 @@ export class ConfigurationService implements IConfigurationService {
         desktopVisibleCards: num('services.desktopVisibleCards', 4, 2, 8),
         tabletVisibleCards: num('services.tabletVisibleCards', 2, 1, 4),
         mobileVisibleCards: num('services.mobileVisibleCards', 1, 1, 2),
-        defaultLinkText: str('services.defaultLinkText', 'Learn More')
+        defaultLinkText: str('services.defaultLinkText', 'Learn More'),
+        autoPlay: bool('services.autoPlay', true),
+        intervalSeconds: num('services.intervalSeconds', 5, 3, 20)
+      },
+      businessTravel: {
+        title: str('businessTravel.title', 'Business Travel'),
+        description: str(
+          'businessTravel.description',
+          'Everything you need to raise a request, get it approved, and book your trip — all in one place.'
+        ),
+        concurUrl: (() => {
+          const u = url('businessTravel.concurUrl', '#');
+          return u === '#' ? undefined : u;
+        })(),
+        concurLinkText: str('businessTravel.concurLinkText', 'Access SAP Concur'),
+        concurOpenInNewTab: bool('businessTravel.concurOpenInNewTab', true)
       },
       updates: {
         newsCount: num('updates.news.count', 4, 2, 8),
-        eventsCount: num('updates.events.count', 4, 2, 8),
+        // Business rule: Upcoming Events shows at most 3 on the hub page —
+        // the rest live behind "View All" (updates.viewAll.events).
+        eventsCount: num('updates.events.count', 3, 1, 3),
         tipsCount: num('updates.tips.count', 7, 3, 12),
         viewAll: {
           news: viewAll('viewAll.news', 'View All'),
@@ -241,7 +261,7 @@ export class ConfigurationService implements IConfigurationService {
         dashboardUrl: url('spend.dashboardUrl', '#'),
         deniedMessage: str(
           'spend.deniedMessage',
-          'This dashboard is available to authorised users only. Access is role-based. Please sync with the appropriate permissions to view your department’s travel spend details.'
+          'This dashboard is available to authorized users only. Access is role-based. Please sign in with the appropriate permissions to view your department’s travel spend insights.'
         )
       },
       team: {

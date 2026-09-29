@@ -1,0 +1,178 @@
+@import '../../../../../common/styles/mixins';
+@import '../../../../../common/styles/typography';
+
+.root {
+  width: 100%;
+}
+
+/* --- "View All Team Members" screen (matches TravelerEngagementSection's
+   .screen/.screenBack/.screenTitle for the other "view all" screens) ------ */
+.screen {
+  width: 100%;
+  max-width: var(--full-content-max, 1280px);
+  margin-inline: auto;
+  padding-block: var(--full-space-6, 32px);
+}
+
+.screenBack {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--full-space-1, 4px);
+  margin-bottom: var(--full-space-5, 24px);
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--full-text-muted, #4a5568);
+  font-family: var(--full-font-family, "Segoe UI", sans-serif);
+  font-size: var(--full-fs-link, 0.875rem);
+  font-weight: var(--full-fw-semibold, 600);
+  cursor: pointer;
+  @include th-focusable;
+
+  &:hover {
+    color: var(--full-heading, #04253c);
+  }
+}
+
+.screenTitle {
+  @include th-page-title;
+  font-size: 1.75rem;
+  margin-bottom: var(--full-space-5, 24px);
+}
+
+.viewAllMembers {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  @include th-link;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--full-space-4, 16px);
+  align-items: stretch;
+
+  @include th-tablet-up {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include th-desktop-up {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Two-part split (mock): a rectangular photo on the left, content on the
+   right. A fixed height (not just `height: 100%`, which only matches
+   siblings within the same grid row) keeps every card the same size
+   regardless of how much optional contact info a member has - the body's
+   text is clamped so it never grows past what fits.
+
+   `Card` (Card.tsx) always wraps its own children in an internal
+   `display:flex; flex-direction:column` div (Card.module.scss's `.body`) -
+   that's a div we don't control, so `.card` here only sets the fixed
+   height/clip; the actual left/right row is `.cardRow`, our own element one
+   level inside it (see TravelTeamCard.tsx), so its `flex-direction: row`
+   isn't fighting Card's own `column` on the same element. */
+.card {
+  height: 11rem;
+  overflow: hidden;
+}
+
+.cardRow {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  height: 100%;
+}
+
+/* Inset on all but the right edge (`.cardRow`'s gap already separates it from
+   `.body`) so the photo reads as a framed portrait rather than a flush,
+   edge-to-edge crop - `align-items: stretch` on `.cardRow` still fills the
+   remaining height around this margin, it just no longer touches the card's
+   own top/bottom/left edges. */
+.avatar {
+  width: 38%;
+  flex-shrink: 0;
+  margin: var(--full-space-3, 12px) 0 var(--full-space-3, 12px) var(--full-space-3, 12px);
+  border-radius: var(--full-radius-md, 8px);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+  padding: var(--full-space-3, 12px);
+  overflow: hidden;
+}
+
+.name {
+  @include th-card-title;
+  font-size: 0.9375rem;
+  margin: 0;
+  @include th-line-clamp(1);
+}
+
+.designation {
+  @include th-body;
+  margin: 0;
+  @include th-line-clamp(1);
+}
+
+.secondary {
+  @include th-meta;
+  margin: 0;
+  @include th-line-clamp(1);
+}
+
+/* Location on its own row, email/call icons on the next row below it. Sits
+   close under the text above it (a small fixed gap) rather than being pushed
+   to the card's bottom edge via `margin-top: auto` - that left a large empty
+   gap above location whenever a card's name/designation/secondary text was
+   short. */
+.contactRows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: var(--full-space-2, 8px);
+}
+
+.contactActions {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-2, 8px);
+}
+
+.contactItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  @include th-meta;
+}
+
+.contactLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--full-surface-alt, #faf8f4);
+  color: var(--full-accent-text, #816630);
+  transition: background-color var(--full-transition-fast, 120ms ease),
+    color var(--full-transition-fast, 120ms ease);
+  @include th-focusable;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--full-primary, #b89c66);
+    color: var(--full-primary-contrast, #04253c);
+  }
+}

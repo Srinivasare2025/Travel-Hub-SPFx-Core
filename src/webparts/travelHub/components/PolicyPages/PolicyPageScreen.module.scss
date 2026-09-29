@@ -1,0 +1,3025 @@
+@import '../../../../common/styles/mixins';
+@import '../../../../common/styles/typography';
+
+.screen {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-block: var(--full-space-5, 24px) var(--full-space-6, 32px);
+}
+
+/* --- Breadcrumb ----------------------------------------------------------- */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-1, 4px);
+  margin-bottom: calc(-1 * var(--full-space-3, 12px));
+  @include th-meta;
+
+  button {
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--full-text-muted, #4a5568);
+    font: inherit;
+    cursor: pointer;
+    @include th-focusable;
+
+    &:hover {
+      color: var(--full-accent-text, #816630);
+      text-decoration: underline;
+    }
+  }
+
+  svg,
+  i {
+    font-size: 0.7rem;
+  }
+
+  [aria-current='page'] {
+    color: var(--full-heading, #04253c);
+    font-weight: var(--full-fw-semibold, 600);
+  }
+}
+
+/* --- Hero ------------------------------------------------------------------ */
+.hero {
+  position: relative;
+  border-radius: var(--full-radius-lg, 16px);
+  overflow: hidden;
+  min-height: 14rem;
+  background: var(--full-secondary, #04253c) center / cover no-repeat;
+  box-shadow: var(--full-shadow-card-hover, 0 8px 28px rgba(15, 44, 74, 0.14));
+}
+
+.heroScrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(15, 44, 74, 0.72) 0%, rgba(15, 44, 74, 0.35) 55%, rgba(15, 44, 74, 0.1) 100%);
+}
+
+.heroContent {
+  position: relative;
+  z-index: 1;
+  max-width: 40rem;
+  padding: var(--full-space-6, 32px);
+  color: #fff;
+}
+
+.heroIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: var(--full-space-3, 12px);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-size: 1.375rem;
+}
+
+.heroTitle {
+  @include th-page-title;
+  color: #fff;
+  margin: 0 0 var(--full-space-2, 8px);
+}
+
+.heroSubtitle {
+  @include th-body;
+  color: #fff;
+  font-weight: var(--full-fw-semibold, 600);
+  margin: 0 0 var(--full-space-1, 4px);
+}
+
+.heroDescription {
+  @include th-body;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+.heroTagline {
+  position: absolute;
+  z-index: 1;
+  top: var(--full-space-5, 24px);
+  right: var(--full-space-6, 32px);
+  font-family: var(--full-font-family-display, "Cormorant Garamond", Georgia, serif);
+  font-style: italic;
+  color: #fff;
+  text-align: right;
+  line-height: 1.3;
+  // HeroTagline is a multi-line ("Note") field - editors enter real line
+  // breaks, which need this to actually render as separate lines instead of
+  // collapsing to one.
+  white-space: pre-line;
+}
+
+/* --- Banners ---------------------------------------------------------------- */
+.infoBanner,
+.noteBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--full-space-3, 12px);
+  padding: var(--full-space-4, 16px);
+  border-radius: var(--full-radius-md, 8px);
+
+  p {
+    @include th-body;
+    margin: 0;
+  }
+}
+
+.infoBanner {
+  background: var(--full-surface, #fff);
+  border: 1px solid var(--full-border, #e8e5e0);
+  color: var(--full-heading, #04253c);
+
+  svg,
+  i {
+    color: var(--full-accent-text, #816630);
+    flex-shrink: 0;
+  }
+}
+
+.noteBanner {
+  background: linear-gradient(rgba(195, 161, 94, 0.1), rgba(195, 161, 94, 0.1)), var(--full-surface, #fff);
+  border: 1px solid rgba(195, 161, 94, 0.35);
+
+  svg,
+  i {
+    color: var(--full-accent-text, #816630);
+    flex-shrink: 0;
+  }
+}
+
+/* --- Generic section heading ------------------------------------------------ */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-4, 16px);
+}
+
+.sectionTitle {
+  @include th-section-title;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-2, 8px);
+}
+
+/* Opt-in section number badge - see `renderSectionTitle` in
+   PolicyCardSections.tsx (a section's Title starting "1. " / "1) "). */
+.sectionNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--full-primary, #b89c66);
+  color: #fff;
+  font-family: var(--full-font-family, "Noto Sans", sans-serif);
+  font-weight: var(--full-fw-bold, 700);
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+.sectionSubtitle {
+  @include th-body;
+  color: var(--full-text-muted, #4a5568);
+  margin: calc(-1 * var(--full-space-3, 12px)) 0 0;
+}
+
+/* --- Icon-left paragraph section (opt-in via `section.icon`, e.g. "Purpose"
+   on the Purpose & Scope page) - see PolicyCardSections.tsx. A light tinted
+   background so it reads as its own highlighted block instead of blending
+   into the page body. */
+.iconParagraphSection {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--full-space-4, 16px);
+  padding: var(--full-space-5, 24px);
+  @include th-card-surface;
+}
+
+.iconParagraphIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  height: 88px;
+  flex-shrink: 0;
+  align-self: center;
+  border-radius: 50%;
+  background: var(--th-section-accent-soft, rgba(195, 161, 94, 0.16));
+  color: var(--th-section-accent, var(--full-accent-text, #816630));
+  font-size: 2.5rem;
+}
+
+.iconParagraphBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-2, 8px);
+  min-width: 0;
+}
+
+/* --- Category cards (row 2) -------------------------------------------------- */
+.categoryGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--full-space-4, 16px);
+
+  @include th-tablet-up {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.categoryCard {
+  @include th-card-surface;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--full-space-3, 12px);
+  width: 100%;
+  padding: var(--full-space-5, 24px);
+  text-align: start;
+  text-decoration: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: box-shadow var(--full-transition-base, 200ms ease), transform var(--full-transition-base, 200ms ease);
+  @include th-focusable;
+
+  &:hover {
+    box-shadow: var(--full-shadow-card-hover, 0 8px 28px rgba(15, 44, 74, 0.14));
+    transform: translateY(-2px);
+  }
+}
+
+.categoryIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: rgba(195, 161, 94, 0.16);
+  color: var(--full-accent-text, #816630);
+  font-size: 1.25rem;
+}
+
+.categoryBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-2, 8px);
+  min-width: 0;
+  flex: 1;
+}
+
+.categoryTitle {
+  @include th-card-title;
+  margin: 0;
+}
+
+.categoryDescription {
+  @include th-body;
+  color: var(--full-text-muted, #4a5568);
+  margin: 0;
+  flex: 1;
+}
+
+.categoryLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--full-accent-text, #816630);
+  font-size: var(--full-fs-link, 0.875rem);
+  font-weight: var(--full-fw-semibold, 600);
+}
+
+/* --- Info tiles (Explore Policy Information) --------------------------------- */
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--full-space-3, 12px);
+
+  @include th-tablet-up {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @include th-desktop-up {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+.infoCard {
+  @include th-card-surface;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--full-space-2, 8px);
+  padding: var(--full-space-4, 16px);
+  text-align: center;
+  text-decoration: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: box-shadow var(--full-transition-base, 200ms ease);
+  @include th-focusable;
+
+  &:hover {
+    box-shadow: var(--full-shadow-card-hover, 0 8px 28px rgba(15, 44, 74, 0.14));
+  }
+}
+
+.infoIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(195, 161, 94, 0.16);
+  color: var(--full-accent-text, #816630);
+  font-size: 1.125rem;
+}
+
+.infoTitle {
+  @include th-body;
+  font-weight: var(--full-fw-semibold, 600);
+  color: var(--full-heading, #04253c);
+}
+
+/* --- Highlight cards --------------------------------------------------------- */
+/* `auto-fit` instead of a fixed column count so a section with fewer cards
+   (e.g. Purpose & Scope's 2-card "Which Policy Applies to Your Travel?")
+   widens them to fill the row edge-to-edge instead of leaving empty columns,
+   while a full 4-card row (Key Policy Highlights) still lays out 4 across at
+   this same minimum width. */
+.highlightGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--full-space-4, 16px);
+
+  @include th-tablet-up {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include th-desktop-up {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+}
+
+.highlightCard {
+  @include th-card-surface;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-2, 8px);
+  padding: var(--full-space-4, 16px);
+  height: 100%;
+}
+
+/* From a card's leading `%%Tag` SubPoints line - see PolicyCardSections.tsx. */
+.highlightTag {
+  position: absolute;
+  top: var(--full-space-3, 12px);
+  right: var(--full-space-3, 12px);
+  padding: 2px var(--full-space-2, 8px);
+  border-radius: 999px;
+  background: var(--full-surface-alt, #faf8f4);
+  border: 1px solid var(--full-border, #e8e5e0);
+  color: var(--full-text-muted, #4a5568);
+  font-size: var(--full-fs-meta, 0.8125rem);
+  font-weight: var(--full-fw-semibold, 600);
+}
+
+.highlightIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: rgba(195, 161, 94, 0.16);
+  color: var(--full-accent-text, #816630);
+  font-size: 1rem;
+}
+
+.highlightTitle {
+  @include th-card-title;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.highlightDescription {
+  @include th-meta;
+  margin: 0;
+}
+
+.highlightSubPoints {
+  margin: var(--full-space-1, 4px) 0 0;
+  padding: var(--full-space-2, 8px) var(--full-space-3, 12px);
+  border-radius: var(--full-radius-sm, 4px);
+  background: var(--full-surface-alt, #faf8f4);
+  list-style: disc;
+  padding-inline-start: calc(var(--full-space-3, 12px) + 1em);
+  @include th-meta;
+
+  li + li {
+    margin-top: 2px;
+  }
+}
+
+/* `==Sub-heading` in SubPoints - a small bold label above the bullets /
+   numbered points / paragraphs that follow it. */
+.highlightSubHeading {
+  @include th-body;
+  margin: var(--full-space-3, 12px) 0 0;
+  font-size: var(--full-fs-meta, 0.8125rem);
+  font-weight: var(--full-fw-bold, 700);
+  color: var(--full-heading, #081c32);
+
+  & + .highlightSubPoints,
+  & + .highlightNumbered,
+  & + .highlightParagraph {
+    margin-top: var(--full-space-1, 4px);
+  }
+}
+
+/* `~~Paragraph text` in SubPoints - plain text, no bullet marker. */
+.highlightParagraph {
+  @include th-meta;
+  margin: var(--full-space-2, 8px) 0 0;
+}
+
+/* An `@Icon|text` bullet - its own icon instead of the shared disc marker. */
+.highlightSubPointIconed {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--full-space-2, 8px);
+  list-style: none;
+
+  svg,
+  i {
+    color: var(--full-accent-text, #816630);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+}
+
+/* --- Highlight cards, icon-left header variant ------------------------------
+   Opt-in: only used when `PolicySectionBlock` passes a `sectionTitle` that
+   `HighlightCards` recognises (Key Policy Highlights on the Travel Policy
+   landing page; Which Policy Applies to Your Travel? on Purpose & Scope) -
+   every other `cardVariant: 'highlight'` section keeps the icon-on-top
+   layout above untouched. */
+.highlightHeaderRow {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-3, 12px);
+}
+
+.highlightHeaderRow .highlightIcon {
+  margin: 0;
+}
+
+.highlightHeaderRow .highlightTitle {
+  font-size: 1.0625rem;
+}
+
+/* Opt-in colored underline below the title (from `card.iconColor`) - e.g.
+   Guiding Principles' "How We Approach Business Travel" cards. */
+.highlightTitleUnderline {
+  padding-bottom: var(--full-space-1, 4px);
+  border-bottom: 2px solid var(--full-primary, #b89c66);
+  display: inline-block;
+}
+
+/* One parsed `SubPoints` block - see parseHighlightSubPoints.ts. */
+.highlightTableWrap {
+  margin-top: var(--full-space-1, 4px);
+  overflow-x: auto;
+}
+
+.highlightTable {
+  width: 100%;
+  border-collapse: collapse;
+  @include th-meta;
+
+  th,
+  td {
+    text-align: start;
+    padding: var(--full-space-2, 8px) var(--full-space-3, 12px);
+    border-bottom: 1px solid var(--full-border, #e2e8f0);
+  }
+
+  th {
+    background: var(--full-surface-alt, #faf8f4);
+    color: var(--full-heading, #04253c);
+    font-weight: var(--full-fw-semibold, 600);
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+.highlightCallout {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--full-space-2, 8px);
+  margin-top: var(--full-space-1, 4px);
+  padding: var(--full-space-2, 8px) var(--full-space-3, 12px);
+  border-radius: var(--full-radius-sm, 4px);
+  background: var(--full-info-bg, #eaf2fb);
+  color: var(--full-text-muted, #4a5568);
+  @include th-meta;
+
+  svg,
+  i {
+    color: var(--full-info, #2b6cb0);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  strong {
+    color: var(--full-heading, #04253c);
+  }
+}
+
+.highlightIconBlock {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--full-space-2, 8px);
+  margin-top: var(--full-space-1, 4px);
+
+  svg,
+  i {
+    color: var(--full-accent-text, #816630);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+}
+
+.highlightIconBlockBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+
+  strong {
+    color: var(--full-heading, #04253c);
+  }
+
+  p {
+    margin: 0;
+    @include th-meta;
+  }
+}
+
+.highlightNumbered {
+  list-style: none;
+  margin: var(--full-space-1, 4px) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-2, 8px);
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--full-space-2, 8px);
+    @include th-meta;
+  }
+}
+
+.highlightNumberedBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--full-primary, #b89c66);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: var(--full-fw-bold, 700);
+}
+
+/* --- Rule cards --------------------------------------------------------------- */
+.ruleGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--full-space-4, 16px);
+
+  @include th-tablet-up {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.ruleCard {
+  @include th-card-surface;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--full-space-3, 12px);
+  padding: var(--full-space-4, 16px);
+}
+
+.ruleBadgeGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-1, 4px);
+  flex-shrink: 0;
+}
+
+.ruleNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--full-primary, #b89c66);
+  color: #fff;
+  font-weight: var(--full-fw-bold, 700);
+  font-size: 0.8125rem;
+}
+
+.ruleIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--full-surface-alt, #faf8f4);
+  color: var(--full-accent-text, #816630);
+  font-size: 1.25rem;
+}
+
+.ruleBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-1, 4px);
+  min-width: 0;
+}
+
+.ruleTitle {
+  @include th-card-title;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.ruleDescription {
+  @include th-body;
+  color: var(--full-text-muted, #4a5568);
+  margin: 0;
+}
+
+/* --- Paragraph block -------------------------------------------------------- */
+.paragraphBody {
+  @include th-body;
+  color: var(--full-text, #04253c);
+  margin: 0;
+
+  & + & {
+    margin-top: var(--full-space-3, 12px);
+  }
+}
+
+/* --- Table block -------------------------------------------------------------- */
+.tableWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-2, 8px);
+}
+
+.tableWrap + .tableWrap {
+  margin-top: var(--full-space-4, 16px);
+}
+
+.tableTitle {
+  @include th-card-title;
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* A first-column cell written as `IconName::Text` - see TableCell in PolicyCardSections.tsx. */
+.tableCellIconed {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--full-space-2, 8px);
+
+  svg,
+  i {
+    color: var(--full-accent-text, #816630);
+    flex-shrink: 0;
+  }
+}
+
+.tableScroll {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--full-border, #e8e5e0);
+  border-radius: var(--full-radius-md, 8px);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 28rem;
+
+  th,
+  td {
+    padding: var(--full-space-2, 8px) var(--full-space-3, 12px);
+    text-align: start;
+    vertical-align: top;
+    @include th-body;
+  }
+
+  th {
+    background: var(--full-surface-alt, #faf8f4);
+    color: var(--full-heading, #04253c);
+    font-weight: var(--full-fw-semibold, 600);
+    white-space: nowrap;
+  }
+
+  td {
+    color: var(--full-text-muted, #4a5568);
+    border-top: 1px solid var(--full-border, #e8e5e0);
+  }
+
+  tr:first-child td {
+    border-top: none;
+  }
+}
+
+/* --- Tabs block --------------------------------------------------------------- */
+.tabList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--full-space-2, 8px);
+  border-bottom: 1px solid var(--full-border, #e8e5e0);
+}
+
+.tabButton {
+  padding: var(--full-space-2, 8px) var(--full-space-4, 16px);
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--full-text-muted, #4a5568);
+  font-family: var(--full-font-family, "Segoe UI", sans-serif);
+  font-size: var(--full-fs-link, 0.875rem);
+  font-weight: var(--full-fw-semibold, 600);
+  cursor: pointer;
+  @include th-focusable;
+
+  &:hover {
+    color: var(--full-heading, #04253c);
+  }
+}
+
+.tabButtonActive {
+  color: var(--full-accent-text, #816630);
+  border-bottom-color: var(--full-primary, #b89c66);
+}
+
+.tabPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-4, 16px);
+  padding-top: var(--full-space-4, 16px);
+}
+
+/* --- Rich tab selectors (a tab with Icon set) - e.g. Travel Entitlement's
+   "Select Your Travel Type" (Business Travel / Business Assignment). ------ */
+.tabSelectorList {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--full-space-3, 12px);
+  border-bottom: none;
+
+  @include th-tablet-up {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.tabSelector {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-3, 12px);
+  padding: var(--full-space-4, 16px);
+  border: 1px solid var(--full-border, #e8e5e0);
+  border-radius: var(--full-radius-md, 8px);
+  background: var(--full-surface, #fff);
+  text-align: start;
+  cursor: pointer;
+  @include th-focusable;
+
+  &:hover {
+    box-shadow: var(--full-shadow-card-hover, 0 8px 28px rgba(15, 44, 74, 0.14));
+  }
+}
+
+.tabSelectorActive {
+  border-color: var(--full-primary, #b89c66);
+  background: rgba(195, 161, 94, 0.08);
+}
+
+.tabSelectorIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: rgba(195, 161, 94, 0.16);
+  color: var(--full-accent-text, #816630);
+  font-size: 1.25rem;
+}
+
+.tabSelectorBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tabSelectorTitle {
+  @include th-card-title;
+  font-size: 1rem;
+}
+
+.tabSelectorSubtitle {
+  @include th-meta;
+  font-weight: var(--full-fw-semibold, 600);
+  color: var(--full-heading, #04253c);
+}
+
+.tabSelectorDescription {
+  @include th-meta;
+}
+
+.tabSelectorArrow {
+  flex-shrink: 0;
+  color: var(--full-accent-text, #816630);
+}
+
+/* --- Callout / info box -------------------------------------------------------- */
+.callout {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-4, 16px);
+  padding: var(--full-space-4, 16px);
+  border-radius: var(--full-radius-md, 8px);
+  background: rgba(195, 161, 94, 0.12);
+  border: 1px solid rgba(195, 161, 94, 0.35);
+
+  /* A fixed circular icon badge, centered alongside the text block, rather
+     than a small top-aligned glyph - keeps the icon's visual weight/height
+     matching the content next to it instead of looking cropped/mismatched. */
+  > svg,
+  > i {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: rgba(195, 161, 94, 0.16);
+    color: var(--full-accent-text, #816630);
+    font-size: 1.375rem;
+  }
+}
+
+.calloutBody {
+  @include th-body;
+  color: var(--full-heading, #04253c);
+  margin: 0;
+}
+
+/* --- Image block ---------------------------------------------------------------- */
+.imageBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-2, 8px);
+}
+
+.imageBlockMedia {
+  border-radius: var(--full-radius-md, 8px);
+}
+
+.imageBlockCaption {
+  @include th-meta;
+  margin: 0;
+}
+
+/* --- Links list ------------------------------------------------------------------ */
+.linksList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--full-space-3, 12px);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.linkItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--full-space-2, 8px);
+  padding: var(--full-space-2, 8px) var(--full-space-4, 16px);
+  border: 1px solid var(--full-border, #e8e5e0);
+  border-radius: 999px;
+  background: var(--full-surface, #fff);
+  color: var(--full-heading, #04253c);
+  text-decoration: none;
+  font-family: var(--full-font-family, "Segoe UI", sans-serif);
+  font-size: var(--full-fs-link, 0.875rem);
+  font-weight: var(--full-fw-semibold, 600);
+  cursor: pointer;
+  transition: border-color var(--full-transition-fast, 120ms ease);
+  @include th-focusable;
+
+  &:hover {
+    border-color: var(--full-primary, #b89c66);
+    color: var(--full-accent-text, #816630);
+  }
+}
+
+/* --- CTA row -------------------------------------------------------------- */
+.ctaRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--full-space-4, 16px);
+  padding: var(--full-space-5, 24px);
+  // Card surface: --full-surface-alt now equals the Sky page canvas, so a
+  // tinted band would be invisible against the page.
+  @include th-card-surface;
+}
+
+.ctaTitle {
+  @include th-card-title;
+  margin: 0 0 4px;
+}
+
+.ctaDescription {
+  @include th-meta;
+  margin: 0;
+}
+
+.ctaText {
+  flex: 1;
+  min-width: 220px;
+}
+
+.ctaActions {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-4, 16px);
+  flex-shrink: 0;
+}
+
+.ctaLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--full-space-2, 8px);
+  white-space: nowrap;
+  @include th-link;
+
+  & {
+    font-size: var(--full-fs-body, 0.9375rem);
+  }
+}
+
+/* The "|" between the two CTA links. */
+.ctaDivider {
+  width: 1px;
+  height: 20px;
+  background: var(--full-border-strong, #aabed2);
+}
+
+.ctaPrimaryLink i {
+  font-size: 0.875rem;
+  transition: transform var(--full-transition-fast, 120ms ease);
+}
+
+.ctaPrimaryLink:hover i {
+  transform: translateX(3px);
+}
+
+/* --- AI assistant placeholder ------------------------------------------------ */
+.assistant {
+  display: flex;
+  gap: var(--full-space-3, 12px);
+  padding: var(--full-space-5, 24px);
+  @include th-card-surface;
+}
+
+.assistantIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--full-primary, #b89c66);
+  color: #fff;
+  font-size: 1.25rem;
+}
+
+.assistantBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.assistantHeading {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-2, 8px);
+}
+
+.assistantDescription {
+  @include th-meta;
+  margin: var(--full-space-1, 4px) 0 var(--full-space-3, 12px);
+}
+
+/* Travel Policy landing page layout: input box + "Try asking" chips beside
+   it in the same row, each side taking equal height. */
+.assistantRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: var(--full-space-4, 16px);
+}
+
+/* Explore Policy Information sub-page layout: title/description left,
+   "Ask a Question" button right, in the same row. */
+.assistantTopRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--full-space-3, 12px);
+}
+
+.assistantInputRow {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-2, 8px);
+  max-width: 28rem;
+}
+
+.assistantInput {
+  flex: 1;
+  padding: var(--full-space-2, 8px) var(--full-space-3, 12px);
+  border: 1px solid var(--full-border, #e8e5e0);
+  border-radius: 999px;
+  background: var(--full-surface, #fff);
+  color: var(--full-text-muted, #4a5568);
+  font-family: var(--full-font-family, "Segoe UI", sans-serif);
+  font-size: var(--full-fs-body, 0.9375rem);
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+.assistantSend {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--full-border, #e8e5e0);
+  color: var(--full-text-muted, #4a5568);
+}
+
+.assistantSuggestions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--full-space-2, 8px);
+  margin-top: var(--full-space-3, 12px);
+}
+
+.assistantSuggestionsLabel {
+  @include th-meta;
+  font-weight: var(--full-fw-semibold, 600);
+}
+
+.assistantChip {
+  padding: var(--full-space-1, 4px) var(--full-space-3, 12px);
+  border: 1px solid var(--full-border, #e8e5e0);
+  border-radius: 999px;
+  background: var(--full-surface, #fff);
+  @include th-meta;
+}
+
+.assistantChipIconed {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--full-space-1, 4px);
+
+  svg {
+    font-size: 0.875rem;
+    color: var(--full-text-muted, #4a5568);
+  }
+}
+
+/* Travel Policy landing page: [title/description/input] | [Try asking + 2-per-line questions].
+   Both columns stretch to the taller one's height; the questions fill it. */
+.assistantSplit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--full-space-4, 16px);
+
+  @include th-desktop-up {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    align-items: stretch;
+  }
+}
+
+.assistantMain {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+
+  .assistantInputRow {
+    max-width: none;
+  }
+}
+
+.assistantTry {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-3, 12px);
+  min-width: 0;
+
+  @include th-desktop-up {
+    padding-inline-start: var(--full-space-4, 16px);
+    border-inline-start: 1px solid var(--full-border, #c8d7e6);
+  }
+
+  .assistantSuggestionsLabel {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+}
+
+.assistantTryGrid {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  align-self: stretch;
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-rows: 1fr;
+  gap: var(--full-space-2, 8px);
+
+  @include th-tablet-up {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.assistantTryChip {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding: var(--full-space-2, 8px) var(--full-space-3, 12px);
+  border-radius: var(--full-radius-lg, 14px);
+  line-height: 1.35;
+}
+
+/* --- Need help ------------------------------------------------------------ */
+.needHelp {
+  display: flex;
+  gap: var(--full-space-3, 12px);
+  padding: var(--full-space-5, 24px);
+  // Card surface: --full-surface-alt now equals the Sky page canvas, so a
+  // tinted band would be invisible against the page.
+  @include th-card-surface;
+}
+
+.needHelpIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--full-primary, #b89c66);
+  color: #fff;
+  font-size: 1.25rem;
+}
+
+.needHelpBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--full-space-4, 16px);
+}
+
+.needHelpText {
+  flex: 1;
+  min-width: 220px;
+}
+
+.needHelpLabel {
+  display: block;
+  @include th-meta;
+  font-weight: var(--full-fw-bold, 700);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--full-accent-text, #816630);
+  margin: 2px 0;
+}
+
+.needHelpDescription {
+  @include th-meta;
+  margin: var(--full-space-1, 4px) 0 0;
+}
+
+/* The email and/or "Ask HR" steps, set off from the title/description with
+   a divider and pinned to the row's trailing edge. */
+.needHelpTrailing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--full-space-4, 16px);
+  padding-inline-start: var(--full-space-4, 16px);
+  border-inline-start: 1px solid var(--full-border, #e8e5e0);
+}
+
+.needHelpEmail {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  @include th-link;
+}
+
+.helpSteps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--full-space-3, 12px);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.helpStep {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-2, 8px);
+}
+
+.helpStepNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--full-primary, #b89c66);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: var(--full-fw-bold, 700);
+}
+
+.helpStepTitle {
+  @include th-body;
+  font-weight: var(--full-fw-semibold, 600);
+  color: var(--full-heading, #04253c);
+}
+
+.helpStepDescription {
+  @include th-meta;
+}
+
+.helpStepArrow {
+  color: var(--full-text-muted, #4a5568);
+  font-size: 0.75rem;
+}
+
+/* Need Help WITH "Ask HR" style steps (e.g. Annual Flight Ticket Benefits):
+   title/label/description left, the steps in ONE row on the right, each
+   step's description wrapping instead of pushing the steps onto a second
+   row. Opt-in via `.needHelpWithSteps` (only when the page has steps), so an
+   email-only Need Help row keeps its layout; also scoped under it so
+   `processSteps` sections using the same HelpSteps list are unaffected. */
+.needHelpWithSteps {
+  @include th-desktop-up {
+    flex-wrap: nowrap;
+    align-items: center;
+
+    .needHelpText {
+      flex: 0 1 300px;
+      min-width: 200px;
+    }
+
+    .needHelpTrailing {
+      flex: 1 1 0;
+      min-width: 0;
+      flex-wrap: nowrap;
+    }
+
+    .helpSteps {
+      flex: 1;
+      min-width: 0;
+      flex-wrap: nowrap;
+      align-items: flex-start;
+    }
+
+    .helpStep {
+      flex: 1 1 0;
+      min-width: 0;
+      align-items: flex-start;
+    }
+
+    .helpStepArrow {
+      flex: none;
+      align-self: center;
+    }
+
+    .helpStepTitle,
+    .helpStepDescription {
+      overflow-wrap: anywhere;
+    }
+  }
+}
+
+/* --- Closing banner --------------------------------------------------------- */
+.closingBanner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--full-space-4, 16px);
+  padding: var(--full-space-5, 24px);
+  border-radius: var(--full-radius-md, 8px);
+  background: linear-gradient(135deg, #0f6b3f, #1a8a54);
+  color: #fff;
+}
+
+.closingIcon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.closingTitle {
+  @include th-card-title;
+  color: #fff;
+  margin: 0 0 4px;
+}
+
+.closingDescription {
+  @include th-body;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+.closingBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--full-space-4, 16px);
+  margin-inline-start: auto;
+}
+
+.closingBadge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--full-space-1, 4px);
+  font-size: var(--full-fs-meta, 0.8125rem);
+  font-weight: var(--full-fw-semibold, 600);
+  white-space: nowrap;
+}
+
+.closingBadgeIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #fff;
+  color: #0f6b3f;
+  font-size: 1.25rem;
+}
+
+/* =========================================================================
+   Opt-in section/card options (TH_PolicySections.SectionStyle / Theme /
+   Columns / CardStyle / TintCards) and the Split / Checklist / Banner
+   layouts. Nothing below applies unless a section opts in.
+   ========================================================================= */
+
+/* --- Theme accents (data-th-theme on the section) -------------------------- */
+[data-th-theme='gold'] {
+  --th-section-accent: #9c7f44;
+  --th-section-accent-rgb: 195, 161, 94;
+}
+
+[data-th-theme='blue'] {
+  --th-section-accent: #1d5fd1;
+  --th-section-accent-rgb: 37, 99, 235;
+}
+
+[data-th-theme='green'] {
+  --th-section-accent: #15803d;
+  --th-section-accent-rgb: 22, 163, 74;
+}
+
+[data-th-theme='amber'] {
+  --th-section-accent: #b45309;
+  --th-section-accent-rgb: 217, 119, 6;
+}
+
+[data-th-theme='red'] {
+  --th-section-accent: #c0262d;
+  --th-section-accent-rgb: 220, 38, 38;
+}
+
+[data-th-theme='purple'] {
+  --th-section-accent: #6d28d9;
+  --th-section-accent-rgb: 124, 58, 237;
+}
+
+[data-th-theme='teal'] {
+  --th-section-accent: #0f766e;
+  --th-section-accent-rgb: 13, 148, 136;
+}
+
+[data-th-theme] {
+  --th-section-accent-soft: rgba(var(--th-section-accent-rgb), 0.14);
+
+  .sectionNumber,
+  .sectionHeaderIcon {
+    background: var(--th-section-accent);
+    color: #fff;
+  }
+
+  .helpStepIconBadge {
+    background: var(--th-section-accent-soft);
+    color: var(--th-section-accent);
+  }
+}
+
+/* --- Section containers ------------------------------------------------------ */
+.sectionCard {
+  @include th-card-surface;
+  padding: var(--full-space-5, 24px);
+}
+
+.sectionTinted {
+  padding: var(--full-space-5, 24px);
+  border-radius: var(--full-radius-lg, 14px);
+  border: 1px solid rgba(var(--th-section-accent-rgb, 195, 161, 94), 0.26);
+  background: linear-gradient(rgba(var(--th-section-accent-rgb, 195, 161, 94), 0.08), rgba(var(--th-section-accent-rgb, 195, 161, 94), 0.08)),
+    var(--full-surface, #fff);
+}
+
+.sectionHeaderRow {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-3, 12px);
+}
+
+.sectionHeaderIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(195, 161, 94, 0.16);
+  color: var(--full-accent-text, #816630);
+  font-size: 1.125rem;
+}
+
+.sectionHeaderText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+
+  .sectionSubtitle {
+    margin: 0;
+  }
+}
+
+/* --- Card grid options --------------------------------------------------------- */
+/* Columns = N: N per row on desktop, up to 2 on tablets, 1 on phones. */
+.highlightGridCols {
+  @include th-tablet-up {
+    grid-template-columns: repeat(min(2, var(--th-cols, 2)), minmax(0, 1fr));
+  }
+
+  @include th-desktop-up {
+    grid-template-columns: repeat(var(--th-cols, 3), minmax(0, 1fr));
+  }
+}
+
+/* TintCards = Yes: each card washed with its own IconColor. */
+.highlightCardTinted {
+  background: color-mix(in srgb, var(--th-card-accent) 7%, var(--full-surface, #fff));
+  border-color: color-mix(in srgb, var(--th-card-accent) 26%, var(--full-surface, #fff));
+
+  .highlightSubPoints {
+    background: color-mix(in srgb, var(--th-card-accent) 6%, var(--full-surface, #fff));
+  }
+}
+
+/* A tag (from `%%Tag`) at the end of the header row, not absolutely positioned. */
+.highlightHeaderTag {
+  flex-shrink: 0;
+  margin-inline-start: auto;
+  padding: 3px 10px;
+  border-radius: var(--full-radius-pill, 9999px);
+  background: color-mix(in srgb, var(--th-card-accent, #c3a15e) 14%, var(--full-surface, #fff));
+  color: var(--full-heading, #081c32);
+  font-size: var(--full-fs-meta, 0.8125rem);
+  font-weight: var(--full-fw-semibold, 600);
+  white-space: nowrap;
+}
+
+/* "2. Employee Responsibilities" - number badge in a card title. */
+.cardNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  margin-inline-end: var(--full-space-2, 8px);
+  border-radius: 50%;
+  background: var(--full-primary, #c3a15e);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: var(--full-fw-bold, 700);
+  vertical-align: middle;
+}
+
+/* CardStyle = IconMedia: bigger icon in its own left column. */
+.highlightCardMedia {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--full-space-4, 16px);
+}
+
+.highlightMediaIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--full-primary, #c3a15e);
+  color: #fff;
+  font-size: 1.5rem;
+}
+
+.highlightMediaBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--full-space-2, 8px);
+  min-width: 0;
+}
+
+/* --- Process steps in one row (processSteps sections) --------------------- */
+.helpStepIconBadge {
+  width: 40px;
+  height: 40px;
+  background: rgba(195, 161, 94, 0.16);
+  color: var(--full-accent-text, #816630);
+  font-size: 1.125rem;
+}
+
+.helpStepsRow {
+  @include th-desktop-up {
+    flex-wrap: nowrap;
+    align-items: flex-start;
+
+    .helpStep {
+      flex: 1 1 0;
+      min-width: 0;
+      align-items: flex-start;
+    }
+
+    .helpStepArrow {
+      flex: none;
+      align-self: center;
+    }
+  }
+}
+
+/* --- Tabs ------------------------------------------------------------------------ */
+.tabsBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-4, 16px);
+
+  > .tabPanel {
+    padding-top: 0;
+  }
+}
+
+/* --- Split (parts separated by vertical lines) ------------------------------ */
+.split {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-4, 16px);
+
+  @include th-tablet-up {
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0;
+  }
+}
+
+.splitCompact {
+  padding: var(--full-space-3, 12px) var(--full-space-4, 16px);
+  border-radius: var(--full-radius-lg, 14px);
+  border: 1px solid var(--full-border, #c8d7e6);
+  background: var(--full-surface, #fff);
+}
+
+.splitPart {
+  display: flex;
+  flex: 1 1 0;
+  align-items: flex-start;
+  gap: var(--full-space-3, 12px);
+  min-width: 0;
+
+  & + & {
+    padding-top: var(--full-space-4, 16px);
+    border-top: 1px solid var(--full-border, #c8d7e6);
+  }
+
+  @include th-tablet-up {
+    padding-inline: var(--full-space-4, 16px);
+
+    &:first-child {
+      padding-inline-start: 0;
+    }
+
+    &:last-child {
+      padding-inline-end: 0;
+    }
+
+    & + & {
+      padding-top: 0;
+      border-top: 0;
+      border-inline-start: 1px solid var(--full-border, #c8d7e6);
+    }
+  }
+}
+
+/* A LinkItem part: compact, at the end, e.g. "Need help deciding?". */
+.splitPartTrailing {
+  @include th-tablet-up {
+    flex: 0 0 auto;
+    max-width: 260px;
+  }
+}
+
+.splitIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--th-section-accent-soft, rgba(195, 161, 94, 0.16));
+  color: var(--th-section-accent, var(--full-accent-text, #816630));
+  font-size: 1.25rem;
+}
+
+.splitBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-1, 4px);
+  min-width: 0;
+}
+
+.splitTitle {
+  @include th-body;
+
+  & {
+    margin: 0;
+    font-weight: var(--full-fw-bold, 700);
+    color: var(--full-heading, #081c32);
+  }
+}
+
+.splitDescription {
+  @include th-meta;
+
+  & {
+    margin: 0;
+  }
+}
+
+.splitLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: start;
+  cursor: pointer;
+  @include th-link;
+}
+
+/* --- Checklist ------------------------------------------------------------------ */
+.checklist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-3, 12px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include th-desktop-up {
+    flex-direction: row;
+    gap: 0;
+  }
+}
+
+.checklistItem {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  gap: var(--full-space-2, 8px);
+  min-width: 0;
+  font-size: var(--full-fs-body, 0.9375rem);
+  font-weight: var(--full-fw-medium, 500);
+  color: var(--full-text, #081c32);
+
+  @include th-desktop-up {
+    padding-inline: var(--full-space-4, 16px);
+
+    &:first-child {
+      padding-inline-start: 0;
+    }
+
+    & + & {
+      border-inline-start: 1px solid var(--full-border, #c8d7e6);
+    }
+  }
+}
+
+.checklistCheck {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #15803d;
+  color: #fff;
+  font-size: 0.875rem;
+}
+
+/* --- Banner (header band with script tagline) ---------------------------------- */
+.banner {
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-4, 16px);
+  padding: var(--full-space-4, 16px) var(--full-space-5, 24px);
+  border-radius: var(--full-radius-lg, 14px);
+  border: 1px solid rgba(var(--th-section-accent-rgb, 37, 99, 235), 0.22);
+  background: linear-gradient(rgba(var(--th-section-accent-rgb, 37, 99, 235), 0.09), rgba(var(--th-section-accent-rgb, 37, 99, 235), 0.09)),
+    var(--full-surface, #fff);
+}
+
+.bannerIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--th-section-accent, #1d5fd1);
+  color: #fff;
+  font-size: 1.5rem;
+}
+
+.bannerText {
+  flex: 1;
+  min-width: 0;
+}
+
+.bannerTitle {
+  @include th-section-title;
+
+  & {
+    display: flex;
+    align-items: center;
+    gap: var(--full-space-2, 8px);
+  }
+}
+
+.bannerSubtitle {
+  @include th-meta;
+
+  & {
+    margin: 2px 0 0;
+  }
+}
+
+.bannerTagline {
+  display: none;
+  flex-direction: column;
+  align-items: flex-end;
+  margin: 0;
+  font-family: var(--full-font-family-display, "Cormorant Garamond", Georgia, serif);
+  font-size: 1.25rem;
+  font-style: italic;
+  font-weight: var(--full-fw-semibold, 600);
+  line-height: 1.2;
+  color: var(--full-heading, #081c32);
+  text-align: end;
+
+  @include th-tablet-up {
+    display: flex;
+  }
+}
+
+/* =========================================================================
+   Round 2 layouts & options (all opt-in): section widths, header note/link,
+   light hero, ImageCards, Feature, Faq, Search, stacked process steps,
+   Value blocks.
+   ========================================================================= */
+
+/* A card/link rendered as <a>/<button>/<div>: reset to a plain block. */
+@mixin th-link-reset {
+  display: flex;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  text-decoration: none;
+}
+
+/* --- Side-by-side sections (Width) -------------------------------------- */
+.sectionRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+
+  @include th-desktop-up {
+    grid-template-columns: var(--th-row-cols, 1fr 1fr);
+    align-items: stretch;
+  }
+}
+
+.sectionRowCell {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  > section {
+    flex: 1;
+  }
+}
+
+/* --- Section header with a note and/or link on the right ------------------- */
+.sectionHeaderBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--full-space-3, 12px) var(--full-space-5, 24px);
+
+  .sectionSubtitle {
+    margin: 2px 0 0;
+  }
+}
+
+.sectionHeaderAside {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--full-space-3, 12px) var(--full-space-5, 24px);
+  margin-inline-start: auto;
+}
+
+.sectionHeaderNote {
+  max-width: 34rem;
+  padding: var(--full-space-2, 8px) var(--full-space-3, 12px);
+  border-radius: var(--full-radius-md, 8px);
+  border: 1px solid var(--full-border, #c8d7e6);
+  background: var(--full-surface, #fff);
+  font-size: var(--full-fs-meta, 0.8125rem);
+
+  .highlightParagraph,
+  .highlightSubPoints {
+    margin: 0;
+  }
+
+  .highlightSubPoints {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--full-space-2, 8px) var(--full-space-4, 16px);
+    padding: 0;
+    background: none;
+    list-style: none;
+  }
+}
+
+.sectionHeaderLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--full-radius-pill, 9999px);
+  border: 1px solid var(--full-accent-text, #816630);
+  background: var(--full-surface, #fff);
+  color: var(--full-accent-text, #816630);
+  font: inherit;
+  font-size: var(--full-fs-meta, 0.8125rem);
+  font-weight: var(--full-fw-semibold, 600);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  @include th-focusable;
+
+  &:hover {
+    background: var(--full-accent-wash, rgba(195, 161, 94, 0.08));
+    text-decoration: none;
+  }
+}
+
+/* --- Light hero (HeroStyle = Light) -------------------------------------- */
+.heroLight {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 15rem;
+  overflow: hidden;
+  border-radius: var(--full-radius-lg, 14px);
+  border: 1px solid var(--full-border, #c8d7e6);
+  background: linear-gradient(90deg, #f4f9ff 0%, #eef6fd 45%, #e3f0fb 100%);
+}
+
+.heroLightImage {
+  position: absolute;
+  inset: 0 0 0 38%;
+  background: center / cover no-repeat;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 35%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 35%);
+}
+
+.heroLightContent {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--full-space-5, 24px);
+  max-width: 44rem;
+  padding: var(--full-space-6, 32px);
+}
+
+.heroLightIcon {
+  display: none;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 3rem;
+
+  @include th-tablet-up {
+    display: inline-flex;
+  }
+}
+
+.heroLightText {
+  min-width: 0;
+}
+
+.heroEyebrow,
+.heroEyebrowDark {
+  margin: 0 0 4px;
+  font-size: var(--full-fs-meta, 0.8125rem);
+  font-weight: var(--full-fw-semibold, 600);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.heroEyebrow {
+  color: #1e3a8a;
+}
+
+.heroEyebrowDark {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.heroLightTitle {
+  @include th-page-title;
+
+  & {
+    margin: 0 0 var(--full-space-2, 8px);
+    color: #0b2a6b;
+  }
+}
+
+.heroLightSubtitle {
+  @include th-body;
+
+  & {
+    margin: 0 0 4px;
+    font-size: 1.0625rem;
+    font-weight: var(--full-fw-semibold, 600);
+    color: #1e3a8a;
+  }
+}
+
+.heroLightDescription {
+  @include th-body;
+
+  & {
+    margin: 0;
+    color: var(--full-text-muted, #3c5573);
+  }
+}
+
+.heroLightTagline {
+  position: absolute;
+  z-index: 1;
+  right: var(--full-space-6, 32px);
+  bottom: var(--full-space-5, 24px);
+  display: none;
+  font-family: var(--full-font-family-display, "Cormorant Garamond", Georgia, serif);
+  font-size: 1.375rem;
+  font-style: italic;
+  font-weight: var(--full-fw-semibold, 600);
+  line-height: 1.2;
+  color: #fff;
+  text-align: right;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  white-space: pre-line;
+
+  @include th-desktop-up {
+    display: block;
+  }
+}
+
+.heroLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--full-space-3, 12px);
+  margin-top: var(--full-space-4, 16px);
+}
+
+@mixin th-hero-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: var(--full-radius-pill, 9999px);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  text-decoration: none;
+  cursor: pointer;
+  @include th-focusable;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+.heroButtonPrimary {
+  @include th-hero-button;
+
+  & {
+    border: 0;
+    background: var(--full-primary-strong, #816630);
+    color: #fff;
+  }
+}
+
+.heroButtonSecondary {
+  @include th-hero-button;
+
+  & {
+    border: 1px solid #1e3a8a;
+    background: rgba(255, 255, 255, 0.85);
+    color: #1e3a8a;
+  }
+}
+
+.heroButtonOnDark {
+  @include th-hero-button;
+
+  & {
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    background: transparent;
+    color: #fff;
+  }
+}
+
+/* --- Value block ("Starting From / SAR 5,999 / per person") --------------- */
+.valueBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.valueLabel,
+.valueNote {
+  font-size: 0.75rem;
+  color: var(--full-text-muted, #3c5573);
+}
+
+.valueFigure {
+  font-size: 1.375rem;
+  font-weight: var(--full-fw-bold, 700);
+  line-height: 1.15;
+  color: var(--th-card-accent, #1d4ed8);
+}
+
+/* --- ImageCards ------------------------------------------------------------ */
+.imageCards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--full-space-4, 16px);
+
+  @include th-tablet-up {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.imageCardsTop,
+.imageCardsTile {
+  @include th-desktop-up {
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  }
+}
+
+.imageCardsBanner,
+.imageCardsLeft {
+  @include th-desktop-up {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.imageCardsCols {
+  @include th-desktop-up {
+    grid-template-columns: repeat(var(--th-cols, 3), minmax(0, 1fr));
+  }
+}
+
+.imageCard {
+  @include th-link-reset;
+  @include th-card-surface;
+
+  & {
+    position: relative;
+    flex-direction: column;
+    overflow: hidden;
+    height: 100%;
+  }
+}
+
+.imageCardLinked {
+  cursor: pointer;
+  transition: box-shadow var(--full-transition-base, 200ms ease), transform var(--full-transition-base, 200ms ease);
+  @include th-focusable;
+
+  &:hover {
+    box-shadow: var(--full-shadow-card-hover, 0 8px 24px rgba(8, 28, 50, 0.14));
+    transform: translateY(-2px);
+    text-decoration: none;
+  }
+
+  @include th-reduced-motion {
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+.imageCardMedia {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 10;
+  background: var(--full-surface-alt, #dff0f6);
+
+  > img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.imageCardBadge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 3px 10px;
+  border-radius: var(--full-radius-pill, 9999px);
+  background: var(--th-card-accent, #dc2626);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: var(--full-fw-semibold, 600);
+}
+
+.imageCardIconAnchor {
+  position: absolute;
+  left: 50%;
+  bottom: -22px;
+  transform: translateX(-50%);
+}
+
+.imageCardIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 3px solid var(--full-surface, #fff);
+  background: var(--th-card-accent, #1d4ed8);
+  color: #fff;
+  font-size: 1.125rem;
+}
+
+.imageCardTopIcon {
+  display: flex;
+  justify-content: flex-start;
+  padding: var(--full-space-4, 16px) var(--full-space-4, 16px) 0;
+
+  .imageCardIcon {
+    width: 56px;
+    height: 56px;
+    border: 0;
+    background: color-mix(in srgb, var(--th-card-accent, #1d4ed8) 14%, transparent);
+    color: var(--th-card-accent, #1d4ed8);
+    font-size: 1.5rem;
+  }
+}
+
+.imageCardBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.imageCardTop > .imageCardBody {
+  padding: var(--full-space-4, 16px);
+}
+
+.imageCardTop .imageCardMedia + .imageCardBody {
+  padding-top: 28px;
+  text-align: center;
+  align-items: center;
+}
+
+.imageCardTitle {
+  font-size: var(--full-fs-card-title, 1.125rem);
+  font-weight: var(--full-fw-bold, 700);
+  line-height: 1.25;
+  color: var(--full-heading, #081c32);
+}
+
+.imageCardSubtitle {
+  font-size: var(--full-fs-meta, 0.8125rem);
+  color: var(--full-text-muted, #3c5573);
+}
+
+.imageCardText {
+  font-size: var(--full-fs-meta, 0.8125rem);
+  line-height: var(--full-lh-normal, 1.5);
+  color: var(--full-text-muted, #3c5573);
+}
+
+.imageCardPoints {
+  display: block;
+  width: 100%;
+  text-align: start;
+
+  .highlightSubPoints {
+    background: none;
+    padding: 0;
+    list-style: none;
+  }
+}
+
+.imageCardButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  align-self: stretch;
+  margin-top: auto;
+  padding: 9px 14px;
+  border-radius: var(--full-radius-md, 8px);
+  background: var(--th-card-accent, #1e3a8a);
+  color: #fff;
+  font-size: var(--full-fs-meta, 0.8125rem);
+  font-weight: var(--full-fw-semibold, 600);
+}
+
+.imageCardValue {
+  margin-top: 4px;
+}
+
+/* ImageTile */
+.imageCardTile .imageCardMedia {
+  aspect-ratio: 16 / 9;
+}
+
+.imageCardTileIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  margin: var(--full-space-4, 16px) auto 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--th-card-accent, #1d4ed8) 14%, transparent);
+  color: var(--th-card-accent, #1d4ed8);
+  font-size: 1.375rem;
+}
+
+.imageCardTileFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--full-space-2, 8px);
+  padding: 28px var(--full-space-3, 12px) var(--full-space-3, 12px);
+
+  .imageCardTitle {
+    font-size: 0.9375rem;
+  }
+}
+
+.imageCardTileIcon + .imageCardTileFooter {
+  padding-top: var(--full-space-3, 12px);
+  flex-direction: column;
+  text-align: center;
+}
+
+.imageCardArrow {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--th-card-accent, #1d4ed8);
+  color: #fff;
+  font-size: 0.75rem;
+}
+
+/* ImageBanner */
+.imageCardBanner {
+  min-height: 220px;
+  justify-content: flex-end;
+  background: var(--full-secondary, #0f2c4a);
+  color: #fff;
+}
+
+.imageCardBannerImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.imageCardBannerContent {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: var(--full-space-5, 24px);
+  background: linear-gradient(0deg, rgba(8, 28, 50, 0.82) 0%, rgba(8, 28, 50, 0.45) 60%, rgba(8, 28, 50, 0) 100%);
+
+  .imageCardButton {
+    align-self: flex-start;
+    margin-top: var(--full-space-2, 8px);
+  }
+}
+
+.imageCardEyebrow {
+  font-size: 0.75rem;
+  font-weight: var(--full-fw-semibold, 600);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.imageCardBannerTitle {
+  font-family: var(--full-font-family-display, "Cormorant Garamond", Georgia, serif);
+  font-size: 1.75rem;
+  font-weight: var(--full-fw-bold, 700);
+  line-height: 1.1;
+}
+
+.imageCardBannerSub {
+  font-size: 1rem;
+  font-weight: var(--full-fw-semibold, 600);
+}
+
+.imageCardBannerText {
+  max-width: 30rem;
+  font-size: var(--full-fs-meta, 0.8125rem);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/* ImageLeft */
+.imageCardLeft {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--full-space-4, 16px);
+  padding: var(--full-space-3, 12px);
+}
+
+.imageCardLeftMedia {
+  position: relative;
+  flex: 0 0 38%;
+  align-self: stretch;
+  min-height: 90px;
+  overflow: hidden;
+  border-radius: var(--full-radius-md, 8px);
+
+  > img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .imageCardIcon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.imageCardLeftIcon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--th-card-accent, #1d4ed8) 14%, transparent);
+  color: var(--th-card-accent, #1d4ed8);
+  font-size: 1.5rem;
+}
+
+/* --- Feature panel ------------------------------------------------------------ */
+.feature {
+  @include th-card-surface;
+
+  & {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  @include th-desktop-up {
+    flex-direction: row;
+    align-items: stretch;
+  }
+}
+
+.sectionTinted > .feature {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.featureImageLeft {
+  @include th-desktop-up {
+    flex-direction: row-reverse;
+  }
+}
+
+.featureMain {
+  display: flex;
+  flex: 1 1 0;
+  align-items: flex-start;
+  gap: var(--full-space-4, 16px);
+  min-width: 0;
+  padding: var(--full-space-5, 24px);
+}
+
+.featureIcon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--th-section-accent-soft, rgba(37, 99, 235, 0.12));
+  color: var(--th-section-accent, #1d4ed8);
+  font-size: 1.75rem;
+}
+
+.featureBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--full-space-2, 8px);
+  min-width: 0;
+
+  .highlightParagraph:first-of-type {
+    margin-top: 0;
+  }
+}
+
+.featureTitle {
+  @include th-section-title;
+
+  & {
+    display: flex;
+    align-items: center;
+    gap: var(--full-space-2, 8px);
+    margin: 0;
+  }
+}
+
+.featureSubtitle {
+  @include th-body;
+
+  & {
+    margin: 0;
+    font-weight: var(--full-fw-semibold, 600);
+    color: var(--th-section-accent, #1e3a8a);
+  }
+}
+
+.featureInfos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--full-space-3, 12px);
+  margin-top: var(--full-space-2, 8px);
+}
+
+.featureInfo {
+  @include th-link-reset;
+
+  & {
+    align-items: flex-start;
+    gap: var(--full-space-3, 12px);
+    padding: var(--full-space-3, 12px);
+    border-radius: var(--full-radius-md, 8px);
+    border: 1px solid var(--full-border, #c8d7e6);
+    background: var(--full-surface, #fff);
+  }
+
+  .imageCardTitle {
+    font-size: 0.9375rem;
+  }
+}
+
+a.featureInfo,
+button.featureInfo {
+  cursor: pointer;
+
+  &:hover {
+    border-color: rgba(195, 161, 94, 0.5);
+    text-decoration: none;
+  }
+}
+
+.featureInfoIcon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--th-card-accent, #1d4ed8) 14%, transparent);
+  color: var(--th-card-accent, #1d4ed8);
+  font-size: 1.125rem;
+}
+
+.featureLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: var(--full-fs-meta, 0.8125rem);
+  font-weight: var(--full-fw-semibold, 600);
+  color: var(--full-accent-text, #816630);
+  cursor: pointer;
+}
+
+.featureStats {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--full-space-3, 12px);
+  padding: 0 var(--full-space-5, 24px) var(--full-space-5, 24px);
+
+  @include th-desktop-up {
+    flex: 0 0 200px;
+    flex-direction: column;
+    justify-content: center;
+    padding: var(--full-space-5, 24px) 0;
+  }
+}
+
+.featureStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: var(--full-space-4, 16px);
+  border-radius: var(--full-radius-lg, 14px);
+  border: 1px solid var(--full-border, #c8d7e6);
+  background: color-mix(in srgb, var(--th-card-accent, #2563eb) 6%, var(--full-surface, #fff));
+  text-align: center;
+
+  .valueBlock {
+    align-items: center;
+  }
+}
+
+.featureStatIcon {
+  font-size: 1.75rem;
+  color: var(--th-card-accent, #1d4ed8);
+}
+
+.featureImage {
+  display: block;
+  width: 100%;
+  max-height: 260px;
+  object-fit: cover;
+
+  @include th-desktop-up {
+    flex: 0 0 30%;
+    width: 30%;
+    max-height: none;
+  }
+}
+
+.featureWithImage .featureStats {
+  @include th-desktop-up {
+    padding-inline: 0 var(--full-space-4, 16px);
+  }
+}
+
+/* --- FAQ ------------------------------------------------------------------------- */
+.faq {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-2, 8px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.faqItem {
+  border-radius: var(--full-radius-md, 8px);
+  border: 1px solid var(--full-border, #c8d7e6);
+  background: var(--full-surface, #fff);
+}
+
+.faqRow {
+  @include th-link-reset;
+
+  & {
+    align-items: center;
+    gap: var(--full-space-3, 12px);
+    padding: 10px 12px;
+    cursor: pointer;
+  }
+
+  @include th-focusable;
+
+  &:hover {
+    text-decoration: none;
+    background: var(--full-accent-wash, rgba(195, 161, 94, 0.08));
+  }
+}
+
+.faqNumber {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #0e7490;
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: var(--full-fw-bold, 700);
+}
+
+.faqQuestion {
+  flex: 1;
+  font-size: 0.875rem;
+  font-weight: var(--full-fw-semibold, 600);
+  color: var(--full-heading, #081c32);
+}
+
+.faqChevron {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: var(--full-text-muted, #3c5573);
+}
+
+.faqAnswer {
+  padding: 0 12px 12px 50px;
+}
+
+/* --- Search ---------------------------------------------------------------------- */
+.search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--full-space-3, 12px) var(--full-space-5, 24px);
+  padding: var(--full-space-4, 16px);
+  border-radius: var(--full-radius-lg, 14px);
+  border: 1px solid var(--full-border, #c8d7e6);
+  background: var(--full-surface, #fff);
+}
+
+.searchForm {
+  display: flex;
+  flex: 1 1 420px;
+  align-items: center;
+  min-width: 0;
+  border-radius: var(--full-radius-md, 8px);
+  border: 1px solid var(--full-border-strong, #aabed2);
+  overflow: hidden;
+}
+
+.searchIcon {
+  padding: 0 10px 0 14px;
+  color: var(--full-text-muted, #3c5573);
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  padding: 11px 8px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--full-text, #081c32);
+  font: inherit;
+  font-size: 0.9375rem;
+}
+
+.searchButton {
+  align-self: stretch;
+  padding: 0 22px;
+  border: 0;
+  background: #1e3a8a;
+  color: #fff;
+  font: inherit;
+  font-weight: var(--full-fw-semibold, 600);
+  cursor: pointer;
+}
+
+.searchQuick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--full-space-2, 8px);
+}
+
+.searchQuickLabel {
+  font-size: var(--full-fs-meta, 0.8125rem);
+  font-weight: var(--full-fw-semibold, 600);
+  color: var(--full-heading, #081c32);
+}
+
+.searchPill {
+  display: inline-flex;
+  padding: 6px 14px;
+  border-radius: var(--full-radius-pill, 9999px);
+  border: 1px solid var(--full-border, #c8d7e6);
+  background: var(--full-surface, #fff);
+  color: var(--full-heading, #081c32);
+  font: inherit;
+  font-size: var(--full-fs-meta, 0.8125rem);
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #1e3a8a;
+    text-decoration: none;
+  }
+}
+
+/* --- Stacked process steps (CardStyle = Stacked) ------------------------------ */
+.stackedSteps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--full-space-3, 12px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include th-desktop-up {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  > .helpStepArrow {
+    display: none;
+    align-self: center;
+    flex: none;
+
+    @include th-desktop-up {
+      display: inline-block;
+    }
+  }
+}
+
+.stackedStep {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: var(--full-space-3, 12px);
+  border-radius: var(--full-radius-lg, 14px);
+  border: 1px solid var(--full-border, #c8d7e6);
+  background: color-mix(in srgb, var(--th-card-accent, #2563eb) 5%, var(--full-surface, #fff));
+}
+
+.stackedStepTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  position: relative;
+  min-height: 56px;
+}
+
+.stackedStepNumber {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #0e7490;
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: var(--full-fw-bold, 700);
+}
+
+.stackedStepIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--th-card-accent, #2563eb) 14%, transparent);
+  color: var(--th-card-accent, #1d4ed8);
+  font-size: 1.5rem;
+}
+
+.stackedStepTitle {
+  font-size: 0.9375rem;
+  font-weight: var(--full-fw-bold, 700);
+  color: var(--full-heading, #081c32);
+}
+
+.stackedStepSubtitle {
+  font-size: 0.75rem;
+  font-weight: var(--full-fw-semibold, 600);
+  color: var(--full-text-muted, #3c5573);
+}
+
+.stackedStepImage {
+  display: block;
+  width: 100%;
+  margin-top: auto;
+  border-radius: var(--full-radius-md, 8px);
+}
+
+/* --- Split part image (QR code etc.) -------------------------------------------- */
+.splitImage {
+  flex-shrink: 0;
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  border-radius: var(--full-radius-md, 8px);
+  border: 1px solid var(--full-border, #c8d7e6);
+  background: #fff;
+}
+
+.imageCardButtonOutline {
+  border: 1px solid #1e3a8a;
+  background: var(--full-surface, #fff);
+  color: #1e3a8a;
+}
+
+/* An ImageTop card without a photo: icon, text and link left-aligned. */
+.imageCardTopIcon + .imageCardBody {
+  text-align: start;
+}
+
+/* Stacked steps wrap onto more rows instead of squeezing (e.g. 7 steps in a half-width section). */
+.stackedSteps {
+  @include th-desktop-up {
+    flex-wrap: wrap;
+  }
+}
+
+.stackedStep {
+  min-width: 140px;
+}
+
+/* A title-only step: icon, number and label, no box (SAP Concur Workflow Cycle). */
+.stackedStepCompact {
+  min-width: 84px;
+  padding: var(--full-space-2, 8px) 0;
+  border: 0;
+  background: none;
+  align-items: center;
+  text-align: center;
+
+  .stackedStepTop {
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .stackedStepNumber {
+    position: static;
+    order: 2;
+    width: 22px;
+    height: 22px;
+    font-size: 0.75rem;
+  }
+
+  .stackedStepTitle {
+    font-size: 0.8125rem;
+    font-weight: var(--full-fw-semibold, 600);
+  }
+}
+
+/* A Feature panel's button sits at its natural width. */
+.featureBody > .sectionHeaderLink {
+  align-self: flex-start;
+}

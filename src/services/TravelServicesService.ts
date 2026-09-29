@@ -4,28 +4,18 @@ import type { SharePointService } from './base/SharePointService';
 import { Logger } from './base/Logger';
 import type { ICache } from './base/MemoryCache';
 import { sanitizeUrl } from '../common/utils/urlValidation';
-import { orderBy, toBool, toNumber, toStringOr } from '../common/utils/collection';
+import { orderBy, toBool, toNumber, toOptionalString, toStringOr } from '../common/utils/collection';
+import { safeColor } from '../common/utils/color';
 
 const LIST = 'TH_TravelServices';
 const TTL_SECONDS = 300;
-
-/** Safe CSS colour for the icon chip background: #rgb/#rrggbb or a --full-* token name. */
-function safeColor(raw: string | null | undefined, fallback: string): string {
-  const v = (raw ?? '').trim();
-  if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v)) {
-    return v;
-  }
-  if (/^--full-[a-z-]+$/.test(v)) {
-    return `var(${v})`;
-  }
-  return fallback;
-}
 
 interface IRawServiceItem {
   Id: number;
   Title: string | null;
   Description: string | null;
   ImageUrl: { Url: string } | null;
+  ImageFit: string | null;
   Icon: string | null;
   IconBackgroundColor: string | null;
   LinkUrl: { Url: string } | null;
@@ -33,9 +23,18 @@ interface IRawServiceItem {
   LinkText: string | null;
   OpenInNewTab: boolean | null;
   DisplayOrder: number | null;
+  PageSlug?: string | null;
 }
 
-const SELECT = [
+// ImageFit is newer than the rest of this list's columns (added for the SAP
+// Concur logo-cropping fix) - a site that hasn't re-run the provisioning
+// script yet won't have that column, and SharePoint REST fails the *entire*
+// $select when one field doesn't exist. BASE_SELECT is the fallback used if
+// the full SELECT 400s, so a not-yet-provisioned site still gets a working
+// carousel (every image just uses the 'cover' default) instead of the whole
+// section - and the global nav tabs that read from this same call - going
+// down.
+const BASE_SELECT = [
   'Id',
   'Title',
   'Description',
@@ -48,6 +47,9 @@ const SELECT = [
   'OpenInNewTab',
   'DisplayOrder'
 ];
+const SELECT = [...BASE_SELECT, 'ImageFit'];
+// PageSlug (newest): opens a list-driven TH_PolicyPages page for this service.
+const SELECT_WITH_PAGE = [...SELECT, 'PageSlug'];
 
 export interface ITravelServicesService {
   getServices(config: ITravelHubConfiguration): Promise<ITravelService[]>;
@@ -67,13 +69,19 @@ export class TravelServicesService implements ITravelServicesService {
   public async getServices(config: ITravelHubConfiguration): Promise<ITravelService[]> {
     return this.cache.getOrAdd('travelServices', TTL_SECONDS, async () => {
       const nowIso = new Date().toISOString();
-      const raw = await this.spo.getListItems<IRawServiceItem>({
-        list: LIST,
-        select: SELECT,
-        filter: `IsActive eq 1 and (StartDate eq null or StartDate le datetime'${nowIso}') and (EndDate eq null or EndDate ge datetime'${nowIso}')`,
-        orderBy: { field: 'DisplayOrder', ascending: true },
-        top: 50
-      });
+      const filter = `IsActive eq 1 and (StartDate eq null or StartDate le datetime'${nowIso}') and (EndDate eq null or EndDate ge datetime'${nowIso}')`;
+      const orderByField = { field: 'DisplayOrder', ascending: true };
+
+      let raw: IRawServiceItem[];
+      try {
+        raw = await this.spo
+          .getListItems<IRawServiceItem>({ list: LIST, select: SELECT_WITH_PAGE, filter, orderBy: orderByField, top: 50 })
+          .catch(() => this.spo.getListItems<IRawServiceItem>({ list: LIST, select: SELECT, filter, orderBy: orderByField, top: 50 }));
+      } catch (error) {
+        const detail = error instanceof Error ? error.message : String(error);
+        this.log.warn(`"${LIST}" query with ImageFit failed (column not provisioned yet?) - retrying without it. ${detail}`);
+        raw = await this.spo.getListItems<IRawServiceItem>({ list: LIST, select: BASE_SELECT, filter, orderBy: orderByField, top: 50 });
+      }
 
       const mapped = raw.map((item) => this.mapService(item, config.services.defaultLinkText));
       return orderBy(mapped, (s) => s.displayOrder);
@@ -92,12 +100,14 @@ export class TravelServicesService implements ITravelServicesService {
       title: toStringOr(item.Title, 'Untitled service'),
       description: toStringOr(item.Description, ''),
       imageUrl: sanitizeUrl(item.ImageUrl?.Url),
+      imageFit: (item.ImageFit ?? '').toLowerCase() === 'contain' ? 'contain' : 'cover',
       icon: toStringOr(item.Icon, 'Page'),
       iconBackgroundColor: safeColor(item.IconBackgroundColor, 'var(--full-primary, #b89c66)'),
       linkUrl,
       linkType,
       openInNewTab: toBool(item.OpenInNewTab, linkType === 'external'),
       linkText: toStringOr(item.LinkText, defaultLinkText),
+      pageSlug: toOptionalString(item.PageSlug)?.trim().toLowerCase(),
       displayOrder: toNumber(item.DisplayOrder, 0)
     };
   }

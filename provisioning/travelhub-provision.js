@@ -153,6 +153,16 @@
       `<Field Type='Lookup' ${attrs(n)} List='{${String(targetListId).replace(/[{}]/g, '')}}' ShowField='Title' />`
   };
 
+  // TH_PolicySections.Layout choices. New layouts are appended here; step 4b
+  // adds any missing ones to an EXISTING Layout column (step 3 only creates
+  // missing fields, it never updates an existing field's choices).
+  const POLICY_SECTION_LAYOUTS = [
+    'Paragraph', 'CardsGrid', 'Table', 'Tabs', 'NumberedSteps', 'ProcessSteps', 'Callout', 'ImageBlock', 'LinksList',
+    'Split', 'Checklist', 'Banner', 'ImageCards', 'Feature', 'Faq', 'Search'
+  ];
+  // TH_PolicySections.CardStyle choices (same "append only" rule, step 4b).
+  const POLICY_CARD_STYLES = ['Default', 'IconHeader', 'IconMedia', 'Stacked', 'ImageTop', 'ImageLeft', 'ImageTile', 'ImageBanner'];
+
   // AddToAllContentTypes(4) | AddFieldInternalNameHint(8) | AddFieldToDefaultView(16)
   const ADD_FIELD_OPTIONS = 28;
 
@@ -168,7 +178,7 @@
         {
           name: 'Category',
           xml: F.choice('Category', [
-            'Brand', 'Hero', 'Services', 'Updates', 'Testimonials', 'QuickPulse',
+            'Brand', 'Hero', 'Services', 'BusinessTravel', 'Updates', 'Testimonials', 'QuickPulse',
             'Spend', 'Team', 'Footer', 'Dates', 'Sections', 'ViewAll', 'FeatureFlags'
           ])
         },
@@ -188,10 +198,16 @@
         { name: 'AccessibilityText', xml: F.text('AccessibilityText') },
         { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
         { name: 'AutoPlay', xml: F.bool('AutoPlay', true) },
-        { name: 'DurationSeconds', xml: F.number('DurationSeconds', { default: 6, min: 3, max: 30 }) },
+        // Image slides only - video slides advance on their own `ended` event instead
+        // (HeroBannerService.ts), so this ceiling only needs to cover a reasonable
+        // image dwell time, not a video's length.
+        { name: 'DurationSeconds', xml: F.number('DurationSeconds', { default: 6, min: 3, max: 600 }) },
         { name: 'IsActive', xml: F.bool('IsActive', true) },
         { name: 'StartDate', xml: F.date('StartDate', true) },
-        { name: 'EndDate', xml: F.date('EndDate', true) }
+        { name: 'EndDate', xml: F.date('EndDate', true) },
+        // Optional: a TH_PolicyPages Slug (e.g. 'sap-concur'). The service's
+        // nav tab and card then open that list-driven page.
+        { name: 'PageSlug', xml: F.text('PageSlug') }
       ]
     },
     {
@@ -200,6 +216,11 @@
       fields: [
         { name: 'Description', xml: F.note('Description', 4) },
         { name: 'ImageUrl', xml: F.url('ImageUrl') },
+        // 'Cover' crops to fill the card image (photography); 'Contain'
+        // letterboxes to keep the whole image visible - use it for a
+        // logo/wordmark image (e.g. a partner brand image with text) that
+        // must not be cropped.
+        { name: 'ImageFit', xml: F.choice('ImageFit', ['Cover', 'Contain'], 'Cover') },
         { name: 'Icon', xml: F.text('Icon') },
         { name: 'IconBackgroundColor', xml: F.text('IconBackgroundColor') },
         { name: 'LinkUrl', xml: F.url('LinkUrl') },
@@ -210,6 +231,40 @@
         { name: 'IsActive', xml: F.bool('IsActive', true) },
         { name: 'StartDate', xml: F.date('StartDate', true) },
         { name: 'EndDate', xml: F.date('EndDate', true) }
+      ]
+    },
+    {
+      // The 5 process-step cards on the dedicated Business Travel page
+      // (Raise Request, Approval, Book, Travel, Expense). Title = step
+      // title; Number is the value shown in the small coloured square.
+      title: 'TH_BusinessTravelSteps',
+      description: 'Business Travel page - the request-to-expense process steps.',
+      fields: [
+        { name: 'Description', xml: F.note('Description', 3) },
+        { name: 'Number', xml: F.number('Number', {}) },
+        // Hex (#rrggbb) or a --full-* design-token name (e.g. --full-primary).
+        { name: 'BackgroundColor', xml: F.text('BackgroundColor') },
+        { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
+        { name: 'IsActive', xml: F.bool('IsActive', true) }
+      ]
+    },
+    {
+      // The 3 info cards below the steps (Policy reminders, Useful
+      // Documents, Need further help?, …) on the same page.
+      title: 'TH_BusinessTravelInfoCards',
+      description: 'Business Travel page - supporting info cards.',
+      fields: [
+        { name: 'Description', xml: F.note('Description', 3) },
+        { name: 'Icon', xml: F.text('Icon') },
+        // In-app navigation to a TH_PolicyPages row (e.g. "employee-relocation")
+        // - wins over LinkUrl when both are set. See BUSINESS_TRAVEL_SLUG's
+        // sibling pattern in PolicyCardSections.tsx.
+        { name: 'TargetSlug', xml: F.text('TargetSlug') },
+        { name: 'LinkUrl', xml: F.url('LinkUrl') },
+        { name: 'LinkText', xml: F.text('LinkText') },
+        { name: 'OpenInNewTab', xml: F.bool('OpenInNewTab', false) },
+        { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
+        { name: 'IsActive', xml: F.bool('IsActive', true) }
       ]
     },
     {
@@ -296,6 +351,9 @@
         { name: 'ProfileImage', xml: F.url('ProfileImage') },
         { name: 'Rating', xml: F.number('Rating', { min: 1, max: 5 }) },
         { name: 'Comment', xml: F.note('Comment', 4) },
+        // Free text, not a Choice - lets the content owner tag a story with whatever it relates
+        // to (a travel service name, "Travel Care", etc.) without a fixed enum to maintain.
+        { name: 'Category', xml: F.text('Category') },
         { name: 'Designation', xml: F.text('Designation') },
         { name: 'Department', xml: F.text('Department') },
         { name: 'Location', xml: F.text('Location') },
@@ -324,6 +382,7 @@
       title: 'TH_GreenTravel',
       description: 'Green Travel content block (one active record).',
       fields: [
+        { name: 'Subtitle', xml: F.text('Subtitle') },
         { name: 'Description', xml: F.note('Description', 4) },
         { name: 'Points', xml: F.note('Points', 6) },
         { name: 'ImageUrl', xml: F.url('ImageUrl') },
@@ -366,13 +425,234 @@
         { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
         { name: 'IsActive', xml: F.bool('IsActive', true) }
       ]
+    },
+    {
+      // Admin-added tabs only. The hub's Help Desk / Travel Care / Our
+      // Services tabs are always present and come from the hero quick-link
+      // config + the services section anchor (GlobalNavigationService.ts) -
+      // they don't need a row here.
+      title: 'TH_GlobalNavigation',
+      description: 'Extra global navigation tabs, shown above the hero banner.',
+      fields: [
+        { name: 'Url', xml: F.url('Url') },
+        // 'App' = an existing destination inside this SharePoint/Teams app - opens in the same tab.
+        // 'External' = always opens in a new tab.
+        { name: 'Kind', xml: F.choice('Kind', ['App', 'External'], 'App') },
+        { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
+        { name: 'IsActive', xml: F.bool('IsActive', true) }
+      ]
+    },
+    {
+      // One row per Travel Policy page - the landing page included. Title =
+      // the page name; Slug is the routing key used in the URL and in
+      // TH_PolicyCards.TargetSlug. See PolicyService.ts.
+      title: 'TH_PolicyPages',
+      description: 'Travel Policy pages (landing + detail pages).',
+      fields: [
+        { name: 'Slug', xml: F.text('Slug', { indexed: true }) },
+        { name: 'ParentSlug', xml: F.text('ParentSlug') },
+        { name: 'ParentTitle', xml: F.text('ParentTitle') },
+        // Non-clickable breadcrumb crumb between the parent page and this
+        // page's title, e.g. "Explore Policy Information" for the 6 policy
+        // sub-pages (Home > Travel Policy > Explore Policy Information > …).
+        { name: 'ParentSectionLabel', xml: F.text('ParentSectionLabel') },
+        // Contextual "Ask Policy Assistant" suggested questions for this
+        // page - one per line. Decorative only (the assistant is a
+        // placeholder pending a real integration - PolicyPageScreen.tsx).
+        { name: 'SuggestedQuestions', xml: F.note('SuggestedQuestions', 4) },
+        // Optional "Ask a Question" CTA for the assistant block. When set,
+        // the assistant renders as icon + title/description with this link
+        // as a button (opens in a new tab) instead of the inline search box
+        // - the layout the 6 "Explore Policy Information" sub-pages use.
+        // Leave both blank to keep the inline search box (e.g. the Travel
+        // Policy landing page) - PolicyPageScreen.tsx.
+        { name: 'AssistantLinkText', xml: F.text('AssistantLinkText') },
+        { name: 'AssistantLinkUrl', xml: F.url('AssistantLinkUrl') },
+        // Hero options: a small caps line above the title, the Light style
+        // (the mockups' light band with the photo on the right) and up to two
+        // hero buttons, each to a URL or an in-app page (TargetSlug wins).
+        { name: 'HeroEyebrow', xml: F.text('HeroEyebrow') },
+        { name: 'HeroStyle', xml: F.choice('HeroStyle', ['Dark', 'Light'], 'Dark') },
+        { name: 'HeroLinkText', xml: F.text('HeroLinkText') },
+        { name: 'HeroLinkUrl', xml: F.url('HeroLinkUrl') },
+        { name: 'HeroLinkTargetSlug', xml: F.text('HeroLinkTargetSlug') },
+        { name: 'HeroLink2Text', xml: F.text('HeroLink2Text') },
+        { name: 'HeroLink2Url', xml: F.url('HeroLink2Url') },
+        { name: 'HeroLink2TargetSlug', xml: F.text('HeroLink2TargetSlug') },
+        { name: 'HeroIcon', xml: F.text('HeroIcon') },
+        { name: 'HeroTitle', xml: F.text('HeroTitle') },
+        { name: 'HeroSubtitle', xml: F.text('HeroSubtitle') },
+        { name: 'HeroDescription', xml: F.note('HeroDescription', 3) },
+        { name: 'HeroImageUrl', xml: F.url('HeroImageUrl') },
+        { name: 'HeroTagline', xml: F.note('HeroTagline', 2) },
+        { name: 'InfoBannerText', xml: F.note('InfoBannerText', 2) },
+        { name: 'NoteBannerText', xml: F.note('NoteBannerText', 2) },
+        { name: 'CtaTitle', xml: F.text('CtaTitle') },
+        { name: 'CtaDescription', xml: F.note('CtaDescription', 2) },
+        { name: 'CtaLinkText', xml: F.text('CtaLinkText') },
+        { name: 'CtaLinkUrl', xml: F.url('CtaLinkUrl') },
+        { name: 'CtaPrimaryText', xml: F.text('CtaPrimaryText') },
+        { name: 'CtaPrimaryUrl', xml: F.url('CtaPrimaryUrl') },
+        { name: 'ClosingBannerTitle', xml: F.text('ClosingBannerTitle') },
+        { name: 'ClosingBannerDescription', xml: F.note('ClosingBannerDescription', 2) },
+        { name: 'ClosingBadges', xml: F.note('ClosingBadges', 3) },
+        { name: 'NeedHelpTitle', xml: F.text('NeedHelpTitle') },
+        { name: 'NeedHelpSupportLabel', xml: F.text('NeedHelpSupportLabel') },
+        { name: 'NeedHelpDescription', xml: F.note('NeedHelpDescription', 2) },
+        { name: 'NeedHelpEmail', xml: F.text('NeedHelpEmail') },
+        { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
+        { name: 'IsActive', xml: F.bool('IsActive', true) }
+      ]
+    },
+    {
+      // One ordered content block on a TH_PolicyPages row - Layout picks the
+      // rendering template (PolicyCardSections.tsx' PolicySectionBlock).
+      // This is the unit a content owner adds/reorders/removes to build up a
+      // page: a paragraph, a grid of cards, a table, a tabbed group, a
+      // numbered/process step list, a callout, an image, or a links list.
+      title: 'TH_PolicySections',
+      description: 'Travel Policy page content sections - one ordered block per row.',
+      fields: [
+        // PageId is a lookup -> TH_PolicyPages, added via LOOKUPS below.
+        { name: 'Subtitle', xml: F.note('Subtitle', 2) },
+        {
+          name: 'Layout',
+          xml: F.choice('Layout', POLICY_SECTION_LAYOUTS, 'Paragraph')
+        },
+        // Only meaningful when Layout = CardsGrid - which of the 3 card visual treatments to use.
+        { name: 'CardVariant', xml: F.choice('CardVariant', ['Category', 'Info', 'Highlight'], 'Highlight') },
+        // Free text for Layout = Paragraph/Callout - one paragraph per line.
+        { name: 'Body', xml: F.note('Body', 6) },
+        // Decorative icon for Layout = Callout/ImageBlock.
+        { name: 'Icon', xml: F.text('Icon') },
+        { name: 'ImageUrl', xml: F.url('ImageUrl') },
+        { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
+        { name: 'IsActive', xml: F.bool('IsActive', true) },
+        // Yes = Title is an internal name only (not shown on the page). Give
+        // EVERY section a Title - TH_PolicyCards/TH_PolicyTables/TH_PolicyTabs
+        // pick their parent through a SectionId lookup that displays Title,
+        // and a blank-titled section shows as an empty option in the edit
+        // form, so saving a card there can silently clear its SectionId
+        // (the card then disappears from the page).
+        { name: 'HideTitle', xml: F.bool('HideTitle', false) },
+        // --- Optional presentation options (all default to the legacy look) ---
+        // Cards per row for Layout = CardsGrid (Highlight); blank = responsive default.
+        { name: 'Columns', xml: F.number('Columns', { min: 1, max: 6 }) },
+        // How Highlight cards place their icon: Default (legacy), IconHeader
+        // (icon + title in one row), IconMedia (bigger icon in a left column).
+        { name: 'CardStyle', xml: F.choice('CardStyle', POLICY_CARD_STYLES, 'Default') },
+        // Yes = wash each card with its own IconColor.
+        { name: 'TintCards', xml: F.bool('TintCards', false) },
+        // The section's container: Plain (legacy), Card (white card), Tinted (Theme-coloured panel).
+        { name: 'SectionStyle', xml: F.choice('SectionStyle', ['Plain', 'Card', 'Tinted'], 'Plain') },
+        // Accent colour for a Tinted panel, number badge, header icon, Banner.
+        { name: 'Theme', xml: F.choice('Theme', ['Gold', 'Blue', 'Green', 'Amber', 'Red', 'Purple', 'Teal'], null) },
+        // Share of the row: consecutive Half / OneThird / TwoThirds sections sit side by side.
+        { name: 'Width', xml: F.choice('Width', ['Full', 'Half', 'OneThird', 'TwoThirds'], 'Full') },
+        // Optional header link at the right of the title ("View All Offers");
+        // for Layout = Search, LinkUrl is the search address ({query} = typed words).
+        { name: 'LinkText', xml: F.text('LinkText') },
+        { name: 'LinkUrl', xml: F.url('LinkUrl') },
+        { name: 'TargetSlug', xml: F.text('TargetSlug') }
+        // TabId is a lookup -> TH_PolicyTabs (a section INSIDE a tab), added via LOOKUPS below.
+      ]
+    },
+    {
+      // One tab of a Layout = Tabs section, e.g. "Business Travel" vs
+      // "Business Assignment" on the Travel Entitlement page. Title = the
+      // tab label; its own cards/tables (TH_PolicyCards.TabId / TH_PolicyTables.TabId) render inside it.
+      title: 'TH_PolicyTabs',
+      description: 'Tabs inside a Layout = Tabs policy section.',
+      fields: [
+        // SectionId is a lookup -> TH_PolicySections, added via LOOKUPS below.
+        // Optional selector icon/subtitle/description - set any of these to
+        // render the tab as a rich icon+title/subtitle/description selector
+        // card instead of a plain label pill, e.g. Travel Entitlement's
+        // "Select Your Travel Type" (Business Travel / Business Assignment).
+        { name: 'Icon', xml: F.text('Icon') },
+        { name: 'Subtitle', xml: F.text('Subtitle') },
+        { name: 'Description', xml: F.note('Description', 2) },
+        { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
+        { name: 'IsActive', xml: F.bool('IsActive', true) }
+      ]
+    },
+    {
+      // Repeatable content blocks belonging to a TH_PolicySections row (or,
+      // when TabId is set, to one tab within it) - one Kind -> one rendering
+      // template (PolicyCardSections.tsx). PageId (direct, no Section/Tab)
+      // is reserved for the fixed "Ask HR" style HelpStep process under a
+      // page's Need Help row, which isn't a reorderable content block.
+      title: 'TH_PolicyCards',
+      description: 'Travel Policy page content blocks (category/info/highlight/rule/help/link cards).',
+      fields: [
+        // PageId/SectionId/TabId are lookups, added via LOOKUPS below.
+        { name: 'Kind', xml: F.choice('Kind', ['Category', 'Info', 'Highlight', 'Rule', 'HelpStep', 'LinkItem'], 'Info') },
+        { name: 'Number', xml: F.number('Number', {}) },
+        { name: 'Icon', xml: F.text('Icon') },
+        { name: 'IconColor', xml: F.text('IconColor') },
+        { name: 'Description', xml: F.note('Description', 3) },
+        { name: 'SubPoints', xml: F.note('SubPoints', 4) },
+        { name: 'TargetSlug', xml: F.text('TargetSlug') },
+        { name: 'LinkUrl', xml: F.url('LinkUrl') },
+        { name: 'LinkText', xml: F.text('LinkText') },
+        { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
+        { name: 'IsActive', xml: F.bool('IsActive', true) },
+        // Optional card content (ImageCards / Feature / Split / steps):
+        { name: 'OpenInNewTab', xml: F.bool('OpenInNewTab', false) },
+        { name: 'ImageUrl', xml: F.url('ImageUrl') },
+        { name: 'Subtitle', xml: F.text('Subtitle') },
+        // Pill on the photo, e.g. "Special Offer".
+        { name: 'Badge', xml: F.text('Badge') },
+        // Highlighted figure + captions: "Starting From" / "SAR 5,999" / "per person".
+        { name: 'Value', xml: F.text('Value') },
+        { name: 'ValueLabel', xml: F.text('ValueLabel') },
+        { name: 'ValueNote', xml: F.text('ValueNote') }
+      ]
+    },
+    {
+      // A simple data table belonging to a TH_PolicySections row (or, when
+      // TabId is set, to one tab within it), e.g. "Air Travel Entitlement".
+      // Several may stack under the same section/tab (each with its own
+      // optional Title) - see TH_PolicyTableRows for the actual cell data.
+      title: 'TH_PolicyTables',
+      description: 'Data tables inside a Layout = Table (or Tabs) policy section.',
+      fields: [
+        // SectionId/TabId are lookups -> TH_PolicySections/TH_PolicyTabs, added via LOOKUPS below.
+        // One column header per line, e.g. "Job Grade\nZone 1\nZone 2".
+        { name: 'ColumnHeaders', xml: F.note('ColumnHeaders', 3) },
+        { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
+        { name: 'IsActive', xml: F.bool('IsActive', true) }
+      ]
+    },
+    {
+      // One row of a TH_PolicyTables table. Title is unused (blank) - the
+      // actual cell values live in CellValues, one per line matching the
+      // parent table's ColumnHeaders order.
+      title: 'TH_PolicyTableRows',
+      description: 'Rows of a TH_PolicyTables table.',
+      fields: [
+        // TableId is a lookup -> TH_PolicyTables, added via LOOKUPS below.
+        { name: 'CellValues', xml: F.note('CellValues', 4) },
+        { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) }
+      ]
     }
   ];
 
   const LOOKUPS = [
     { list: 'TH_QuickPulseOptions', name: 'QuestionId', target: 'TH_QuickPulseQuestions' },
     { list: 'TH_QuickPulseResponses', name: 'QuestionId', target: 'TH_QuickPulseQuestions' },
-    { list: 'TH_FooterLinks', name: 'ColumnId', target: 'TH_FooterColumns' }
+    { list: 'TH_FooterLinks', name: 'ColumnId', target: 'TH_FooterColumns' },
+    { list: 'TH_PolicySections', name: 'PageId', target: 'TH_PolicyPages' },
+    { list: 'TH_PolicyTabs', name: 'SectionId', target: 'TH_PolicySections' },
+    // A section nested inside a tab (e.g. Travel Entitlement's per-tab banner, card grid, split row).
+    { list: 'TH_PolicySections', name: 'TabId', target: 'TH_PolicyTabs' },
+    // Kept for the page-level "Ask HR" HelpStep cards (see TH_PolicyCards' description above).
+    { list: 'TH_PolicyCards', name: 'PageId', target: 'TH_PolicyPages' },
+    { list: 'TH_PolicyCards', name: 'SectionId', target: 'TH_PolicySections' },
+    { list: 'TH_PolicyCards', name: 'TabId', target: 'TH_PolicyTabs' },
+    { list: 'TH_PolicyTables', name: 'SectionId', target: 'TH_PolicySections' },
+    { list: 'TH_PolicyTables', name: 'TabId', target: 'TH_PolicyTabs' },
+    { list: 'TH_PolicyTableRows', name: 'TableId', target: 'TH_PolicyTables' }
   ];
 
   const LIBRARIES = ['Travel Hub Images', 'Travel Hub Documents', 'Travel Hub Videos'];
@@ -380,11 +660,13 @@
   const CONFIG_SEED = [
     ['brand.name', 'RSG', 'string'],
     ['layout.fullBleed', 'true', 'boolean'],
+    // 'sky' | 'cream' | 'dark' - see docs/CONFIGURATION.md "Theme".
+    ['theme.canvas', 'sky', 'string'],
     ['hero.autoPlay', 'true', 'boolean'],
     ['hero.intervalSeconds', '6', 'number'],
     ['hero.supportingMessage', 'Travel Care - Your Partner in Every Journey', 'string'],
     ['hero.quickLinks.layout', 'inline', 'string'],
-    ['hero.quickLink.helpDesk.title', 'Travel Services Help Desk', 'string'],
+    ['hero.quickLink.helpDesk.title', 'Help Desk', 'string'],
     ['hero.quickLink.helpDesk.description', 'General travel guidance and non-urgent assistance', 'string'],
     ['hero.quickLink.helpDesk.url', '#', 'string'],
     ['hero.quickLink.helpDesk.type', 'page', 'string'],
@@ -401,8 +683,17 @@
     ['services.tabletVisibleCards', '2', 'number'],
     ['services.mobileVisibleCards', '1', 'number'],
     ['services.defaultLinkText', 'Learn More', 'string'],
+    ['services.autoPlay', 'true', 'boolean'],
+    ['services.intervalSeconds', '5', 'number'],
+    ['businessTravel.title', 'Business Travel', 'string'],
+    ['businessTravel.description', 'Everything you need to raise a request, get it approved, and book your trip - all in one place.', 'string'],
+    ['businessTravel.concurUrl', 'https://www.concursolutions.com', 'string'],
+    ['businessTravel.concurLinkText', 'Access SAP Concur', 'string'],
+    ['businessTravel.concurOpenInNewTab', 'true', 'boolean'],
     ['updates.news.count', '4', 'number'],
-    ['updates.events.count', '4', 'number'],
+    // Business rule: Upcoming Events shows at most 3 on the hub page - the
+    // rest live behind "View All" (viewAll.events).
+    ['updates.events.count', '3', 'number'],
     ['updates.tips.count', '7', 'number'],
     ['viewAll.news.text', 'View All', 'string'],
     ['viewAll.news.url', '#', 'string'],
@@ -590,6 +881,29 @@
       } catch (e) {
         issues.push(`lookup ${lk.list}.${lk.name}: ${e.message}`);
         warn(`  ! lookup ${lk.list}.${lk.name}: ${e.message}`);
+      }
+    }
+
+    /* 4b. Choice fields that gained new options after first provisioning */
+    log('\n-- Step 4b: update choice options ---------------');
+    for (const ch of [
+      { list: 'TH_PolicySections', field: 'Layout', choices: POLICY_SECTION_LAYOUTS },
+      { list: 'TH_PolicySections', field: 'CardStyle', choices: POLICY_CARD_STYLES }
+    ]) {
+      try {
+        const url = `/_api/web/lists/getbytitle('${esc(ch.list)}')/fields/getbyinternalnameortitle('${esc(ch.field)}')`;
+        const f = await spGetJson(url + '?$select=Choices');
+        const current = (f.Choices && f.Choices.results) || [];
+        const missing = ch.choices.filter((c) => current.indexOf(c) < 0);
+        if (missing.length === 0) { log(`=  ${ch.list}.${ch.field} choices up to date`); continue; }
+        await spWrite(url, {
+          __metadata: { type: 'SP.FieldChoice' },
+          Choices: { __metadata: { type: 'Collection(Edm.String)' }, results: current.concat(missing) }
+        }, { 'X-HTTP-Method': 'MERGE', 'IF-MATCH': '*' });
+        log(`+  ${ch.list}.${ch.field}: added ${missing.join(', ')}`);
+      } catch (e) {
+        issues.push(`choices ${ch.list}.${ch.field}: ${e.message}`);
+        warn(`  ! choices ${ch.list}.${ch.field}: ${e.message}`);
       }
     }
 

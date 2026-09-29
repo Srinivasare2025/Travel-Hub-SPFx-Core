@@ -17,7 +17,8 @@ export interface IHeroBanner {
   displayOrder: number;
   /** Per-slide autoplay preference. */
   autoPlay: boolean;
-  /** Seconds this slide stays visible before advancing. */
+  /** Image slides only: seconds this slide stays visible before advancing.
+   * Video slides ignore it and advance when the video finishes playing. */
   durationSeconds: number;
 }
 
