@@ -1,35 +1,44 @@
 @import '../../styles/mixins';
 @import '../../styles/typography';
 
+// HR Hub ui/Button recipe: pill radius, 13px / 650 weight, 44px touch target,
+// AA-gold primary fill with white text, a line-soft outlined secondary that
+// warms to a gold edge + wash on hover, and a text-only tertiary.
 .button {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--full-space-2, 8px);
-  padding: var(--full-space-3, 12px) var(--full-space-5, 24px);
-  border-radius: var(--full-radius-sm, 4px);
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: var(--full-radius-pill, 9999px);
   border: 1px solid transparent;
-  font-family: var(--full-font-family, "Segoe UI", sans-serif);
-  font-size: var(--full-fs-link, 0.875rem);
-  font-weight: var(--full-fw-semibold, 600);
+  font-family: var(--full-font-family, "Noto Sans", "Segoe UI", sans-serif);
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0.005em;
   line-height: 1;
   cursor: pointer;
   text-decoration: none;
+  flex-shrink: 0;
   transition: background-color var(--full-transition-fast, 120ms ease),
     color var(--full-transition-fast, 120ms ease),
     border-color var(--full-transition-fast, 120ms ease),
-    box-shadow var(--full-transition-fast, 120ms ease),
-    transform var(--full-transition-fast, 120ms ease);
+    box-shadow var(--full-transition-fast, 120ms ease);
   @include th-focusable;
-  @include th-reduced-motion {
-    &:hover:not(:disabled) {
-      transform: none;
-    }
+
+  &:focus-visible {
+    border-radius: var(--full-radius-pill, 9999px);
   }
 
   &[disabled],
   &:disabled {
-    opacity: 0.5;
+    opacity: 0.52;
     cursor: not-allowed;
+  }
+
+  @media (forced-colors: active) {
+    border-color: ButtonText;
   }
 }
 
@@ -42,34 +51,46 @@
 }
 
 .primary {
-  background: var(--full-primary, #b89c66);
-  color: var(--full-primary-contrast, #04253c);
+  border: none;
+  background: var(--full-primary-strong, #816630);
+  color: var(--full-on-gold, #fff);
 
   &:hover:not(:disabled) {
-    background: var(--full-primary-hover, #a5884f);
-    box-shadow: var(--full-shadow-card-hover, 0 8px 28px rgba(4, 37, 60, 0.14));
-    transform: translateY(-1px);
+    background: var(--full-primary-strong, #816630);
+    box-shadow: var(--full-shadow-sm, 0 1px 2px rgba(8, 28, 50, 0.1));
+    text-decoration: none;
+  }
+
+  &:active:not(:disabled) {
+    box-shadow: none;
   }
 }
 
 .secondary {
-  background: transparent;
-  color: var(--full-heading, #04253c);
-  border-color: var(--full-heading, #04253c);
+  background: var(--full-surface, #fff);
+  color: var(--full-heading, #081c32);
+  border-color: var(--full-border, #c8d7e6);
 
   &:hover:not(:disabled) {
-    background: var(--full-heading, #04253c);
-    color: var(--full-bg, #fff);
+    border-color: rgba(195, 161, 94, 0.5);
+    background: var(--full-accent-wash, rgba(195, 161, 94, 0.08));
+    text-decoration: none;
+  }
+
+  &:active:not(:disabled) {
+    border-color: rgba(195, 161, 94, 0.65);
+    background: rgba(195, 161, 94, 0.12);
   }
 }
 
 .tertiary {
+  min-height: 0;
   background: transparent;
-  color: var(--full-primary, #b89c66);
+  color: var(--full-accent-text, #816630);
   padding-inline: 0;
 
   &:hover:not(:disabled) {
-    color: var(--full-primary-hover, #a5884f);
+    color: var(--full-heading, #081c32);
     text-decoration: underline;
   }
 }

@@ -153,6 +153,16 @@
       `<Field Type='Lookup' ${attrs(n)} List='{${String(targetListId).replace(/[{}]/g, '')}}' ShowField='Title' />`
   };
 
+  // TH_PolicySections.Layout choices. New layouts are appended here; step 4b
+  // adds any missing ones to an EXISTING Layout column (step 3 only creates
+  // missing fields, it never updates an existing field's choices).
+  const POLICY_SECTION_LAYOUTS = [
+    'Paragraph', 'CardsGrid', 'Table', 'Tabs', 'NumberedSteps', 'ProcessSteps', 'Callout', 'ImageBlock', 'LinksList',
+    'Split', 'Checklist', 'Banner', 'ImageCards', 'Feature', 'Faq', 'Search'
+  ];
+  // TH_PolicySections.CardStyle choices (same "append only" rule, step 4b).
+  const POLICY_CARD_STYLES = ['Default', 'IconHeader', 'IconMedia', 'Stacked', 'ImageTop', 'ImageLeft', 'ImageTile', 'ImageBanner'];
+
   // AddToAllContentTypes(4) | AddFieldInternalNameHint(8) | AddFieldToDefaultView(16)
   const ADD_FIELD_OPTIONS = 28;
 
@@ -194,7 +204,10 @@
         { name: 'DurationSeconds', xml: F.number('DurationSeconds', { default: 6, min: 3, max: 600 }) },
         { name: 'IsActive', xml: F.bool('IsActive', true) },
         { name: 'StartDate', xml: F.date('StartDate', true) },
-        { name: 'EndDate', xml: F.date('EndDate', true) }
+        { name: 'EndDate', xml: F.date('EndDate', true) },
+        // Optional: a TH_PolicyPages Slug (e.g. 'sap-concur'). The service's
+        // nav tab and card then open that list-driven page.
+        { name: 'PageSlug', xml: F.text('PageSlug') }
       ]
     },
     {
@@ -455,6 +468,17 @@
         // Policy landing page) - PolicyPageScreen.tsx.
         { name: 'AssistantLinkText', xml: F.text('AssistantLinkText') },
         { name: 'AssistantLinkUrl', xml: F.url('AssistantLinkUrl') },
+        // Hero options: a small caps line above the title, the Light style
+        // (the mockups' light band with the photo on the right) and up to two
+        // hero buttons, each to a URL or an in-app page (TargetSlug wins).
+        { name: 'HeroEyebrow', xml: F.text('HeroEyebrow') },
+        { name: 'HeroStyle', xml: F.choice('HeroStyle', ['Dark', 'Light'], 'Dark') },
+        { name: 'HeroLinkText', xml: F.text('HeroLinkText') },
+        { name: 'HeroLinkUrl', xml: F.url('HeroLinkUrl') },
+        { name: 'HeroLinkTargetSlug', xml: F.text('HeroLinkTargetSlug') },
+        { name: 'HeroLink2Text', xml: F.text('HeroLink2Text') },
+        { name: 'HeroLink2Url', xml: F.url('HeroLink2Url') },
+        { name: 'HeroLink2TargetSlug', xml: F.text('HeroLink2TargetSlug') },
         { name: 'HeroIcon', xml: F.text('HeroIcon') },
         { name: 'HeroTitle', xml: F.text('HeroTitle') },
         { name: 'HeroSubtitle', xml: F.text('HeroSubtitle') },
@@ -493,11 +517,7 @@
         { name: 'Subtitle', xml: F.note('Subtitle', 2) },
         {
           name: 'Layout',
-          xml: F.choice(
-            'Layout',
-            ['Paragraph', 'CardsGrid', 'Table', 'Tabs', 'NumberedSteps', 'ProcessSteps', 'Callout', 'ImageBlock', 'LinksList'],
-            'Paragraph'
-          )
+          xml: F.choice('Layout', POLICY_SECTION_LAYOUTS, 'Paragraph')
         },
         // Only meaningful when Layout = CardsGrid - which of the 3 card visual treatments to use.
         { name: 'CardVariant', xml: F.choice('CardVariant', ['Category', 'Info', 'Highlight'], 'Highlight') },
@@ -507,7 +527,34 @@
         { name: 'Icon', xml: F.text('Icon') },
         { name: 'ImageUrl', xml: F.url('ImageUrl') },
         { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
-        { name: 'IsActive', xml: F.bool('IsActive', true) }
+        { name: 'IsActive', xml: F.bool('IsActive', true) },
+        // Yes = Title is an internal name only (not shown on the page). Give
+        // EVERY section a Title - TH_PolicyCards/TH_PolicyTables/TH_PolicyTabs
+        // pick their parent through a SectionId lookup that displays Title,
+        // and a blank-titled section shows as an empty option in the edit
+        // form, so saving a card there can silently clear its SectionId
+        // (the card then disappears from the page).
+        { name: 'HideTitle', xml: F.bool('HideTitle', false) },
+        // --- Optional presentation options (all default to the legacy look) ---
+        // Cards per row for Layout = CardsGrid (Highlight); blank = responsive default.
+        { name: 'Columns', xml: F.number('Columns', { min: 1, max: 6 }) },
+        // How Highlight cards place their icon: Default (legacy), IconHeader
+        // (icon + title in one row), IconMedia (bigger icon in a left column).
+        { name: 'CardStyle', xml: F.choice('CardStyle', POLICY_CARD_STYLES, 'Default') },
+        // Yes = wash each card with its own IconColor.
+        { name: 'TintCards', xml: F.bool('TintCards', false) },
+        // The section's container: Plain (legacy), Card (white card), Tinted (Theme-coloured panel).
+        { name: 'SectionStyle', xml: F.choice('SectionStyle', ['Plain', 'Card', 'Tinted'], 'Plain') },
+        // Accent colour for a Tinted panel, number badge, header icon, Banner.
+        { name: 'Theme', xml: F.choice('Theme', ['Gold', 'Blue', 'Green', 'Amber', 'Red', 'Purple', 'Teal'], null) },
+        // Share of the row: consecutive Half / OneThird / TwoThirds sections sit side by side.
+        { name: 'Width', xml: F.choice('Width', ['Full', 'Half', 'OneThird', 'TwoThirds'], 'Full') },
+        // Optional header link at the right of the title ("View All Offers");
+        // for Layout = Search, LinkUrl is the search address ({query} = typed words).
+        { name: 'LinkText', xml: F.text('LinkText') },
+        { name: 'LinkUrl', xml: F.url('LinkUrl') },
+        { name: 'TargetSlug', xml: F.text('TargetSlug') }
+        // TabId is a lookup -> TH_PolicyTabs (a section INSIDE a tab), added via LOOKUPS below.
       ]
     },
     {
@@ -549,7 +596,17 @@
         { name: 'LinkUrl', xml: F.url('LinkUrl') },
         { name: 'LinkText', xml: F.text('LinkText') },
         { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
-        { name: 'IsActive', xml: F.bool('IsActive', true) }
+        { name: 'IsActive', xml: F.bool('IsActive', true) },
+        // Optional card content (ImageCards / Feature / Split / steps):
+        { name: 'OpenInNewTab', xml: F.bool('OpenInNewTab', false) },
+        { name: 'ImageUrl', xml: F.url('ImageUrl') },
+        { name: 'Subtitle', xml: F.text('Subtitle') },
+        // Pill on the photo, e.g. "Special Offer".
+        { name: 'Badge', xml: F.text('Badge') },
+        // Highlighted figure + captions: "Starting From" / "SAR 5,999" / "per person".
+        { name: 'Value', xml: F.text('Value') },
+        { name: 'ValueLabel', xml: F.text('ValueLabel') },
+        { name: 'ValueNote', xml: F.text('ValueNote') }
       ]
     },
     {
@@ -587,6 +644,8 @@
     { list: 'TH_FooterLinks', name: 'ColumnId', target: 'TH_FooterColumns' },
     { list: 'TH_PolicySections', name: 'PageId', target: 'TH_PolicyPages' },
     { list: 'TH_PolicyTabs', name: 'SectionId', target: 'TH_PolicySections' },
+    // A section nested inside a tab (e.g. Travel Entitlement's per-tab banner, card grid, split row).
+    { list: 'TH_PolicySections', name: 'TabId', target: 'TH_PolicyTabs' },
     // Kept for the page-level "Ask HR" HelpStep cards (see TH_PolicyCards' description above).
     { list: 'TH_PolicyCards', name: 'PageId', target: 'TH_PolicyPages' },
     { list: 'TH_PolicyCards', name: 'SectionId', target: 'TH_PolicySections' },
@@ -822,6 +881,29 @@
       } catch (e) {
         issues.push(`lookup ${lk.list}.${lk.name}: ${e.message}`);
         warn(`  ! lookup ${lk.list}.${lk.name}: ${e.message}`);
+      }
+    }
+
+    /* 4b. Choice fields that gained new options after first provisioning */
+    log('\n-- Step 4b: update choice options ---------------');
+    for (const ch of [
+      { list: 'TH_PolicySections', field: 'Layout', choices: POLICY_SECTION_LAYOUTS },
+      { list: 'TH_PolicySections', field: 'CardStyle', choices: POLICY_CARD_STYLES }
+    ]) {
+      try {
+        const url = `/_api/web/lists/getbytitle('${esc(ch.list)}')/fields/getbyinternalnameortitle('${esc(ch.field)}')`;
+        const f = await spGetJson(url + '?$select=Choices');
+        const current = (f.Choices && f.Choices.results) || [];
+        const missing = ch.choices.filter((c) => current.indexOf(c) < 0);
+        if (missing.length === 0) { log(`=  ${ch.list}.${ch.field} choices up to date`); continue; }
+        await spWrite(url, {
+          __metadata: { type: 'SP.FieldChoice' },
+          Choices: { __metadata: { type: 'Collection(Edm.String)' }, results: current.concat(missing) }
+        }, { 'X-HTTP-Method': 'MERGE', 'IF-MATCH': '*' });
+        log(`+  ${ch.list}.${ch.field}: added ${missing.join(', ')}`);
+      } catch (e) {
+        issues.push(`choices ${ch.list}.${ch.field}: ${e.message}`);
+        warn(`  ! choices ${ch.list}.${ch.field}: ${e.message}`);
       }
     }
 

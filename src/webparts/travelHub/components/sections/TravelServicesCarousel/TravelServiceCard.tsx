@@ -17,7 +17,12 @@ function isBusinessTravel(service: ITravelService): boolean {
 const TravelServiceCardInner: React.FC<ITravelServiceCardProps> = ({ service }) => {
   const { navigate } = useNavigation();
   const businessTravel = isBusinessTravel(service);
-  const hasAction = businessTravel || service.linkUrl !== undefined;
+  // TH_TravelServices.PageSlug: the card opens that list-driven page in-app.
+  const pageSlug = businessTravel ? undefined : service.pageSlug;
+  const inApp = businessTravel || pageSlug !== undefined;
+  const hasAction = inApp || service.linkUrl !== undefined;
+  const openInApp = (): void =>
+    pageSlug !== undefined ? navigate({ kind: 'policyPage', slug: pageSlug }) : navigate({ kind: 'businessTravel' });
 
   return (
     <Card
@@ -43,11 +48,11 @@ const TravelServiceCardInner: React.FC<ITravelServiceCardProps> = ({ service }) 
       {hasAction && (
         <div className={styles.action}>
           <ExternalLink
-            href={businessTravel ? undefined : service.linkUrl}
+            href={inApp ? undefined : service.linkUrl}
             openInNewTab={service.openInNewTab}
             showArrow
             ariaLabel={`${service.linkText}: ${service.title}`}
-            onClick={businessTravel ? () => navigate({ kind: 'businessTravel' }) : undefined}
+            onClick={inApp ? openInApp : undefined}
           >
             {service.linkText}
           </ExternalLink>

@@ -17,5 +17,11 @@ export interface ITravelService {
   openInNewTab: boolean;
   /** e.g. "Learn More"; falls back to `services.defaultLinkText`. */
   linkText: string;
+  /**
+   * Optional TH_PolicyPages slug. When set, this service's tab and card open
+   * that list-driven page (e.g. `sap-concur`) instead of the placeholder
+   * service screen.
+   */
+  pageSlug: string | undefined;
   displayOrder: number;
 }

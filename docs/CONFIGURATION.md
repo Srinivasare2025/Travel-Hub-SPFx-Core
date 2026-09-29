@@ -52,7 +52,7 @@ shown).
 ### Theme
 | Key | Type | Default | Used by |
 | --- | --- | --- | --- |
-| `theme.canvas` | enum `sky` \| `cream` \| `dark` | `sky` | `TravelHub` root (`data-th-canvas`) — the page canvas palette (`src/common/styles/_tokens.scss`). `sky` is the standard light theme, `cream` a warm ivory alternative, `dark` a dark navy canvas with light text. The gold/navy brand colours (buttons, links, the hero's own photo-overlay chrome) stay constant across all three — only backgrounds, borders, and card/section text swap, so nothing loses contrast in any theme. |
+| `theme.canvas` | enum `sky` \| `cream` \| `dark` | `sky` | `TravelHub` root (`data-th-canvas`) — the page canvas palette (`src/common/styles/_tokens.scss`). `sky` is the standard light theme, `cream` a warm ivory alternative, `dark` a dark navy canvas with light text. The gold/navy brand colours (buttons, links, the hero's own photo-overlay chrome) stay constant across all three — only backgrounds, borders, and card/section text swap, so nothing loses contrast in any theme. This is the **site default**: each viewer can override it for themselves from the top bar's theme menu (saved in their browser, key `th-canvas`); a viewer who never picks one sees this value. |
 
 ### Hero
 | Key | Type | Default | Used by |

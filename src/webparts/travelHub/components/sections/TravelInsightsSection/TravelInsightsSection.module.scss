@@ -74,8 +74,8 @@
   height: 40px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: rgba(184, 156, 102, 0.16);
-  color: var(--full-primary, #b89c66);
+  background: rgba(195, 161, 94, 0.16);
+  color: var(--full-accent-text, #816630);
   font-size: 1.125rem;
 }
 
@@ -180,7 +180,7 @@
 .greenImageOverlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(4, 37, 60, 0.35) 0%, rgba(4, 37, 60, 0) 45%);
+  background: linear-gradient(135deg, rgba(15, 44, 74, 0.35) 0%, rgba(15, 44, 74, 0) 45%);
 }
 
 .greenBody {

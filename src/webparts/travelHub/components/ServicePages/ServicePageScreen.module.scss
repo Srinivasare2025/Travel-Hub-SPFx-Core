@@ -28,7 +28,7 @@
     @include th-focusable;
 
     &:hover {
-      color: var(--full-primary, #b89c66);
+      color: var(--full-accent-text, #816630);
       text-decoration: underline;
     }
   }
@@ -89,7 +89,7 @@
 
   svg,
   i {
-    color: var(--full-primary, #b89c66);
+    color: var(--full-accent-text, #816630);
     flex-shrink: 0;
     margin-top: 2px;
   }

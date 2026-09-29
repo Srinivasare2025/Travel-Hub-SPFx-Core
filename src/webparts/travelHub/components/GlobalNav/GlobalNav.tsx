@@ -6,15 +6,30 @@ import { useAsyncData } from '../../../../common/hooks';
 import { ImageLightbox } from '../../../../common/components';
 import { ThView } from '../../../../common/context/NavigationContext';
 import { IGlobalNavItem } from '../../../../models';
+import { TopbarActions } from './TopbarActions';
 import styles from './GlobalNav.module.scss';
 
+/**
+ * For a page view, the `policy` tab that owns it: the tab whose page slug
+ * equals it or prefixes it (`sap-concur` owns `sap-concur-plan-book`);
+ * otherwise the Travel Policy tab owns every other page, as before.
+ */
+function owningPolicyTab(items: IGlobalNavItem[], slug: string): IGlobalNavItem | undefined {
+  const policyTabs = items.filter((i) => i.kind === 'policy' && i.url !== undefined);
+  return (
+    policyTabs.find((i) => slug === i.url || slug.indexOf(`${i.url as string}-`) === 0) ??
+    policyTabs.find((i) => i.url === 'travel-policy') ??
+    policyTabs[0]
+  );
+}
+
 /** Whether `item` is the tab for the screen currently showing. */
-function isActive(item: IGlobalNavItem, view: ThView): boolean {
+function isActive(item: IGlobalNavItem, view: ThView, items: IGlobalNavItem[]): boolean {
   switch (item.kind) {
     case 'home':
       return view.kind === 'hub';
     case 'policy':
-      return view.kind === 'policyPage';
+      return view.kind === 'policyPage' && owningPolicyTab(items, view.slug) === item;
     case 'service':
       return view.kind === 'servicePage' && Number(item.url) === view.serviceId;
     case 'businessTravel':
@@ -103,44 +118,57 @@ function NavLink({
 }
 
 /**
- * Global navigation tabs shown above the hero banner: Home, one tab per
- * Travel Service (Business Travel, Personal Travel, Travel Policy, SAP
- * Concur, Catering Services, Meetings & Events, …), the Help Desk / Travel
- * Care hero quick links, plus any admin-added rows from `TH_GlobalNavigation`
- * (GlobalNavigationService.ts). Configuration-driven, not a section (it
- * isn't gated by `configuration.sections`).
+ * The app's top bar, styled after the sibling HR-Hub-SPFx solution's Topbar:
+ * brand eyebrow on the left, the global navigation tabs in the middle and the
+ * theme menu / notification bell / profile menu on the right (TopbarActions).
+ *
+ * The tabs are unchanged: Home, one tab per Travel Service (Business Travel,
+ * Personal Travel, Travel Policy, SAP Concur, Catering Services, Meetings &
+ * Events, …), the Help Desk / Travel Care hero quick links, plus any
+ * admin-added rows from `TH_GlobalNavigation` (GlobalNavigationService.ts).
+ * Configuration-driven, not a section (it isn't gated by
+ * `configuration.sections`).
  */
 export const GlobalNav: React.FC = () => {
   const { globalNav, configuration } = useServices();
-  const { view } = useNavigation();
+  const { view, navigate } = useNavigation();
   const { status, data } = useAsyncData(() => globalNav.getNavItems(configuration), [configuration]);
   const [imageViewer, setImageViewer] = React.useState<IGlobalNavItem | undefined>(undefined);
 
-  // No loading skeleton and no error/retry panel for this bar - it sits
-  // directly above the hero, so a flash of "loading…"/"failed to load" chrome
-  // there would be more distracting than the nav simply appearing once ready.
-  // getNavItems() itself never rejects on a missing TH_GlobalNavigation list
+  // No loading skeleton and no error/retry panel for the tabs - a flash of
+  // "loading…"/"failed to load" chrome in the top bar would be more
+  // distracting than the tabs simply appearing once ready. getNavItems()
+  // itself never rejects on a missing TH_GlobalNavigation list
   // (GlobalNavigationService.ts falls back to the built-in tabs only), so
-  // 'error' here would mean a genuine unexpected failure.
-  if (status !== 'success' || data === undefined || data.length === 0) {
-    return null;
-  }
+  // 'error' here would mean a genuine unexpected failure. The bar itself
+  // (brand + actions) always renders.
+  const items = status === 'success' && data !== undefined ? data : [];
 
   return (
-    <nav className={styles.root} aria-label="Global">
+    <header className={styles.root} data-th-topbar="true">
       {/* Mirrors TravelHub.module.scss .fullBleed .page: the same edge-to-edge
-          vs. centred-column choice, so the nav's links line up with the
-          sections below it either way. */}
-      <ul className={`${styles.list} ${configuration.layout.fullBleed ? styles.fullBleedList : ''}`}>
-        {data.map((item) => (
-          <NavLink
-            key={item.id}
-            item={item}
-            active={isActive(item, view)}
-            onOpenImage={setImageViewer}
-          />
-        ))}
-      </ul>
+          vs. centred-column choice, so the bar lines up with the sections below. */}
+      <div className={`${styles.bar} ${configuration.layout.fullBleed ? styles.fullBleedBar : ''}`}>
+        <button type="button" className={styles.brand} onClick={() => navigate({ kind: 'hub' })} aria-label={`${configuration.brandName} Travel Hub - home`}>
+          <span className={styles.brandMark}>{configuration.brandName}</span>
+          <span className={styles.brandDivider} aria-hidden="true" />
+          <span className={styles.brandName}>Travel Hub</span>
+        </button>
+
+        <nav className={styles.nav} aria-label="Global">
+          {items.length > 0 && (
+            <ul className={styles.list}>
+              {items.map((item) => (
+                <NavLink key={item.id} item={item} active={isActive(item, view, items)} onOpenImage={setImageViewer} />
+              ))}
+            </ul>
+          )}
+        </nav>
+
+        <div className={styles.actions}>
+          <TopbarActions />
+        </div>
+      </div>
 
       <ImageLightbox
         isOpen={imageViewer !== undefined}
@@ -149,6 +177,6 @@ export const GlobalNav: React.FC = () => {
         alt={imageViewer?.title ?? 'Travel Care'}
         title={imageViewer?.title}
       />
-    </nav>
+    </header>
   );
 };

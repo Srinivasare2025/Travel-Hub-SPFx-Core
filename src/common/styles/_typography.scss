@@ -53,13 +53,15 @@
   @include th-font-base;
   font-size: var(--full-fs-link, 0.875rem);
   font-weight: var(--full-fw-semibold, 600);
-  color: var(--full-primary, #b89c66);
+  // AA gold (HR Hub --c-accent-text-strong) - the decorative --full-primary
+  // gold is too light for small text on the light canvases.
+  color: var(--full-accent-text, #816630);
   text-decoration: none;
   transition: color var(--full-transition-fast, 120ms ease);
 
   &:hover,
   &:focus-visible {
-    color: var(--full-primary-hover, #a5884f);
+    color: var(--full-heading, #081c32);
     text-decoration: underline;
   }
 }

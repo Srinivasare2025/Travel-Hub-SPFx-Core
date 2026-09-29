@@ -5,8 +5,9 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  border: 1px solid var(--full-border, #e8e5e0);
+  border: 1px solid var(--full-border, #c8d7e6);
   background: var(--full-surface, #fff);
+  box-shadow: var(--full-shadow-chrome, 0 5px 14px rgba(8, 28, 50, 0.045));
   color: var(--full-heading, #04253c);
   cursor: pointer;
   transition: background-color var(--full-transition-fast, 120ms ease),
@@ -14,8 +15,9 @@
   @include th-focusable;
 
   &:hover:not(:disabled) {
-    border-color: var(--full-primary, #b89c66);
-    color: var(--full-primary, #b89c66);
+    border-color: rgba(195, 161, 94, 0.5);
+    background: var(--full-accent-wash, rgba(195, 161, 94, 0.08));
+    color: var(--full-accent-text, #816630);
   }
 
   &:disabled {
@@ -44,6 +46,6 @@
   color: var(--full-secondary, #04253c);
 
   &:hover:not(:disabled) {
-    color: var(--full-primary, #b89c66);
+    color: var(--full-accent-text, #816630);
   }
 }

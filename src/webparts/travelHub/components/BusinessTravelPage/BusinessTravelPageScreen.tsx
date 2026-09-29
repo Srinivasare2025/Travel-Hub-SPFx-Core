@@ -5,7 +5,10 @@ import { useNavigation } from '../../../../common/context/NavigationContext';
 import { useAsyncData } from '../../../../common/hooks';
 import { Button, ExternalLink, LoadingState, ErrorState, EmptyState } from '../../../../common/components';
 import { IBusinessTravelInfoCard, IBusinessTravelStep } from '../../../../models';
+import { PolicyPageScreen } from '../PolicyPages';
 import styles from './BusinessTravelPageScreen.module.scss';
+
+const BUSINESS_TRAVEL_PAGE_SLUG = 'business-travel';
 
 /** The 5-card "Raise Request → Approval → Book → Travel → Expense" process row. */
 const StepsGrid: React.FC = () => {
@@ -91,7 +94,7 @@ const InfoCardsGrid: React.FC = () => {
  * card and its matching global nav tab (GlobalNavigationService.ts,
  * TravelServiceCard.tsx).
  */
-export const BusinessTravelPageScreen: React.FC = () => {
+const LegacyBusinessTravelPageScreen: React.FC = () => {
   const { configuration } = useServices();
   const { navigate } = useNavigation();
   const { title, description, concurUrl, concurLinkText, concurOpenInNewTab } = configuration.businessTravel;
@@ -122,4 +125,22 @@ export const BusinessTravelPageScreen: React.FC = () => {
       <InfoCardsGrid />
     </div>
   );
+};
+
+/**
+ * Business Travel. When a TH_PolicyPages row with Slug `business-travel`
+ * exists (the "Business Travel Policy - Home" mockup, configured in the
+ * policy lists), that page is shown; otherwise the original screen below
+ * (TH_BusinessTravelSteps / TH_BusinessTravelInfoCards) is unchanged.
+ */
+export const BusinessTravelPageScreen: React.FC = () => {
+  const { policy } = useServices();
+  const { status, data } = useAsyncData(() => policy.getPage(BUSINESS_TRAVEL_PAGE_SLUG).catch(() => undefined), []);
+  if (status === 'loading') {
+    return <LoadingState variant="hero" label="Loading Business Travel" />;
+  }
+  if (data !== undefined) {
+    return <PolicyPageScreen slug={BUSINESS_TRAVEL_PAGE_SLUG} />;
+  }
+  return <LegacyBusinessTravelPageScreen />;
 };

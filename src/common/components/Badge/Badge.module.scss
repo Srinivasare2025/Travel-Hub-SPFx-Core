@@ -1,8 +1,9 @@
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px var(--full-space-2, 8px);
-  border-radius: var(--full-radius-sm, 4px);
+  padding: 2px 10px;
+  border-radius: var(--full-radius-pill, 9999px); // HR Hub ToneBadge: pill
+  letter-spacing: 0.01em;
   font-family: var(--full-font-family, "Segoe UI", sans-serif);
   font-size: var(--full-fs-meta, 0.8125rem);
   font-weight: var(--full-fw-semibold, 600);
@@ -11,9 +12,9 @@
 }
 
 .gold {
-  background: rgba(184, 156, 102, 0.16);
-  color: #6b5427;
-  border: 1px solid rgba(184, 156, 102, 0.35);
+  background: rgba(195, 161, 94, 0.12);
+  color: var(--full-accent-text, #816630);
+  border: 1px solid rgba(195, 161, 94, 0.32);
 }
 
 /* Themed tokens, not a fixed navy tint - a literal rgba(navy) tint would

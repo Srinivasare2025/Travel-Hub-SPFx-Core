@@ -80,6 +80,11 @@ export class GlobalNavigationService implements IGlobalNavigationService {
             items.push({ id: nextId--, title: service.title, url: undefined, kind: 'businessTravel', openInNewTab: false });
             continue;
           }
+          if (service.pageSlug !== undefined) {
+            // A list-driven page (TH_TravelServices.PageSlug) - opens like a Travel Policy page.
+            items.push({ id: nextId--, title: service.title, url: service.pageSlug, kind: 'policy', openInNewTab: false });
+            continue;
+          }
           items.push({ id: nextId--, title: service.title, url: String(service.id), kind: 'service', openInNewTab: false });
         }
       } catch {

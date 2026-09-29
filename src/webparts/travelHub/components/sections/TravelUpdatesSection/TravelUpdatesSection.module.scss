@@ -96,7 +96,7 @@
    (invalid-URL) fallback keeps its muted colour. */
 a.newsRowTitle:hover,
 a.newsRowTitle:focus-visible {
-  color: var(--full-primary, #b89c66);
+  color: var(--full-accent-text, #816630);
 }
 
 .newsRowText {
@@ -121,7 +121,7 @@ a.newsRowTitle:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  color: var(--full-primary, #b89c66);
+  color: var(--full-accent-text, #816630);
 }
 
 /* --- Events --------------------------------------------------------- */
@@ -169,7 +169,7 @@ a.newsRowTitle:focus-visible {
 .dateMonth {
   font-size: var(--full-fs-meta, 0.8125rem);
   font-weight: var(--full-fw-semibold, 600);
-  color: var(--full-primary, #b89c66);
+  color: var(--full-accent-text, #816630);
   letter-spacing: 0.04em;
 }
 
@@ -232,8 +232,8 @@ a.newsRowTitle:focus-visible {
   height: 32px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: rgba(184, 156, 102, 0.16);
-  color: var(--full-primary, #b89c66);
+  background: rgba(195, 161, 94, 0.16);
+  color: var(--full-accent-text, #816630);
   font-size: 0.85rem;
 }
 
@@ -254,7 +254,7 @@ a.newsRowTitle:focus-visible {
    fallback (no linkUrl) keeps its normal body colour. */
 a.tipText:hover,
 a.tipText:focus-visible {
-  color: var(--full-primary, #b89c66);
+  color: var(--full-accent-text, #816630);
 }
 
 .tipDesc {

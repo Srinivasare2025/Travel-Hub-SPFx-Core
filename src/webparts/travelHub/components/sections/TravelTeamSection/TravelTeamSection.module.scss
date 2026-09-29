@@ -165,7 +165,7 @@
   height: 28px;
   border-radius: 50%;
   background: var(--full-surface-alt, #faf8f4);
-  color: var(--full-primary, #b89c66);
+  color: var(--full-accent-text, #816630);
   transition: background-color var(--full-transition-fast, 120ms ease),
     color var(--full-transition-fast, 120ms ease);
   @include th-focusable;

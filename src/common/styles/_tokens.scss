@@ -4,47 +4,66 @@
 // container (TravelHub.module.scss). CSS custom properties inherit, so every
 // descendant component can read `var(--full-*)`. Component stylesheets must use
 // the tokens (with a literal fallback) and never hard-code the brand hex values.
+//
+// VALUES: aligned with the sibling HR-Hub-SPFx solution's brand layer
+// (src/styles/hub.css `.rsg-hub` tokens - RSG ink/gold ramps and the Sky /
+// Cream / Dark canvases), so the two hubs read as one family. HR Hub stores
+// its tokens as rgb triplets (`--c-canvas: 223 240 246`); the same values are
+// written here as hex so every existing `var(--full-*)` consumer keeps working
+// unchanged. Keep the two files in step when the brand changes.
+//
+// The canvas colours are duplicated in two import-free files that paint
+// before this stylesheet loads - keep them in step too:
+//   src/webparts/travelHub/splash.ts (CANVAS) and hostChrome.ts (fallback).
 
 @mixin th-tokens {
-  // --- Brand palette (exact values from the brand design system) -----------
-  --full-primary: #b89c66; // gold — accent, CTAs, focus, icon backgrounds — constant across every canvas theme
-  --full-secondary: #04253c; // navy — the hero's own photo-overlay chrome (scrim, quick-link card text) and the
-  // brand navy itself. Deliberately constant across every canvas theme: the hero quick-link cards always float,
-  // white, over a photo, independent of the page canvas. Themed heading/content text uses --full-heading instead.
-  --full-bg: #ffffff;
-  --full-page-bg: #f8f9fa; // soft off-white behind the section stack, so white cards/shadows read against it
-  --full-text: #04253c;
-  // Deepened from the original #7b8794 - that read washed out/dull for body
-  // copy (borderline on WCAG AA contrast against white/off-white too); this
-  // still reads as clearly secondary to --full-text but with real contrast.
-  --full-text-muted: #4a5568;
+  // --- Brand palette (HR Hub --rsg-gold / --rsg-ink ramps) ----------------
+  --full-primary: #c3a15e; // gold (--rsg-gold) — accent, icon backgrounds, rules — constant across every canvas
+  --full-primary-soft: #dabf8a; // --rsg-gold-soft
+  // AA foreground gold (HR Hub --c-accent-text-strong #816630: 5.4:1 on white,
+  // 4.6:1 on the Sky canvas). Use for gold TEXT and the primary button fill;
+  // --full-primary is decorative (fills/rules) only - it's 2.3:1 on white.
+  --full-primary-strong: #816630;
+  --full-secondary: #0f2c4a; // navy (--rsg-ink) — the hero's photo-overlay chrome. Constant across every canvas.
+  --full-bg: #dff0f6; // app background (= canvas)
+  --full-page-bg: #dff0f6; // the page canvas behind the section stack (HR Hub --c-canvas, Sky)
+  --full-canvas-raised: #ebf6fa; // top bar / raised bands (HR Hub --c-canvas-raised)
+  --full-text: #081c32; // --c-ink-1
+  --full-text-muted: #3c5573; // --c-ink-2
+  --full-text-subtle: #6e87a5; // --c-ink-3
   // Themed heading colour for content that sits on the page canvas (SectionHeader/card titles, card icon
   // buttons, badges) - unlike --full-secondary this flips to a light colour on the dark canvas theme.
-  --full-heading: #04253c;
-  --full-border: #e8e5e0;
-  --full-hijri: #b89c66;
+  --full-heading: #081c32;
+  --full-border: #c8d7e6; // --c-line-soft (card/panel hairline)
+  --full-border-strong: #aabed2; // --c-line
+  --full-hijri: #816630;
 
   // --- Derived / semantic colours -----------------------------------------
-  --full-primary-hover: #a5884f;
-  --full-primary-contrast: #04253c; // text on gold (meets AA for large text; body text avoids gold bg)
-  --full-secondary-hover: #063250;
+  --full-primary-hover: #9c7f44; // --rsg-gold-strong
+  --full-primary-contrast: #081c32; // text on the decorative gold fill
+  --full-on-gold: #ffffff; // text on the AA gold fill (--full-primary-strong), HR Hub --on-gold
+  --full-accent-text: #816630; // gold links / active tab text - flips to gold-soft on Dark
+  --full-accent-wash: rgba(195, 161, 94, 0.08); // hover wash (HR Hub rgb(var(--c-accent) / 0.08))
+  --full-accent-line: rgba(195, 161, 94, 0.32); // gold hairline under the top bar
+  --full-secondary-hover: #0b233c;
   --full-secondary-contrast: #ffffff;
-  --full-surface: #ffffff;
-  --full-surface-alt: #faf8f4; // warm off-white section band
-  --full-overlay-navy: rgba(4, 37, 60, 0.72);
-  --full-focus-ring: #04253c;
-  --full-danger: #a4262c;
-  --full-success: #107c41;
+  --full-surface: #ffffff; // --c-surface-1 (cards, menus)
+  --full-surface-alt: #dff0f6; // --c-surface-2 (tinted bands, table headers, hover)
+  --full-surface-sunken: #c5e3ee; // --c-surface-3
+  --full-overlay-navy: rgba(15, 44, 74, 0.72);
+  --full-focus-ring: #816630; // HR Hub --c-focus-ring: AA gold on every light canvas
+  --full-danger: #b9504b; // --rsg-danger
+  --full-danger-text: #a74b49;
+  --full-success: #5f916e; // --rsg-success
+  --full-warning: #d2a046; // --rsg-warning
 
   // --- Typography --------------------------------------------------------
-  // Body face — self-hosted in _fonts-body.scss, same face/role as the
-  // sibling HR-Hub-SPFx solution's `--font-body` token. The system stack
-  // stays as the fallback chain (used if the self-hosted face fails to load).
-  --full-font-family: "Noto Sans", "Segoe UI", -apple-system, BlinkMacSystemFont,
+  // Body face — self-hosted in _fonts-body.scss, same face/role as HR Hub's
+  // `--font-body`. The system stack stays as the fallback chain.
+  --full-font-family: "Noto Sans", system-ui, -apple-system, "Segoe UI", BlinkMacSystemFont,
     "Helvetica Neue", Arial, sans-serif;
-  // Display face for the two largest heading tiers only (page/section titles) —
-  // self-hosted in _fonts.scss, same face/role as the sibling HR-Hub-SPFx
-  // solution's `--font-display` token. Card-level titles stay on the body font.
+  // Display face (HR Hub `--font-display`) for page/section titles and the
+  // top-bar eyebrow — self-hosted in _fonts.scss. Card titles stay on the body font.
   --full-font-family-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
   --full-fs-page-title: 2.25rem; // 36px
   --full-fs-section-title: 1.5rem; // 24px
@@ -69,55 +88,75 @@
   --full-space-7: 48px;
   --full-space-8: 64px;
 
-  // --- Radius / elevation / motion -----------------------------------
+  // --- Radius / elevation / motion (HR Hub values) -----------------------
   --full-radius-sm: 4px;
   --full-radius-md: 8px;
-  --full-radius-lg: 16px;
-  --full-shadow-card: 0 1px 2px rgba(4, 37, 60, 0.06), 0 4px 16px rgba(4, 37, 60, 0.08);
-  --full-shadow-card-hover: 0 2px 4px rgba(4, 37, 60, 0.08), 0 8px 28px rgba(4, 37, 60, 0.14);
-  --full-transition-fast: 120ms ease;
-  --full-transition-base: 200ms ease;
+  --full-radius-lg: 14px;
+  --full-radius-xl: 22px;
+  --full-radius-pill: 9999px;
+  --full-shadow-card: 0 1px 2px rgba(8, 28, 50, 0.08), 0 4px 12px rgba(8, 28, 50, 0.08);
+  --full-shadow-card-hover: 0 2px 4px rgba(8, 28, 50, 0.08), 0 8px 24px rgba(8, 28, 50, 0.14);
+  --full-shadow-sm: 0 1px 2px rgba(8, 28, 50, 0.1);
+  --full-shadow-pop: 0 18px 48px rgba(8, 28, 50, 0.22);
+  --full-shadow-chrome: 0 5px 14px rgba(8, 28, 50, 0.045);
+  --full-ease: cubic-bezier(0.2, 0, 0, 1);
+  --full-transition-fast: 120ms cubic-bezier(0.2, 0, 0, 1);
+  --full-transition-base: 200ms cubic-bezier(0.2, 0, 0, 1);
 
   // --- Layout ----------------------------------------------------------
   --full-content-max: 1280px;
-  --full-section-gap: var(--full-space-7); // 48px — tighter rhythm than the old space-8 (64px)
+  --full-section-gap: var(--full-space-6); // 32px - tighter rhythm between stacked sections/cards
 }
 
-// --- Canvas themes (theme.canvas: 'sky' | 'cream' | 'dark') -----------------
+// --- Canvas themes (theme.canvas / the top bar's theme menu: 'sky' | 'cream' | 'dark')
 //
 // `sky` is the default and needs no override block - it's exactly the
 // `th-tokens` values above. `cream` and `dark` override only the tokens that
-// define the page canvas: backgrounds/surfaces, body/heading/muted text,
-// borders, shadows and the focus ring. The gold/navy brand tokens
-// (--full-primary*, --full-secondary*) and every spacing/typography/radius
+// define the page canvas (HR Hub `.rsg-hub[data-canvas=…]` blocks):
+// backgrounds/surfaces, body/heading/muted text, borders, shadows and the
+// focus ring. The gold/navy brand tokens and every spacing/typography/radius
 // token stay constant - only the "canvas" changes, not the brand.
 //
 // Attribute selectors (`.travelHub[data-th-canvas="…"]`) outrank the plain
 // `.travelHub` selector on specificity alone, so these rules win regardless
 // of where this partial is @imported relative to `@include th-tokens`.
 .travelHub[data-th-canvas='cream'] {
-  --full-bg: #fffcf4;
+  --full-bg: #f5f0e1;
   --full-page-bg: #f5f0e1;
-  --full-text: #04253c;
-  --full-text-muted: #5c4f3a;
-  --full-heading: #04253c;
-  --full-border: #e0d6c0;
+  --full-canvas-raised: #faf6ec;
+  --full-text: #081c32;
+  --full-text-muted: #3c5573;
+  --full-text-subtle: #6e87a5;
+  --full-heading: #081c32;
+  --full-border: #e0d6bc;
+  --full-border-strong: #c8bc9e;
   --full-surface: #fffcf4;
-  --full-surface-alt: #f0e6d2;
+  --full-surface-alt: #faf6ec;
+  --full-surface-sunken: #eae2cf;
 }
 
 .travelHub[data-th-canvas='dark'] {
-  --full-bg: #0b2337;
-  --full-page-bg: #071825;
-  --full-text: #f5f4f0;
-  --full-text-muted: #b9c4cf;
-  --full-heading: #f5f4f0;
-  --full-border: rgba(255, 255, 255, 0.14);
-  --full-surface: #123048;
-  --full-surface-alt: #0e2a40;
+  --full-bg: #0f2c4a;
+  --full-page-bg: #0f2c4a;
+  --full-canvas-raised: #0b233c;
+  --full-text: #faf6ec;
+  --full-text-muted: #d2c8af;
+  --full-text-subtle: #a0afc3;
+  --full-heading: #faf6ec;
+  --full-border: #304c6e;
+  --full-border-strong: #4a688a;
+  --full-surface: #12304e;
+  --full-surface-alt: #183a5c;
+  --full-surface-sunken: #22486c;
+  // Ratified HR Hub divergence: gold-soft clears AA on the dark surfaces.
+  --full-accent-text: #dabf8a;
+  --full-hijri: #dabf8a;
+  --full-danger-text: #deaaa6;
   // Black-based, not navy-based: a navy shadow is nearly invisible on a navy card.
   --full-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.24), 0 4px 16px rgba(0, 0, 0, 0.32);
   --full-shadow-card-hover: 0 2px 4px rgba(0, 0, 0, 0.28), 0 8px 28px rgba(0, 0, 0, 0.4);
-  // Navy-on-navy focus rings would be invisible; gold reads clearly on the dark canvas.
-  --full-focus-ring: var(--full-primary);
+  --full-shadow-pop: 0 18px 48px rgba(0, 0, 0, 0.45);
+  --full-shadow-chrome: 0 5px 14px rgba(0, 0, 0, 0.2);
+  // Navy-on-navy focus rings would be invisible; gold-soft reads clearly on the dark canvas.
+  --full-focus-ring: #dabf8a;
 }

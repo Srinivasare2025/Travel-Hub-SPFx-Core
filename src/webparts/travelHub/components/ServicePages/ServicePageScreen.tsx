@@ -4,6 +4,7 @@ import { useServices } from '../../../../common/context/ServiceContext';
 import { useNavigation } from '../../../../common/context/NavigationContext';
 import { useAsyncData } from '../../../../common/hooks';
 import { Button, ImageWithFallback, LoadingState, ErrorState, EmptyState } from '../../../../common/components';
+import { PolicyPageScreen } from '../PolicyPages';
 import styles from './ServicePageScreen.module.scss';
 
 export interface IServicePageScreenProps {
@@ -27,6 +28,11 @@ export const ServicePageScreen: React.FC<IServicePageScreenProps> = ({ serviceId
   const { status, data, retry } = useAsyncData(() => travelServices.getServices(configuration), [configuration]);
 
   const service = data?.find((s) => s.id === serviceId);
+
+  // A service with a PageSlug has a real list-driven page - show it.
+  if (service !== undefined && service.pageSlug !== undefined) {
+    return <PolicyPageScreen slug={service.pageSlug} />;
+  }
 
   return (
     <div className={styles.screen}>

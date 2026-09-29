@@ -4,7 +4,7 @@ import { useServices } from '../../../../common/context/ServiceContext';
 import { useNavigation } from '../../../../common/context/NavigationContext';
 import { useAsyncData } from '../../../../common/hooks';
 import { Badge, Button, LoadingState, ErrorState, EmptyState } from '../../../../common/components';
-import { PolicySectionBlock, HelpSteps, BUSINESS_TRAVEL_SLUG } from './PolicyCardSections';
+import { SectionFlow, HelpSteps, PageLink, BUSINESS_TRAVEL_SLUG } from './PolicyCardSections';
 import styles from './PolicyPageScreen.module.scss';
 
 export interface IPolicyPageScreenProps {
@@ -22,7 +22,7 @@ function closingBadgeIcon(label: string): string {
     return 'Group';
   }
   if (l.includes('planet')) {
-    return 'Leaf';
+    return 'Flower';
   }
   if (l.includes('future')) {
     return 'BarChart4';
@@ -96,23 +96,78 @@ export const PolicyPageScreen: React.FC<IPolicyPageScreenProps> = ({ slug }) => 
         <span aria-current="page">{data.title}</span>
       </nav>
 
-      <div
-        className={styles.hero}
-        style={data.hero.imageUrl !== undefined ? { backgroundImage: `url(${data.hero.imageUrl})` } : undefined}
-      >
-        <div className={styles.heroScrim} aria-hidden="true" />
-        <div className={styles.heroContent}>
-          {data.hero.icon !== undefined && (
-            <span className={styles.heroIcon} aria-hidden="true">
-              <Icon iconName={data.hero.icon} />
-            </span>
+      {data.hero.style === 'light' ? (
+        // HeroStyle = Light (the mockups): icon disc + text on a light band,
+        // the photo fading in on the right.
+        <div className={styles.heroLight}>
+          {data.hero.imageUrl !== undefined && (
+            <div className={styles.heroLightImage} style={{ backgroundImage: `url(${data.hero.imageUrl})` }} aria-hidden="true" />
           )}
-          <h1 className={styles.heroTitle}>{data.hero.title}</h1>
-          {data.hero.subtitle !== undefined && <p className={styles.heroSubtitle}>{data.hero.subtitle}</p>}
-          {data.hero.description !== undefined && <p className={styles.heroDescription}>{data.hero.description}</p>}
+          <div className={styles.heroLightContent}>
+            {data.hero.icon !== undefined && (
+              <span className={styles.heroLightIcon} aria-hidden="true">
+                <Icon iconName={data.hero.icon} />
+              </span>
+            )}
+            <div className={styles.heroLightText}>
+              {data.hero.eyebrow !== undefined && <p className={styles.heroEyebrow}>{data.hero.eyebrow}</p>}
+              <h1 className={styles.heroLightTitle}>{data.hero.title}</h1>
+              {data.hero.subtitle !== undefined && <p className={styles.heroLightSubtitle}>{data.hero.subtitle}</p>}
+              {data.hero.description !== undefined && <p className={styles.heroLightDescription}>{data.hero.description}</p>}
+              {data.hero.links.length > 0 && (
+                <div className={styles.heroLinks}>
+                  {data.hero.links.map((link, index) => (
+                    <PageLink
+                      key={index}
+                      targetSlug={link.targetSlug}
+                      url={link.url}
+                      openInNewTab={link.openInNewTab}
+                      className={index === 0 ? styles.heroButtonPrimary : styles.heroButtonSecondary}
+                    >
+                      {link.text} <Icon iconName={link.openInNewTab ? 'OpenInNewWindow' : 'ArrowRight'} aria-hidden="true" />
+                    </PageLink>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          {data.hero.tagline !== undefined && <div className={styles.heroLightTagline}>{data.hero.tagline}</div>}
         </div>
-        {data.hero.tagline !== undefined && <div className={styles.heroTagline}>{data.hero.tagline}</div>}
-      </div>
+      ) : (
+        <div
+          className={styles.hero}
+          style={data.hero.imageUrl !== undefined ? { backgroundImage: `url(${data.hero.imageUrl})` } : undefined}
+        >
+          <div className={styles.heroScrim} aria-hidden="true" />
+          <div className={styles.heroContent}>
+            {data.hero.icon !== undefined && (
+              <span className={styles.heroIcon} aria-hidden="true">
+                <Icon iconName={data.hero.icon} />
+              </span>
+            )}
+            {data.hero.eyebrow !== undefined && <p className={styles.heroEyebrowDark}>{data.hero.eyebrow}</p>}
+            <h1 className={styles.heroTitle}>{data.hero.title}</h1>
+            {data.hero.subtitle !== undefined && <p className={styles.heroSubtitle}>{data.hero.subtitle}</p>}
+            {data.hero.description !== undefined && <p className={styles.heroDescription}>{data.hero.description}</p>}
+            {data.hero.links.length > 0 && (
+              <div className={styles.heroLinks}>
+                {data.hero.links.map((link, index) => (
+                  <PageLink
+                    key={index}
+                    targetSlug={link.targetSlug}
+                    url={link.url}
+                    openInNewTab={link.openInNewTab}
+                    className={index === 0 ? styles.heroButtonPrimary : styles.heroButtonOnDark}
+                  >
+                    {link.text} <Icon iconName={link.openInNewTab ? 'OpenInNewWindow' : 'ArrowRight'} aria-hidden="true" />
+                  </PageLink>
+                ))}
+              </div>
+            )}
+          </div>
+          {data.hero.tagline !== undefined && <div className={styles.heroTagline}>{data.hero.tagline}</div>}
+        </div>
+      )}
 
       {data.infoBannerText !== undefined && (
         <div className={styles.infoBanner}>
@@ -121,9 +176,7 @@ export const PolicyPageScreen: React.FC<IPolicyPageScreenProps> = ({ slug }) => 
         </div>
       )}
 
-      {data.sections.map((section) => (
-        <PolicySectionBlock key={section.id} section={section} />
-      ))}
+      <SectionFlow sections={data.sections} />
 
       {data.noteBannerText !== undefined && (
         <div className={styles.noteBanner}>
@@ -132,11 +185,15 @@ export const PolicyPageScreen: React.FC<IPolicyPageScreenProps> = ({ slug }) => 
         </div>
       )}
 
+      {/* "Ready to proceed?" - title/description left; right, the two
+          list-configured links (TH_PolicyPages CtaLinkText/CtaLinkUrl and
+          CtaPrimaryText/CtaPrimaryUrl) separated by a divider, e.g.
+          "Full Rules & Conditions | Apply ->". Either link may be left blank. */}
       {data.cta !== undefined && (
         <div className={styles.ctaRow}>
-          <div>
+          <div className={styles.ctaText}>
             <h2 className={styles.ctaTitle}>{data.cta.title}</h2>
-            <p className={styles.ctaDescription}>{data.cta.description}</p>
+            {data.cta.description.length > 0 && <p className={styles.ctaDescription}>{data.cta.description}</p>}
           </div>
           <div className={styles.ctaActions}>
             {data.cta.linkUrl !== undefined && data.cta.linkText !== undefined && (
@@ -144,10 +201,15 @@ export const PolicyPageScreen: React.FC<IPolicyPageScreenProps> = ({ slug }) => 
                 {data.cta.linkText}
               </a>
             )}
+            {data.cta.linkUrl !== undefined &&
+              data.cta.linkText !== undefined &&
+              data.cta.primaryUrl !== undefined &&
+              data.cta.primaryText !== undefined && <span className={styles.ctaDivider} aria-hidden="true" />}
             {data.cta.primaryUrl !== undefined && data.cta.primaryText !== undefined && (
-              <Button variant="primary" href={data.cta.primaryUrl} iconAfter="ChevronRight">
+              <a className={`${styles.ctaLink} ${styles.ctaPrimaryLink}`} href={data.cta.primaryUrl}>
                 {data.cta.primaryText}
-              </Button>
+                <Icon iconName="ArrowRight" aria-hidden="true" />
+              </a>
             )}
           </div>
         </div>
@@ -194,29 +256,34 @@ export const PolicyPageScreen: React.FC<IPolicyPageScreenProps> = ({ slug }) => 
                 </div>
               </>
             ) : (
-              <>
-                <div className={styles.assistantHeading}>
-                  <h2 className={styles.sectionTitle}>Ask Our Policy Assistant</h2>
-                  <Badge text="AI Powered" tone="gold" />
-                </div>
-                <p className={styles.assistantDescription}>Get instant answers from RSG&rsquo;s Travel Policy.</p>
-                <div className={styles.assistantRow}>
+              // Travel Policy landing page: title / description / input on
+              // the left, "Try asking" + the questions (2 per line) on the
+              // right, stretched to the same height as the left side.
+              <div className={styles.assistantSplit}>
+                <div className={styles.assistantMain}>
+                  <div className={styles.assistantHeading}>
+                    <h2 className={styles.sectionTitle}>Ask Our Policy Assistant</h2>
+                    <Badge text="AI Powered" tone="gold" />
+                  </div>
+                  <p className={styles.assistantDescription}>Get instant answers from RSG&rsquo;s Travel Policy.</p>
                   <div className={styles.assistantInputRow}>
                     <input className={styles.assistantInput} type="text" placeholder="Ask a question about the Travel Policy…" disabled />
                     <span className={styles.assistantSend} aria-hidden="true">
                       <Icon iconName="Send" />
                     </span>
                   </div>
-                  <div className={styles.assistantSuggestions}>
-                    <span className={styles.assistantSuggestionsLabel}>Try asking:</span>
+                </div>
+                <div className={styles.assistantTry}>
+                  <span className={styles.assistantSuggestionsLabel}>Try asking:</span>
+                  <div className={styles.assistantTryGrid}>
                     {data.suggestedQuestions.map((question) => (
-                      <span key={question} className={styles.assistantChip}>
+                      <span key={question} className={`${styles.assistantChip} ${styles.assistantTryChip}`}>
                         {question}
                       </span>
                     ))}
                   </div>
                 </div>
-              </>
+              </div>
             )}
           </div>
         </div>
@@ -227,7 +294,7 @@ export const PolicyPageScreen: React.FC<IPolicyPageScreenProps> = ({ slug }) => 
           <span className={styles.needHelpIcon} aria-hidden="true">
             <Icon iconName="Headset" />
           </span>
-          <div className={styles.needHelpBody}>
+          <div className={`${styles.needHelpBody} ${data.needHelp.steps.length > 0 ? styles.needHelpWithSteps : ''}`}>
             <div className={styles.needHelpText}>
               <h2 className={styles.sectionTitle}>{data.needHelp.title}</h2>
               {data.needHelp.supportLabel !== undefined && <span className={styles.needHelpLabel}>{data.needHelp.supportLabel}</span>}
@@ -249,7 +316,7 @@ export const PolicyPageScreen: React.FC<IPolicyPageScreenProps> = ({ slug }) => 
 
       {data.closingBanner !== undefined && (
         <div className={styles.closingBanner}>
-          <Icon iconName="Leaf" className={styles.closingIcon} aria-hidden="true" />
+          <Icon iconName="Flower" className={styles.closingIcon} aria-hidden="true" />
           <div>
             <h2 className={styles.closingTitle}>{data.closingBanner.title}</h2>
             <p className={styles.closingDescription}>{data.closingBanner.description}</p>

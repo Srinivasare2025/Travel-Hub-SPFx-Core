@@ -323,13 +323,22 @@ One row per Travel Policy page, landing page included. See `PolicyService.ts`.
 | --- | --- |
 | Title / Subtitle | Single line / Multiple lines (plain) — this content block's own heading, if any |
 | PageId | Lookup → `TH_PolicyPages` |
-| Layout | Choice (`Paragraph`, `CardsGrid`, `Table`, `Tabs`, `NumberedSteps`, `ProcessSteps`, `Callout`, `ImageBlock`, `LinksList`) — picks the rendering template |
+| Layout | Choice (`Paragraph`, `CardsGrid`, `Table`, `Tabs`, `NumberedSteps`, `ProcessSteps`, `Callout`, `ImageBlock`, `LinksList`, `Split`, `Checklist`, `Banner`, `ImageCards`, `Feature`, `Faq`, `Search`) — picks the rendering template |
 | CardVariant | Choice (`Category`, `Info`, `Highlight`) — only meaningful when `Layout = CardsGrid`; which of the 3 card visual treatments to use |
 | Body | Multiple lines (plain) — free text for `Layout = Paragraph`/`Callout`, one paragraph per line |
 | Icon | Single line (Fluent icon name) — for `Layout = Callout`/`ImageBlock` |
 | ImageUrl | Hyperlink — for `Layout = ImageBlock` |
 | DisplayOrder | Number |
 | IsActive | Yes/No |
+| TabId | Lookup → `TH_PolicyTabs` — set to place this section INSIDE a tab (the tab then shows its nested sections instead of its own cards/tables). Also set PageId. |
+| Columns | Number (1–6) — cards per row for `Layout = CardsGrid` (Highlight); blank = responsive default |
+| CardStyle | Choice (`Default`, `IconHeader`, `IconMedia`, `Stacked`, `ImageTop`, `ImageLeft`, `ImageTile`, `ImageBanner`) — card look per layout (see POLICY-CONTENT-GUIDE.md §5); `Default` = unchanged |
+| Width | Choice (`Full`, `Half`, `OneThird`, `TwoThirds`) — consecutive non-Full sections share a row |
+| LinkText / LinkUrl / TargetSlug | Single line / Hyperlink / Single line — header button; Feature button; Search address (`{query}`) |
+| TintCards | Yes/No — wash each card with its own `IconColor` |
+| SectionStyle | Choice (`Plain`, `Card`, `Tinted`) — the section's container; `Plain` = unchanged |
+| Theme | Choice (`Gold`, `Blue`, `Green`, `Amber`, `Red`, `Purple`, `Teal`) — colour of a `Tinted` panel, number badge, header icon and `Banner` |
+| HideTitle | Yes/No (default No) — `Yes` = `Title` is an internal name only and is not shown on the page. Give every section a Title: cards/tables/tabs pick their parent through a `SectionId` lookup that displays Title, and a blank Title can clear a card's `SectionId` when it is edited in the list form (the card then disappears). |
 
 One ordered content block on a page — this is the unit a content owner
 adds/reorders/removes to build up a page's body, between the hero and the
@@ -431,3 +440,21 @@ Keeps `filter`/`orderBy` under the list view threshold.
 - No separate "categories" lists unless the business needs managed category
   governance — `Choice` columns suffice initially.
 - No audit/log list — use SPFx `Log` + tenant audit.
+
+### Newer optional columns (added by `travelhub-provision.js`)
+
+| List | Column | Type — purpose |
+| --- | --- | --- |
+| `TH_PolicyPages` | HeroEyebrow | Single line — small caps line above the hero title |
+| `TH_PolicyPages` | HeroStyle | Choice `Dark` / `Light` — hero look |
+| `TH_PolicyPages` | HeroLinkText, HeroLinkUrl, HeroLinkTargetSlug, HeroLink2Text, HeroLink2Url, HeroLink2TargetSlug | Hero buttons (TargetSlug wins over Url) |
+| `TH_PolicyCards` | ImageUrl | Hyperlink — photo / QR / step image |
+| `TH_PolicyCards` | Subtitle, Badge | Single line — line under the title; pill on the photo |
+| `TH_PolicyCards` | Value, ValueLabel, ValueNote | Single line — highlighted figure with captions ("Starting From / SAR 5,999 / per person") |
+| `TH_PolicyCards` | OpenInNewTab | Yes/No — open `LinkUrl` in a new tab |
+| `TH_TravelServices` | PageSlug | Single line — a `TH_PolicyPages` Slug; the service's nav tab and card open that page |
+
+Every page is read with a fallback: a site where these columns don't exist
+yet still loads (the options are simply off). Full editor guidance:
+`POLICY-CONTENT-GUIDE.md`.
+

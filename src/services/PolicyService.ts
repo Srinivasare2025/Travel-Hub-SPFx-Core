@@ -6,7 +6,12 @@ import {
   IPolicyTab,
   IPolicyTable,
   PolicyCardKind,
-  PolicySectionLayout
+  PolicyCardStyle,
+  PolicySectionLayout,
+  PolicySectionStyle,
+  PolicySectionWidth,
+  PolicyTheme,
+  IPolicyHeroLink
 } from '../models';
 import type { SharePointService } from './base/SharePointService';
 import { Logger } from './base/Logger';
@@ -53,6 +58,15 @@ interface IRawPage {
   SuggestedQuestions: string | null;
   AssistantLinkText: string | null;
   AssistantLinkUrl: { Url: string } | null;
+  // Optional (newer) columns.
+  HeroEyebrow?: string | null;
+  HeroStyle?: string | null;
+  HeroLinkText?: string | null;
+  HeroLinkUrl?: { Url: string } | null;
+  HeroLinkTargetSlug?: string | null;
+  HeroLink2Text?: string | null;
+  HeroLink2Url?: { Url: string } | null;
+  HeroLink2TargetSlug?: string | null;
 }
 
 interface IRawSection {
@@ -66,6 +80,18 @@ interface IRawSection {
   Icon: string | null;
   ImageUrl: { Url: string } | null;
   DisplayOrder: number | null;
+  // Optional columns (added later) - absent on sites where provisioning hasn't been re-run.
+  HideTitle?: boolean | null;
+  TabIdId?: number | null;
+  Columns?: number | null;
+  CardStyle?: string | null;
+  TintCards?: boolean | null;
+  SectionStyle?: string | null;
+  Theme?: string | null;
+  Width?: string | null;
+  LinkText?: string | null;
+  LinkUrl?: { Url: string } | null;
+  TargetSlug?: string | null;
 }
 
 interface IRawTab {
@@ -94,6 +120,14 @@ interface IRawCard {
   LinkUrl: { Url: string } | null;
   LinkText: string | null;
   DisplayOrder: number | null;
+  // Optional (newer) columns.
+  ImageUrl?: { Url: string } | null;
+  Subtitle?: string | null;
+  Badge?: string | null;
+  Value?: string | null;
+  ValueLabel?: string | null;
+  ValueNote?: string | null;
+  OpenInNewTab?: boolean | null;
 }
 
 interface IRawTable {
@@ -122,11 +156,32 @@ const PAGE_SELECT = [
 ];
 
 const SECTION_SELECT = ['Id', 'Title', 'PageIdId', 'Subtitle', 'Layout', 'CardVariant', 'Body', 'Icon', 'ImageUrl', 'DisplayOrder'];
+/**
+ * `HideTitle` lets a section carry an internal Title (so it's identifiable in
+ * TH_PolicyCards' SectionId lookup) without that Title showing on the page.
+ * Selected separately with a fallback, so a site where the column hasn't been
+ * provisioned yet keeps loading exactly as before.
+ */
+const SECTION_SELECT_WITH_HIDE_TITLE = [...SECTION_SELECT, 'HideTitle'];
+/** Every optional section column (see IRawSection) - tried first, falling back step by step. */
+const SECTION_SELECT_EXTENDED = [...SECTION_SELECT_WITH_HIDE_TITLE, 'TabIdId', 'Columns', 'CardStyle', 'TintCards', 'SectionStyle', 'Theme'];
+const SECTION_SELECT_V3 = [...SECTION_SELECT_EXTENDED, 'Width', 'LinkText', 'LinkUrl', 'TargetSlug'];
+const PAGE_SELECT_EXTENDED = [
+  ...PAGE_SELECT,
+  'HeroEyebrow', 'HeroStyle', 'HeroLinkText', 'HeroLinkUrl', 'HeroLinkTargetSlug', 'HeroLink2Text', 'HeroLink2Url', 'HeroLink2TargetSlug'
+];
+const WIDTHS: Record<string, PolicySectionWidth> = { full: 'full', half: 'half', onethird: 'oneThird', twothirds: 'twoThirds' };
+
+/** A card Title written in square brackets is an internal name, not shown on the page. */
+const INTERNAL_TITLE_RE = /^\[.*\]$/;
+
+const THEMES: readonly PolicyTheme[] = ['gold', 'blue', 'green', 'amber', 'red', 'purple', 'teal'];
 const TAB_SELECT = ['Id', 'Title', 'SectionIdId', 'Subtitle', 'Description', 'Icon', 'DisplayOrder'];
 const CARD_SELECT = [
   'Id', 'Title', 'PageIdId', 'SectionIdId', 'TabIdId', 'Kind', 'Number', 'Icon', 'IconColor', 'Description', 'SubPoints',
   'TargetSlug', 'LinkUrl', 'LinkText', 'DisplayOrder'
 ];
+const CARD_SELECT_EXTENDED = [...CARD_SELECT, 'ImageUrl', 'Subtitle', 'Badge', 'Value', 'ValueLabel', 'ValueNote', 'OpenInNewTab'];
 const TABLE_SELECT = ['Id', 'Title', 'SectionIdId', 'TabIdId', 'ColumnHeaders', 'DisplayOrder'];
 const TABLE_ROW_SELECT = ['Id', 'TableIdId', 'CellValues', 'DisplayOrder'];
 
@@ -148,7 +203,14 @@ const LAYOUT_MAP: Record<string, PolicySectionLayout> = {
   processsteps: 'processSteps',
   callout: 'callout',
   imageblock: 'imageBlock',
-  linkslist: 'linksList'
+  linkslist: 'linksList',
+  split: 'split',
+  checklist: 'checklist',
+  banner: 'banner',
+  imagecards: 'imageCards',
+  feature: 'feature',
+  faq: 'faq',
+  search: 'search'
 };
 
 /** `field eq id1 or field eq id2 …`; `undefined` when `ids` is empty (skip the request). */
@@ -192,47 +254,79 @@ export class PolicyService implements IPolicyService {
       return undefined;
     }
     return this.cache.getOrAdd(`policy:page:${cleanSlug}`, TTL_SECONDS, async () => {
-      const raw = await this.spo.getListItems<IRawPage>({
-        list: PAGES_LIST,
-        select: PAGE_SELECT,
-        filter: `IsActive eq 1 and Slug eq '${cleanSlug.replace(/'/g, "''")}'`,
-        top: 1
-      });
+      const pageQuery = { list: PAGES_LIST, filter: `IsActive eq 1 and Slug eq '${cleanSlug.replace(/'/g, "''")}'`, top: 1 };
+      const raw = await this.spo
+        .getListItems<IRawPage>({ ...pageQuery, select: PAGE_SELECT_EXTENDED })
+        .catch(() => this.spo.getListItems<IRawPage>({ ...pageQuery, select: PAGE_SELECT }));
       const page = raw[0];
       if (page === undefined) {
         return undefined;
       }
 
-      const sectionsRaw = await this.spo.getListItems<IRawSection>({
+      const sectionQuery = {
         list: SECTIONS_LIST,
-        select: SECTION_SELECT,
         filter: `IsActive eq 1 and PageIdId eq ${String(page.Id)}`,
         orderBy: { field: 'DisplayOrder', ascending: true },
         top: 50
-      });
-      const sectionIds = sectionsRaw.map((s) => s.Id);
+      };
+      // Newest columns first; a site where provisioning hasn't been re-run
+      // yet falls back to the older column sets and renders as before.
+      let sectionSelect = SECTION_SELECT_V3;
+      const allSectionsRaw = await this.spo
+        .getListItems<IRawSection>({ ...sectionQuery, select: SECTION_SELECT_V3 })
+        .catch(() => {
+          sectionSelect = SECTION_SELECT_EXTENDED;
+          return this.spo.getListItems<IRawSection>({ ...sectionQuery, select: SECTION_SELECT_EXTENDED });
+        })
+        .catch(() => {
+          sectionSelect = SECTION_SELECT_WITH_HIDE_TITLE;
+          return this.spo.getListItems<IRawSection>({ ...sectionQuery, select: SECTION_SELECT_WITH_HIDE_TITLE });
+        })
+        .catch(() => {
+          sectionSelect = SECTION_SELECT;
+          return this.spo.getListItems<IRawSection>({ ...sectionQuery, select: SECTION_SELECT });
+        });
+      // Top-level sections are the page's own blocks; a section with TabId
+      // set lives inside that tab instead (see IPolicyTab.sections).
+      const isNested = (raw: IRawSection): boolean => raw.TabIdId !== null && raw.TabIdId !== undefined;
+      const topSectionIds = allSectionsRaw.filter((raw) => !isNested(raw)).map((raw) => raw.Id);
 
-      const tabsRaw = sectionIds.length > 0
+      const tabsRaw = topSectionIds.length > 0
         ? await this.spo.getListItems<IRawTab>({
             list: TABS_LIST,
             select: TAB_SELECT,
-            filter: `IsActive eq 1 and (${inFilter('SectionIdId', sectionIds) as string})`,
+            filter: `IsActive eq 1 and (${inFilter('SectionIdId', topSectionIds) as string})`,
             orderBy: { field: 'DisplayOrder', ascending: true },
             top: 50
           })
         : [];
       const tabIds = tabsRaw.map((t) => t.Id);
 
+      // Tab sections whose PageId was left blank are still found via TabId.
+      const tabSectionFilter = sectionSelect.indexOf('TabIdId') >= 0 ? inFilter('TabIdId', tabIds) : undefined;
+      const extraTabSections = tabSectionFilter !== undefined
+        ? await this.spo
+            .getListItems<IRawSection>({ ...sectionQuery, filter: `IsActive eq 1 and (${tabSectionFilter})`, select: sectionSelect })
+            .catch((): IRawSection[] => [])
+        : [];
+      const knownIds = new Set(allSectionsRaw.map((raw) => raw.Id));
+      const sectionsRaw = [...allSectionsRaw, ...extraTabSections.filter((raw) => !knownIds.has(raw.Id))];
+      const sectionIds = sectionsRaw.map((raw) => raw.Id);
+
       // Both cards and tables can belong directly to a section or to one of
       // its tabs, so both are fetched with the same "section or tab" filter.
       const parentFilter = this.combineParentFilter(sectionIds, tabIds, 'SectionIdId', 'TabIdId');
+      const cardQuery = {
+        list: CARDS_LIST,
+        filter: `IsActive eq 1 and (${parentFilter ?? 'Id eq 0'})`,
+        orderBy: { field: 'DisplayOrder', ascending: true },
+        top: 300
+      };
+      let cardSelect = CARD_SELECT_EXTENDED;
       const cardsRaw = parentFilter !== undefined
-        ? await this.spo.getListItems<IRawCard>({
-            list: CARDS_LIST,
-            select: CARD_SELECT,
-            filter: `IsActive eq 1 and (${parentFilter})`,
-            orderBy: { field: 'DisplayOrder', ascending: true },
-            top: 200
+        ? await this.spo.getListItems<IRawCard>({ ...cardQuery, select: CARD_SELECT_EXTENDED }).catch(() => {
+            cardSelect = CARD_SELECT;
+            return this.spo.getListItems<IRawCard>({ ...cardQuery, select: CARD_SELECT });
           })
         : [];
 
@@ -284,6 +378,13 @@ export class PolicyService implements IPolicyService {
         }
       });
 
+      // Sections nested in a tab (one level only - they carry no tabs of their own).
+      const sectionsByTab = new Map<number, IPolicySection[]>();
+      sectionsRaw.filter(isNested).forEach((raw) => {
+        this.pushTo(sectionsByTab, raw.TabIdId as number, this.mapSection(raw, cardsBySection, tablesBySection, new Map()));
+      });
+      sectionsByTab.forEach((list) => list.sort((a, b) => a.displayOrder - b.displayOrder));
+
       const tabsBySection = new Map<number, IPolicyTab[]>();
       tabsRaw.forEach((raw) => {
         const tab: IPolicyTab = {
@@ -294,6 +395,7 @@ export class PolicyService implements IPolicyService {
           icon: toOptionalString(raw.Icon),
           cards: cardsByTab.get(raw.Id) ?? [],
           tables: tablesByTab.get(raw.Id) ?? [],
+          sections: sectionsByTab.get(raw.Id) ?? [],
           displayOrder: toNumber(raw.DisplayOrder, 0)
         };
         if (raw.SectionIdId !== null && raw.SectionIdId !== undefined) {
@@ -301,14 +403,16 @@ export class PolicyService implements IPolicyService {
         }
       });
 
-      const sections = sectionsRaw.map((s) => this.mapSection(s, cardsBySection, tablesBySection, tabsBySection));
+      const sections = sectionsRaw
+        .filter((raw) => !isNested(raw))
+        .map((raw) => this.mapSection(raw, cardsBySection, tablesBySection, tabsBySection));
 
       // The "Ask HR" style steps under Need Help are a fixed page-level
       // feature (not a reorderable content block) - attached directly via
       // PageId, same as the CTA/closing banner fields below.
       const needHelpStepsRaw = await this.spo.getListItems<IRawCard>({
         list: CARDS_LIST,
-        select: CARD_SELECT,
+        select: cardSelect,
         filter: `IsActive eq 1 and PageIdId eq ${String(page.Id)} and Kind eq 'HelpStep'`,
         orderBy: { field: 'DisplayOrder', ascending: true },
         top: 20
@@ -359,7 +463,7 @@ export class PolicyService implements IPolicyService {
     const layout = LAYOUT_MAP[(s.Layout ?? 'paragraph').toLowerCase()] ?? 'paragraph';
     return {
       id: s.Id,
-      title: toOptionalString(s.Title),
+      title: s.HideTitle === true ? undefined : toOptionalString(s.Title),
       subtitle: toOptionalString(s.Subtitle),
       layout,
       cardVariant: this.mapCardVariant(s.CardVariant),
@@ -369,8 +473,49 @@ export class PolicyService implements IPolicyService {
       cards: cardsBySection.get(s.Id) ?? [],
       tables: tablesBySection.get(s.Id) ?? [],
       tabs: tabsBySection.get(s.Id) ?? [],
+      columns: this.mapColumns(s.Columns),
+      cardStyle: this.mapCardStyle(s.CardStyle),
+      tintCards: s.TintCards === true,
+      sectionStyle: this.mapSectionStyle(s.SectionStyle),
+      theme: this.mapTheme(s.Theme),
+      width: WIDTHS[(s.Width ?? '').replace(/\s+/g, '').toLowerCase()] ?? 'full',
+      linkText: toOptionalString(s.LinkText),
+      linkUrl: sanitizeUrl(s.LinkUrl?.Url),
+      targetSlug: toOptionalString(s.TargetSlug)?.trim().toLowerCase(),
       displayOrder: toNumber(s.DisplayOrder, 0)
     };
+  }
+
+  private mapColumns(value: number | null | undefined): number | undefined {
+    return typeof value === 'number' && value >= 1 && value <= 6 ? Math.floor(value) : undefined;
+  }
+
+  private mapCardStyle(value: string | null | undefined): PolicyCardStyle {
+    const v = (value ?? '').replace(/\s+/g, '').toLowerCase();
+    if (v === 'iconheader') {
+      return 'iconHeader';
+    }
+    if (v === 'iconmedia') {
+      return 'iconMedia';
+    }
+    const extra: Record<string, PolicyCardStyle> = {
+      stacked: 'stacked',
+      imagetop: 'imageTop',
+      imageleft: 'imageLeft',
+      imagetile: 'imageTile',
+      imagebanner: 'imageBanner'
+    };
+    return extra[v] ?? 'default';
+  }
+
+  private mapSectionStyle(value: string | null | undefined): PolicySectionStyle {
+    const v = (value ?? '').toLowerCase();
+    return v === 'card' || v === 'tinted' ? v : 'plain';
+  }
+
+  private mapTheme(value: string | null | undefined): PolicyTheme | undefined {
+    const v = (value ?? '').toLowerCase() as PolicyTheme;
+    return THEMES.indexOf(v) >= 0 ? v : undefined;
   }
 
   private mapCardVariant(value: string | null): 'category' | 'info' | 'highlight' | undefined {
@@ -427,11 +572,17 @@ export class PolicyService implements IPolicyService {
       parentSectionLabel: toOptionalString(page.ParentSectionLabel),
       hero: {
         icon: toOptionalString(page.HeroIcon),
+        eyebrow: toOptionalString(page.HeroEyebrow),
         title: toStringOr(page.HeroTitle, toStringOr(page.Title, 'Travel Policy')),
         subtitle: toOptionalString(page.HeroSubtitle),
         description: toOptionalString(page.HeroDescription),
         imageUrl: sanitizeUrl(page.HeroImageUrl?.Url),
-        tagline: toOptionalString(page.HeroTagline)
+        tagline: toOptionalString(page.HeroTagline),
+        style: (page.HeroStyle ?? '').toLowerCase() === 'light' ? 'light' : 'dark',
+        links: [
+          this.mapHeroLink(page.HeroLinkText, page.HeroLinkUrl, page.HeroLinkTargetSlug),
+          this.mapHeroLink(page.HeroLink2Text, page.HeroLink2Url, page.HeroLink2TargetSlug)
+        ].filter((l): l is IPolicyHeroLink => l !== undefined)
       },
       infoBannerText: toOptionalString(page.InfoBannerText),
       noteBannerText: toOptionalString(page.NoteBannerText),
@@ -455,16 +606,40 @@ export class PolicyService implements IPolicyService {
       id: item.Id,
       kind,
       number: item.Number ?? undefined,
-      title: toStringOr(item.Title, ''),
+      // "[Principle 1]" = an internal name only (TH_PolicyCards.Title is
+      // required in the list form) - rendered as an untitled card/part.
+      title: INTERNAL_TITLE_RE.test(toStringOr(item.Title, '').trim()) ? '' : toStringOr(item.Title, ''),
       description: toStringOr(item.Description, ''),
       icon: toStringOr(item.Icon, 'Info'),
+      iconExplicit: toOptionalString(item.Icon) !== undefined,
       iconColor: toOptionalString(item.IconColor),
       subPoints: this.splitLines(item.SubPoints),
       targetSlug: toOptionalString(item.TargetSlug)?.trim().toLowerCase(),
       linkUrl,
       linkText: toOptionalString(item.LinkText),
+      openInNewTab: item.OpenInNewTab === true,
+      imageUrl: sanitizeUrl(item.ImageUrl?.Url),
+      subtitle: toOptionalString(item.Subtitle),
+      badge: toOptionalString(item.Badge),
+      value: toOptionalString(item.Value),
+      valueLabel: toOptionalString(item.ValueLabel),
+      valueNote: toOptionalString(item.ValueNote),
       displayOrder: toNumber(item.DisplayOrder, 0)
     };
+  }
+
+  private mapHeroLink(
+    text: string | null | undefined,
+    url: { Url: string } | null | undefined,
+    targetSlug: string | null | undefined
+  ): IPolicyHeroLink | undefined {
+    const label = toOptionalString(text);
+    const slug = toOptionalString(targetSlug)?.trim().toLowerCase();
+    const href = sanitizeUrl(url?.Url);
+    if (label === undefined || (slug === undefined && href === undefined)) {
+      return undefined;
+    }
+    return { text: label, url: href, targetSlug: slug, openInNewTab: slug === undefined && href !== undefined && /^https?:/i.test(href) };
   }
 
   private splitLines(value: string | null): string[] {

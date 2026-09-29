@@ -15,7 +15,7 @@ $hero-min-desktop: clamp(26rem, 38vw, 36rem);
   overflow: hidden;
   min-height: $hero-min-mobile;
   background: var(--full-secondary, #04253c);
-  box-shadow: var(--full-shadow-card-hover, 0 8px 28px rgba(4, 37, 60, 0.14));
+  box-shadow: var(--full-shadow-card-hover, 0 8px 28px rgba(15, 44, 74, 0.14));
 
   @include th-tablet-up {
     min-height: $hero-min-desktop;
@@ -86,7 +86,7 @@ $hero-min-desktop: clamp(26rem, 38vw, 36rem);
   padding: var(--full-space-1, 4px) var(--full-space-3, 12px);
   border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: 999px;
-  background: rgba(4, 37, 60, 0.55);
+  background: rgba(15, 44, 74, 0.55);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   color: #fff;
@@ -99,7 +99,7 @@ $hero-min-desktop: clamp(26rem, 38vw, 36rem);
 
   &:hover,
   &:focus-visible {
-    background: rgba(4, 37, 60, 0.8);
+    background: rgba(15, 44, 74, 0.8);
   }
 }
 
@@ -113,8 +113,8 @@ $hero-min-desktop: clamp(26rem, 38vw, 36rem);
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(4, 37, 60, 0.32) 0%, rgba(4, 37, 60, 0.02) 45%, rgba(4, 37, 60, 0) 100%),
-    linear-gradient(90deg, rgba(4, 37, 60, 0.38) 0%, rgba(4, 37, 60, 0.02) 55%);
+    linear-gradient(180deg, rgba(15, 44, 74, 0.32) 0%, rgba(15, 44, 74, 0.02) 45%, rgba(15, 44, 74, 0) 100%),
+    linear-gradient(90deg, rgba(15, 44, 74, 0.38) 0%, rgba(15, 44, 74, 0.02) 55%);
 }
 
 .slideContent {
@@ -136,7 +136,7 @@ $hero-min-desktop: clamp(26rem, 38vw, 36rem);
   line-height: var(--full-lh-tight, 1.2);
   margin: 0 0 var(--full-space-2, 8px);
   color: #fff;
-  text-shadow: 0 2px 12px rgba(4, 37, 60, 0.35);
+  text-shadow: 0 2px 12px rgba(15, 44, 74, 0.35);
 }
 
 .slideText {
@@ -144,7 +144,7 @@ $hero-min-desktop: clamp(26rem, 38vw, 36rem);
   line-height: var(--full-lh-normal, 1.5);
   margin: 0;
   color: rgba(255, 255, 255, 0.97);
-  text-shadow: 0 1px 6px rgba(4, 37, 60, 0.3);
+  text-shadow: 0 1px 6px rgba(15, 44, 74, 0.3);
 }
 
 /* --- Quick-links overlay (on the image, pinned bottom) ------------------ */
@@ -157,9 +157,9 @@ $hero-min-desktop: clamp(26rem, 38vw, 36rem);
   padding: var(--full-space-7, 48px) var(--full-space-4, 16px) var(--full-space-4, 16px);
   background: linear-gradient(
     to top,
-    rgba(4, 37, 60, 0.42) 8%,
-    rgba(4, 37, 60, 0.16) 50%,
-    rgba(4, 37, 60, 0) 100%
+    rgba(15, 44, 74, 0.42) 8%,
+    rgba(15, 44, 74, 0.16) 50%,
+    rgba(15, 44, 74, 0) 100%
   );
 
   @include th-desktop-up {
@@ -217,7 +217,7 @@ $hero-min-desktop: clamp(26rem, 38vw, 36rem);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: var(--full-radius-md, 8px);
-  box-shadow: 0 8px 22px rgba(4, 37, 60, 0.3);
+  box-shadow: 0 8px 22px rgba(15, 44, 74, 0.3);
   text-decoration: none;
   color: inherit;
   transition: background-color var(--full-transition-fast, 120ms ease),
@@ -227,7 +227,7 @@ $hero-min-desktop: clamp(26rem, 38vw, 36rem);
 
   &:hover {
     background: rgba(255, 255, 255, 1);
-    box-shadow: 0 12px 28px rgba(4, 37, 60, 0.38);
+    box-shadow: 0 12px 28px rgba(15, 44, 74, 0.38);
     transform: translateY(-1px);
   }
 
@@ -244,7 +244,7 @@ $hero-min-desktop: clamp(26rem, 38vw, 36rem);
 
   &:hover {
     background: rgba(255, 255, 255, 0.92);
-    box-shadow: 0 8px 22px rgba(4, 37, 60, 0.3);
+    box-shadow: 0 8px 22px rgba(15, 44, 74, 0.3);
     transform: none;
   }
 }
@@ -257,8 +257,8 @@ $hero-min-desktop: clamp(26rem, 38vw, 36rem);
   height: 24px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: rgba(184, 156, 102, 0.22);
-  color: var(--full-primary, #b89c66);
+  background: rgba(195, 161, 94, 0.22);
+  color: var(--full-accent-text, #816630);
   font-size: 0.7rem;
 }
 
@@ -292,7 +292,7 @@ $hero-min-desktop: clamp(26rem, 38vw, 36rem);
 }
 
 .quickLinkChevron {
-  color: var(--full-primary, #b89c66);
+  color: var(--full-accent-text, #816630);
   font-size: 0.6875rem;
   flex-shrink: 0;
 }

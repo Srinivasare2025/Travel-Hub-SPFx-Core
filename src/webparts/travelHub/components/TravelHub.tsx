@@ -2,6 +2,14 @@ import * as React from 'react';
 import type { ITravelHubProps } from './ITravelHubProps';
 import { ServiceContext } from '../../../common/context/ServiceContext';
 import { NavigationContext, ThView } from '../../../common/context/NavigationContext';
+import {
+  ShellContext,
+  IShellContext,
+  ThCanvas,
+  CANVAS_PAGE_BG,
+  readStoredCanvas,
+  storeCanvas
+} from '../../../common/context/ShellContext';
 import { SectionBoundary } from './SectionBoundary';
 import { GlobalNav } from './GlobalNav';
 import { HeroBanner } from './sections/HeroBanner';
@@ -103,6 +111,19 @@ function viewToParam(view: ThView): string | undefined {
 
 interface ITravelHubState {
   view: ThView;
+  /**
+   * The viewer's own canvas choice from the top bar's theme menu (persisted
+   * in localStorage), or `undefined` to follow the site default
+   * `configuration.theme.canvas` (TH_SiteConfiguration).
+   */
+  canvasOverride: ThCanvas | undefined;
+}
+
+/** Paints the SharePoint page behind the app in the active canvas (hostChrome.ts reads --th-host-canvas). */
+function mirrorHostCanvas(canvas: ThCanvas): void {
+  if (typeof document !== 'undefined') {
+    document.documentElement.style.setProperty('--th-host-canvas', CANVAS_PAGE_BG[canvas]);
+  }
 }
 
 /**
@@ -112,15 +133,28 @@ interface ITravelHubState {
  * business logic, no section markup here (ARCHITECTURE.md §2).
  */
 export default class TravelHub extends React.Component<ITravelHubProps, ITravelHubState> {
-  public state: ITravelHubState = { view: readViewFromLocation() };
+  public state: ITravelHubState = { view: readViewFromLocation(), canvasOverride: readStoredCanvas() };
+
+  private get canvas(): ThCanvas {
+    return this.state.canvasOverride ?? this.props.services.configuration.theme.canvas;
+  }
+
+  private readonly setCanvas = (canvas: ThCanvas): void => {
+    storeCanvas(canvas);
+    this.setState({ canvasOverride: canvas });
+  };
 
   public componentDidMount(): void {
     applyFullBleedChrome(this.props.services.configuration.layout.fullBleed);
+    mirrorHostCanvas(this.canvas);
     window.addEventListener('popstate', this.onPopState);
   }
 
   public componentDidUpdate(_prevProps: ITravelHubProps, prevState: ITravelHubState): void {
     applyFullBleedChrome(this.props.services.configuration.layout.fullBleed);
+    if (prevState.canvasOverride !== this.state.canvasOverride) {
+      mirrorHostCanvas(this.canvas);
+    }
     if (prevState.view !== this.state.view) {
       window.scrollTo({ top: 0 });
     }
@@ -152,20 +186,23 @@ export default class TravelHub extends React.Component<ITravelHubProps, ITravelH
   };
 
   public render(): React.ReactElement<ITravelHubProps> {
-    const { services, hasTeamsContext } = this.props;
+    const { services, hasTeamsContext, currentUser } = this.props;
     const { configuration } = services;
     const sections = configuration.sections;
     const { view } = this.state;
+    const canvas = this.canvas;
+    const shell: IShellContext = { canvas, setCanvas: this.setCanvas, user: currentUser };
 
     return (
       <ServiceContext.Provider value={services}>
+        <ShellContext.Provider value={shell}>
         <NavigationContext.Provider value={{ view, navigate: this.navigate }}>
           <div
             className={`${styles.travelHub} ${hasTeamsContext ? styles.teams : ''} ${
               configuration.layout.fullBleed ? styles.fullBleed : ''
             }`}
             dir={configuration.featureFlags.rtl ? 'rtl' : undefined}
-            data-th-canvas={configuration.theme.canvas}
+            data-th-canvas={canvas}
             {...{ [SHELL_MARKER_ATTR]: true }}
           >
             <SectionBoundary name="GlobalNav">
@@ -297,6 +334,7 @@ export default class TravelHub extends React.Component<ITravelHubProps, ITravelH
             )}
           </div>
         </NavigationContext.Provider>
+        </ShellContext.Provider>
       </ServiceContext.Provider>
     );
   }

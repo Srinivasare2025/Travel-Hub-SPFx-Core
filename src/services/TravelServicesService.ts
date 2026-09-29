@@ -4,7 +4,7 @@ import type { SharePointService } from './base/SharePointService';
 import { Logger } from './base/Logger';
 import type { ICache } from './base/MemoryCache';
 import { sanitizeUrl } from '../common/utils/urlValidation';
-import { orderBy, toBool, toNumber, toStringOr } from '../common/utils/collection';
+import { orderBy, toBool, toNumber, toOptionalString, toStringOr } from '../common/utils/collection';
 import { safeColor } from '../common/utils/color';
 
 const LIST = 'TH_TravelServices';
@@ -23,6 +23,7 @@ interface IRawServiceItem {
   LinkText: string | null;
   OpenInNewTab: boolean | null;
   DisplayOrder: number | null;
+  PageSlug?: string | null;
 }
 
 // ImageFit is newer than the rest of this list's columns (added for the SAP
@@ -47,6 +48,8 @@ const BASE_SELECT = [
   'DisplayOrder'
 ];
 const SELECT = [...BASE_SELECT, 'ImageFit'];
+// PageSlug (newest): opens a list-driven TH_PolicyPages page for this service.
+const SELECT_WITH_PAGE = [...SELECT, 'PageSlug'];
 
 export interface ITravelServicesService {
   getServices(config: ITravelHubConfiguration): Promise<ITravelService[]>;
@@ -71,7 +74,9 @@ export class TravelServicesService implements ITravelServicesService {
 
       let raw: IRawServiceItem[];
       try {
-        raw = await this.spo.getListItems<IRawServiceItem>({ list: LIST, select: SELECT, filter, orderBy: orderByField, top: 50 });
+        raw = await this.spo
+          .getListItems<IRawServiceItem>({ list: LIST, select: SELECT_WITH_PAGE, filter, orderBy: orderByField, top: 50 })
+          .catch(() => this.spo.getListItems<IRawServiceItem>({ list: LIST, select: SELECT, filter, orderBy: orderByField, top: 50 }));
       } catch (error) {
         const detail = error instanceof Error ? error.message : String(error);
         this.log.warn(`"${LIST}" query with ImageFit failed (column not provisioned yet?) - retrying without it. ${detail}`);
@@ -102,6 +107,7 @@ export class TravelServicesService implements ITravelServicesService {
       linkType,
       openInNewTab: toBool(item.OpenInNewTab, linkType === 'external'),
       linkText: toStringOr(item.LinkText, defaultLinkText),
+      pageSlug: toOptionalString(item.PageSlug)?.trim().toLowerCase(),
       displayOrder: toNumber(item.DisplayOrder, 0)
     };
   }
