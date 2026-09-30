@@ -30,8 +30,10 @@ export const SubmitFeedbackScreen: React.FC = () => {
   const [submitError, setSubmitError] = React.useState<string | undefined>(undefined);
   const [submitted, setSubmitted] = React.useState(false);
 
+  const canSubmit = category.trim().length > 0 && comment.trim().length > 0;
+
   const handleSubmit = (): void => {
-    if (comment.trim().length === 0 || submitting) {
+    if (!canSubmit || submitting) {
       return;
     }
     setSubmitting(true);
@@ -40,7 +42,7 @@ export const SubmitFeedbackScreen: React.FC = () => {
       .submitFeedback({
         rating,
         comment: comment.trim(),
-        category: category.trim().length > 0 ? category.trim() : undefined,
+        category: category.trim(),
         designation: designation.trim().length > 0 ? designation.trim() : undefined,
         department: department.trim().length > 0 ? department.trim() : undefined,
         location: location.trim().length > 0 ? location.trim() : undefined
@@ -101,7 +103,7 @@ export const SubmitFeedbackScreen: React.FC = () => {
         </label>
 
         <label className={styles.formLabel}>
-          Category (optional)
+          Category (required)
           <input
             className={styles.formInput}
             type="text"
@@ -110,6 +112,8 @@ export const SubmitFeedbackScreen: React.FC = () => {
             onChange={(e) => setCategory(e.target.value)}
             placeholder="e.g. Business Travel, Travel Care"
             maxLength={100}
+            required
+            aria-required="true"
           />
           <datalist id="th-feedback-category-suggestions">
             {CATEGORY_SUGGESTIONS.map((c) => (
@@ -149,7 +153,7 @@ export const SubmitFeedbackScreen: React.FC = () => {
 
         {submitError !== undefined && <p className={styles.pulseError}>{submitError}</p>}
 
-        <Button variant="primary" type="submit" onClick={handleSubmit} disabled={submitting || comment.trim().length === 0}>
+        <Button variant="primary" type="submit" onClick={handleSubmit} disabled={submitting || !canSubmit}>
           {submitting ? 'Submitting…' : 'Submit Feedback'}
         </Button>
       </div>

@@ -27,6 +27,17 @@ const ICON_LEFT_HEADER_SECTIONS: ReadonlySet<string> = new Set([
 /** Within `ICON_LEFT_HEADER_SECTIONS`, sections whose card title also gets a colored underline (from `card.iconColor`) below it, e.g. Guiding Principles' 6 approach cards. */
 const UNDERLINE_TITLE_SECTIONS: ReadonlySet<string> = new Set(['How We Approach Business Travel']);
 
+/** Column count used when these sections' `Columns` field is left empty (mock: 3 per row). */
+const DEFAULT_SECTION_COLUMNS: ReadonlyMap<string, number> = new Map([['How We Approach Business Travel', 3]]);
+
+/**
+ * Intro paragraph sections that take the icon-left card (mock: target icon
+ * left, title + paragraphs right) even when their `Icon` / `SectionStyle`
+ * fields are left empty. A value typed into either field still wins.
+ */
+const ICON_CARD_PARAGRAPH_SECTIONS: ReadonlySet<string> = new Set(['Purpose', 'Our Commitment']);
+const DEFAULT_INTRO_ICON = 'BullseyeTarget';
+
 const SECTION_NUMBER_RE = /^(\d+)[.)]\s*(.+)$/;
 
 /**
@@ -1296,7 +1307,8 @@ function sectionContainerClass(section: IPolicySection, base: string): string {
  * other layout has a single fixed treatment. `sectionStyle`/`theme` wrap it in
  * an optional card or tinted panel; left at their defaults nothing changes.
  */
-export const PolicySectionBlock: React.FC<{ section: IPolicySection }> = ({ section }) => {
+export const PolicySectionBlock: React.FC<{ section: IPolicySection }> = ({ section: rawSection }) => {
+  const section = withTitleDefaults(rawSection);
   const themeAttr = section.theme !== undefined ? { 'data-th-theme': section.theme } : {};
 
   // Opt-in: a `paragraph` section only takes this icon-left card treatment
@@ -1372,6 +1384,24 @@ export const PolicySectionBlock: React.FC<{ section: IPolicySection }> = ({ sect
     </section>
   );
 };
+
+/** Fills the few title-based defaults above for fields the list row leaves empty. */
+function withTitleDefaults(section: IPolicySection): IPolicySection {
+  const rawTitle = (section.title ?? '').trim();
+  const title = rawTitle.replace(SECTION_NUMBER_RE, '$2').trim();
+  if (section.layout === 'paragraph' && ICON_CARD_PARAGRAPH_SECTIONS.has(title)) {
+    return {
+      ...section,
+      icon: section.icon ?? DEFAULT_INTRO_ICON,
+      sectionStyle: section.sectionStyle === 'plain' ? 'card' : section.sectionStyle
+    };
+  }
+  const columns = DEFAULT_SECTION_COLUMNS.get(title);
+  if (section.layout === 'cardsGrid' && section.columns === undefined && columns !== undefined) {
+    return { ...section, columns };
+  }
+  return section;
+}
 
 function renderLayout(section: IPolicySection): React.ReactElement | undefined {
   switch (section.layout) {
