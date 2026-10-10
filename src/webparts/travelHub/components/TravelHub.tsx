@@ -26,8 +26,10 @@ import { TravelTeamSection, TravelTeamAllScreen } from './sections/TravelTeamSec
 import { PolicyPageScreen } from './PolicyPages';
 import { ServicePageScreen } from './ServicePages';
 import { BusinessTravelPageScreen } from './BusinessTravelPage';
+import { OfferDetailScreen } from './OfferDetail';
 import { TravelHubFooter } from './TravelHubFooter';
 import { applyFullBleedChrome, SHELL_MARKER_ATTR } from './chromeOverride';
+import { scrollToTopAndFocus } from './scrollToTop';
 import styles from './TravelHub.module.scss';
 
 // In-app "screens" (NavigationContext.ts) reflected in a query param so the
@@ -63,6 +65,14 @@ function readViewFromLocation(): ThView {
       const serviceId = Number(raw.slice('service/'.length));
       if (isFinite(serviceId)) {
         return { kind: 'servicePage', serviceId };
+      }
+    }
+    if (raw.startsWith('offer/')) {
+      // offer/<id> or offer/<from-page-slug>/<id>
+      const parts = raw.slice('offer/'.length).split('/');
+      const id = Number(parts[parts.length - 1]);
+      if (isFinite(id) && id > 0) {
+        return { kind: 'offer', id, fromSlug: parts.length > 1 && parts[0].length > 0 ? parts[0] : undefined };
       }
     }
     if (raw === 'business-travel') {
@@ -103,6 +113,8 @@ function viewToParam(view: ThView): string | undefined {
       return 'green-travel';
     case 'spendDetail':
       return 'spend-detail';
+    case 'offer':
+      return view.fromSlug !== undefined ? `offer/${view.fromSlug}/${String(view.id)}` : `offer/${String(view.id)}`;
     case 'hub':
     default:
       return undefined;
@@ -135,6 +147,10 @@ function mirrorHostCanvas(canvas: ThCanvas): void {
 export default class TravelHub extends React.Component<ITravelHubProps, ITravelHubState> {
   public state: ITravelHubState = { view: readViewFromLocation(), canvasOverride: readStoredCanvas() };
 
+  /** The app root (scroll reset walks up from here) and the screen area (focused after navigating). */
+  private readonly rootRef = React.createRef<HTMLDivElement>();
+  private readonly screenRef = React.createRef<HTMLDivElement>();
+
   private get canvas(): ThCanvas {
     return this.state.canvasOverride ?? this.props.services.configuration.theme.canvas;
   }
@@ -148,6 +164,12 @@ export default class TravelHub extends React.Component<ITravelHubProps, ITravelH
     applyFullBleedChrome(this.props.services.configuration.layout.fullBleed);
     mirrorHostCanvas(this.canvas);
     window.addEventListener('popstate', this.onPopState);
+    if (this.props.services.configuration.featureFlags.rtl) {
+      // Brand Arabic face (Noto Kufi Arabic) - its own chunk, only for RTL sites.
+      import(/* webpackChunkName: 'travel-hub-arabic-font' */ '../../../common/styles/arabicFont')
+        .then((m) => m.loadArabicFont())
+        .catch(() => undefined);
+    }
   }
 
   public componentDidUpdate(_prevProps: ITravelHubProps, prevState: ITravelHubState): void {
@@ -156,7 +178,8 @@ export default class TravelHub extends React.Component<ITravelHubProps, ITravelH
       mirrorHostCanvas(this.canvas);
     }
     if (prevState.view !== this.state.view) {
-      window.scrollTo({ top: 0 });
+      // Every navigation (links, nav tabs, Back/Forward) opens the new screen at its top.
+      scrollToTopAndFocus(this.rootRef.current ?? undefined, this.screenRef.current ?? undefined);
     }
   }
 
@@ -204,10 +227,14 @@ export default class TravelHub extends React.Component<ITravelHubProps, ITravelH
             dir={configuration.featureFlags.rtl ? 'rtl' : undefined}
             data-th-canvas={canvas}
             {...{ [SHELL_MARKER_ATTR]: true }}
+            ref={this.rootRef}
           >
             <SectionBoundary name="GlobalNav">
               <GlobalNav />
             </SectionBoundary>
+
+            {/* The current screen. Focused (not tabbable) after each navigation - see scrollToTop.ts. */}
+            <div ref={this.screenRef} tabIndex={-1} className={styles.screen} aria-label="Page content">
 
             {view.kind === 'hub' && (
               <div className={styles.page}>
@@ -303,6 +330,14 @@ export default class TravelHub extends React.Component<ITravelHubProps, ITravelH
               </div>
             )}
 
+            {view.kind === 'offer' && (
+              <div className={styles.page}>
+                <SectionBoundary name="OfferDetailScreen">
+                  <OfferDetailScreen offerId={view.id} fromSlug={view.fromSlug} />
+                </SectionBoundary>
+              </div>
+            )}
+
             {view.kind === 'teamAll' && (
               <div className={styles.page}>
                 <SectionBoundary name="TravelTeamAllScreen">
@@ -326,6 +361,8 @@ export default class TravelHub extends React.Component<ITravelHubProps, ITravelH
                 </SectionBoundary>
               </div>
             )}
+
+            </div>
 
             {sections.footer.isVisible && (
               <SectionBoundary name="TravelHubFooter">

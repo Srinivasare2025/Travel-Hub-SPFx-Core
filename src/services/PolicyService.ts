@@ -11,13 +11,18 @@ import {
   PolicySectionStyle,
   PolicySectionWidth,
   PolicyTheme,
-  IPolicyHeroLink
+  IPolicyHeroLink,
+  IPolicyHeroHighlight,
+  IOffer
 } from '../models';
+import type { IOffersService } from './OffersService';
 import type { SharePointService } from './base/SharePointService';
 import { Logger } from './base/Logger';
 import type { ICache } from './base/MemoryCache';
 import { sanitizeUrl, toMailtoHref } from '../common/utils/urlValidation';
 import { toNumber, toOptionalString, toStringOr } from '../common/utils/collection';
+import { parseMediaItems } from '../common/utils/mediaItems';
+import { resolveColor } from '../common/utils/color';
 
 const PAGES_LIST = 'TH_PolicyPages';
 const SECTIONS_LIST = 'TH_PolicySections';
@@ -67,6 +72,9 @@ interface IRawPage {
   HeroLink2Text?: string | null;
   HeroLink2Url?: { Url: string } | null;
   HeroLink2TargetSlug?: string | null;
+  HeroLogoUrl?: { Url: string } | null;
+  HeroHighlights?: string | null;
+  ClosingBannerImageUrl?: { Url: string } | null;
 }
 
 interface IRawSection {
@@ -92,6 +100,7 @@ interface IRawSection {
   LinkText?: string | null;
   LinkUrl?: { Url: string } | null;
   TargetSlug?: string | null;
+  OfferCollection?: string | null;
 }
 
 interface IRawTab {
@@ -128,6 +137,7 @@ interface IRawCard {
   ValueLabel?: string | null;
   ValueNote?: string | null;
   OpenInNewTab?: boolean | null;
+  PopupContent?: string | null;
 }
 
 interface IRawTable {
@@ -166,22 +176,55 @@ const SECTION_SELECT_WITH_HIDE_TITLE = [...SECTION_SELECT, 'HideTitle'];
 /** Every optional section column (see IRawSection) - tried first, falling back step by step. */
 const SECTION_SELECT_EXTENDED = [...SECTION_SELECT_WITH_HIDE_TITLE, 'TabIdId', 'Columns', 'CardStyle', 'TintCards', 'SectionStyle', 'Theme'];
 const SECTION_SELECT_V3 = [...SECTION_SELECT_EXTENDED, 'Width', 'LinkText', 'LinkUrl', 'TargetSlug'];
+/** Newest section column (TH_Offers collection) - falls back to V3 on a site without it. */
+const SECTION_SELECT_V4 = [...SECTION_SELECT_V3, 'OfferCollection'];
+/** TH_Offers cards get ids above every real TH_PolicyCards id so React keys never collide. */
+const OFFER_CARD_ID_OFFSET = 1000000000;
 const PAGE_SELECT_EXTENDED = [
   ...PAGE_SELECT,
   'HeroEyebrow', 'HeroStyle', 'HeroLinkText', 'HeroLinkUrl', 'HeroLinkTargetSlug', 'HeroLink2Text', 'HeroLink2Url', 'HeroLink2TargetSlug'
 ];
+/** Newest page columns (hero logo + badges) - falls back to PAGE_SELECT_EXTENDED on a site without them. */
+const PAGE_SELECT_V3 = [...PAGE_SELECT_EXTENDED, 'HeroLogoUrl', 'HeroHighlights'];
+/** Newest page column (closing banner photo) - falls back to V3 on a site without it. */
+const PAGE_SELECT_V4 = [...PAGE_SELECT_V3, 'ClosingBannerImageUrl'];
 const WIDTHS: Record<string, PolicySectionWidth> = { full: 'full', half: 'half', onethird: 'oneThird', twothirds: 'twoThirds' };
 
 /** A card Title written in square brackets is an internal name, not shown on the page. */
 const INTERNAL_TITLE_RE = /^\[.*\]$/;
 
-const THEMES: readonly PolicyTheme[] = ['gold', 'blue', 'green', 'amber', 'red', 'purple', 'teal'];
+/**
+ * TH_PolicySections.Theme -> brand theme key. Choice text is matched ignoring
+ * case/spaces, so "Blue Lagoon", "BlueLagoon" and "blue-lagoon" all work; the
+ * original 7 choices stay valid as aliases of the nearest RSG colour.
+ */
+const THEMES: Readonly<Record<string, PolicyTheme>> = {
+  gold: 'gold',
+  navy: 'navy',
+  navyblue: 'navy',
+  crystalwaters: 'crystal-waters',
+  bluelagoon: 'blue-lagoon',
+  bloomingnature: 'blooming-nature',
+  majesticmountains: 'majestic-mountains',
+  thrivingcorals: 'thriving-corals',
+  sandydunes: 'sandy-dunes',
+  volcanicash: 'volcanic-ash',
+  // Original choices (pre-rebrand) -> nearest RSG colour.
+  blue: 'crystal-waters',
+  teal: 'blue-lagoon',
+  green: 'blooming-nature',
+  amber: 'sandy-dunes',
+  red: 'thriving-corals',
+  purple: 'majestic-mountains'
+};
 const TAB_SELECT = ['Id', 'Title', 'SectionIdId', 'Subtitle', 'Description', 'Icon', 'DisplayOrder'];
 const CARD_SELECT = [
   'Id', 'Title', 'PageIdId', 'SectionIdId', 'TabIdId', 'Kind', 'Number', 'Icon', 'IconColor', 'Description', 'SubPoints',
   'TargetSlug', 'LinkUrl', 'LinkText', 'DisplayOrder'
 ];
 const CARD_SELECT_EXTENDED = [...CARD_SELECT, 'ImageUrl', 'Subtitle', 'Badge', 'Value', 'ValueLabel', 'ValueNote', 'OpenInNewTab'];
+/** Newest card column (popup files) - falls back to CARD_SELECT_EXTENDED on a site without it. */
+const CARD_SELECT_V3 = [...CARD_SELECT_EXTENDED, 'PopupContent'];
 const TABLE_SELECT = ['Id', 'Title', 'SectionIdId', 'TabIdId', 'ColumnHeaders', 'DisplayOrder'];
 const TABLE_ROW_SELECT = ['Id', 'TableIdId', 'CellValues', 'DisplayOrder'];
 
@@ -210,7 +253,9 @@ const LAYOUT_MAP: Record<string, PolicySectionLayout> = {
   imagecards: 'imageCards',
   feature: 'feature',
   faq: 'faq',
-  search: 'search'
+  search: 'search',
+  pricelist: 'priceList',
+  gallery: 'gallery'
 };
 
 /** `field eq id1 or field eq id2 …`; `undefined` when `ids` is empty (skip the request). */
@@ -243,7 +288,8 @@ export class PolicyService implements IPolicyService {
   public constructor(
     private readonly spo: SharePointService,
     private readonly cache: ICache,
-    logger: Logger
+    logger: Logger,
+    private readonly offers?: IOffersService
   ) {
     this.log = logger.child('PolicyService');
   }
@@ -256,7 +302,9 @@ export class PolicyService implements IPolicyService {
     return this.cache.getOrAdd(`policy:page:${cleanSlug}`, TTL_SECONDS, async () => {
       const pageQuery = { list: PAGES_LIST, filter: `IsActive eq 1 and Slug eq '${cleanSlug.replace(/'/g, "''")}'`, top: 1 };
       const raw = await this.spo
-        .getListItems<IRawPage>({ ...pageQuery, select: PAGE_SELECT_EXTENDED })
+        .getListItems<IRawPage>({ ...pageQuery, select: PAGE_SELECT_V4 })
+        .catch(() => this.spo.getListItems<IRawPage>({ ...pageQuery, select: PAGE_SELECT_V3 }))
+        .catch(() => this.spo.getListItems<IRawPage>({ ...pageQuery, select: PAGE_SELECT_EXTENDED }))
         .catch(() => this.spo.getListItems<IRawPage>({ ...pageQuery, select: PAGE_SELECT }));
       const page = raw[0];
       if (page === undefined) {
@@ -271,9 +319,13 @@ export class PolicyService implements IPolicyService {
       };
       // Newest columns first; a site where provisioning hasn't been re-run
       // yet falls back to the older column sets and renders as before.
-      let sectionSelect = SECTION_SELECT_V3;
+      let sectionSelect = SECTION_SELECT_V4;
       const allSectionsRaw = await this.spo
-        .getListItems<IRawSection>({ ...sectionQuery, select: SECTION_SELECT_V3 })
+        .getListItems<IRawSection>({ ...sectionQuery, select: SECTION_SELECT_V4 })
+        .catch(() => {
+          sectionSelect = SECTION_SELECT_V3;
+          return this.spo.getListItems<IRawSection>({ ...sectionQuery, select: SECTION_SELECT_V3 });
+        })
         .catch(() => {
           sectionSelect = SECTION_SELECT_EXTENDED;
           return this.spo.getListItems<IRawSection>({ ...sectionQuery, select: SECTION_SELECT_EXTENDED });
@@ -322,12 +374,18 @@ export class PolicyService implements IPolicyService {
         orderBy: { field: 'DisplayOrder', ascending: true },
         top: 300
       };
-      let cardSelect = CARD_SELECT_EXTENDED;
+      let cardSelect = CARD_SELECT_V3;
       const cardsRaw = parentFilter !== undefined
-        ? await this.spo.getListItems<IRawCard>({ ...cardQuery, select: CARD_SELECT_EXTENDED }).catch(() => {
-            cardSelect = CARD_SELECT;
-            return this.spo.getListItems<IRawCard>({ ...cardQuery, select: CARD_SELECT });
-          })
+        ? await this.spo
+            .getListItems<IRawCard>({ ...cardQuery, select: CARD_SELECT_V3 })
+            .catch(() => {
+              cardSelect = CARD_SELECT_EXTENDED;
+              return this.spo.getListItems<IRawCard>({ ...cardQuery, select: CARD_SELECT_EXTENDED });
+            })
+            .catch(() => {
+              cardSelect = CARD_SELECT;
+              return this.spo.getListItems<IRawCard>({ ...cardQuery, select: CARD_SELECT });
+            })
         : [];
 
       const tablesRaw = parentFilter !== undefined
@@ -406,6 +464,7 @@ export class PolicyService implements IPolicyService {
       const sections = sectionsRaw
         .filter((raw) => !isNested(raw))
         .map((raw) => this.mapSection(raw, cardsBySection, tablesBySection, tabsBySection));
+      await this.attachOffers([...sections, ...Array.from(sectionsByTab.values()).reduce((all, list) => all.concat(list), [] as IPolicySection[])]);
 
       // The "Ask HR" style steps under Need Help are a fixed page-level
       // feature (not a reorderable content block) - attached directly via
@@ -421,6 +480,60 @@ export class PolicyService implements IPolicyService {
 
       return this.mapPage(page, sections, needHelpSteps);
     });
+  }
+
+  /**
+   * Appends each `offerCollection` section's TH_Offers items as cards (one
+   * request for every collection on the page). A failure only hides the
+   * offers - the page still renders.
+   */
+  private async attachOffers(sections: IPolicySection[]): Promise<void> {
+    const wanting = sections.filter((s) => s.offerCollection !== undefined);
+    if (wanting.length === 0 || this.offers === undefined) {
+      return;
+    }
+    let byCollection: Map<string, IOffer[]>;
+    try {
+      byCollection = await this.offers.getCollections(wanting.map((s) => s.offerCollection as string));
+    } catch (error) {
+      this.log.warn(`Could not load TH_Offers (list missing? run travelhub-provision.js) - offer sections show their own cards only. ${String(error)}`);
+      return;
+    }
+    wanting.forEach((section) => {
+      const offers = byCollection.get((section.offerCollection as string).toLowerCase()) ?? [];
+      section.cards = [...section.cards, ...offers.map((offer) => this.offerToCard(offer))];
+    });
+  }
+
+  /** A TH_Offers row as a card for any ImageCards style; its action decides where a click goes. */
+  private offerToCard(offer: IOffer): IPolicyCard {
+    return {
+      id: OFFER_CARD_ID_OFFSET + offer.id,
+      kind: 'info',
+      number: undefined,
+      title: offer.title,
+      description: offer.summary,
+      icon: offer.icon ?? 'Info',
+      iconExplicit: offer.icon !== undefined,
+      iconColor: offer.iconColor,
+      iconColorOn: offer.iconColorOn,
+      iconColorInk: offer.iconColorInk,
+      subPoints: [],
+      targetSlug: undefined,
+      linkUrl: offer.action === 'link' ? offer.linkUrl : undefined,
+      linkText: offer.action === 'none' ? undefined : offer.linkText,
+      openInNewTab: offer.linkIsExternal,
+      imageUrl: offer.imageUrl,
+      subtitle: offer.subtitle,
+      badge: offer.badge,
+      value: offer.value,
+      valueLabel: offer.valueLabel,
+      valueNote: offer.valueNote,
+      popupItems: offer.action === 'popup' ? offer.files : [],
+      offerId: offer.action === 'details' ? offer.id : undefined,
+      logoUrl: offer.logoUrl,
+      displayOrder: offer.displayOrder
+    };
   }
 
   /** `(SectionIdId eq s1 or … ) or (TabIdId eq t1 or …)`; `undefined` when both id lists are empty. */
@@ -482,6 +595,7 @@ export class PolicyService implements IPolicyService {
       linkText: toOptionalString(s.LinkText),
       linkUrl: sanitizeUrl(s.LinkUrl?.Url),
       targetSlug: toOptionalString(s.TargetSlug)?.trim().toLowerCase(),
+      offerCollection: toOptionalString(s.OfferCollection),
       displayOrder: toNumber(s.DisplayOrder, 0)
     };
   }
@@ -503,7 +617,8 @@ export class PolicyService implements IPolicyService {
       imagetop: 'imageTop',
       imageleft: 'imageLeft',
       imagetile: 'imageTile',
-      imagebanner: 'imageBanner'
+      imagebanner: 'imageBanner',
+      imagemenu: 'imageMenu'
     };
     return extra[v] ?? 'default';
   }
@@ -514,8 +629,7 @@ export class PolicyService implements IPolicyService {
   }
 
   private mapTheme(value: string | null | undefined): PolicyTheme | undefined {
-    const v = (value ?? '').toLowerCase() as PolicyTheme;
-    return THEMES.indexOf(v) >= 0 ? v : undefined;
+    return THEMES[(value ?? '').toLowerCase().replace(/[^a-z]/g, '')];
   }
 
   private mapCardVariant(value: string | null): 'category' | 'info' | 'highlight' | undefined {
@@ -549,7 +663,8 @@ export class PolicyService implements IPolicyService {
         ? {
             title: closingTitle,
             description: toStringOr(page.ClosingBannerDescription, ''),
-            badges: this.splitLines(page.ClosingBadges)
+            badges: this.splitLines(page.ClosingBadges),
+            imageUrl: sanitizeUrl(page.ClosingBannerImageUrl?.Url)
           }
         : undefined;
 
@@ -582,7 +697,9 @@ export class PolicyService implements IPolicyService {
         links: [
           this.mapHeroLink(page.HeroLinkText, page.HeroLinkUrl, page.HeroLinkTargetSlug),
           this.mapHeroLink(page.HeroLink2Text, page.HeroLink2Url, page.HeroLink2TargetSlug)
-        ].filter((l): l is IPolicyHeroLink => l !== undefined)
+        ].filter((l): l is IPolicyHeroLink => l !== undefined),
+        logoUrl: sanitizeUrl(page.HeroLogoUrl?.Url),
+        highlights: this.splitLines(page.HeroHighlights ?? null).map((line) => this.mapHeroHighlight(line))
       },
       infoBannerText: toOptionalString(page.InfoBannerText),
       noteBannerText: toOptionalString(page.NoteBannerText),
@@ -602,6 +719,10 @@ export class PolicyService implements IPolicyService {
     if (item.LinkUrl?.Url !== undefined && linkUrl === undefined) {
       this.log.warn(`Policy card ${String(item.Id)} has an unsafe LinkUrl; the link will be hidden.`);
     }
+    const color = resolveColor(item.IconColor);
+    if (toOptionalString(item.IconColor) !== undefined && color === undefined) {
+      this.log.warn(`Policy card ${String(item.Id)} has an unknown IconColor "${String(item.IconColor)}"; use a brand colour name or #hex.`);
+    }
     return {
       id: item.Id,
       kind,
@@ -612,7 +733,9 @@ export class PolicyService implements IPolicyService {
       description: toStringOr(item.Description, ''),
       icon: toStringOr(item.Icon, 'Info'),
       iconExplicit: toOptionalString(item.Icon) !== undefined,
-      iconColor: toOptionalString(item.IconColor),
+      iconColor: color?.value,
+      iconColorOn: color?.on,
+      iconColorInk: color?.ink,
       subPoints: this.splitLines(item.SubPoints),
       targetSlug: toOptionalString(item.TargetSlug)?.trim().toLowerCase(),
       linkUrl,
@@ -624,8 +747,20 @@ export class PolicyService implements IPolicyService {
       value: toOptionalString(item.Value),
       valueLabel: toOptionalString(item.ValueLabel),
       valueNote: toOptionalString(item.ValueNote),
+      popupItems: parseMediaItems(this.splitLines(item.PopupContent ?? null)),
+      offerId: undefined,
+      logoUrl: undefined,
       displayOrder: toNumber(item.DisplayOrder, 0)
     };
+  }
+
+  /** `Diamond|Quality Catering Solutions` -> icon + text; a line without `|` is text only. */
+  private mapHeroHighlight(line: string): IPolicyHeroHighlight {
+    const bar = line.indexOf('|');
+    if (bar < 0) {
+      return { icon: undefined, text: line };
+    }
+    return { icon: toOptionalString(line.slice(0, bar).trim()), text: line.slice(bar + 1).trim() };
   }
 
   private mapHeroLink(

@@ -22,7 +22,9 @@ export type ThView =
   | { kind: 'businessTravel' }
   | { kind: 'teamAll' }
   | { kind: 'greenTravel' }
-  | { kind: 'spendDetail' };
+  | { kind: 'spendDetail' }
+  /** A TH_Offers details screen; `fromSlug` = the page it was opened from (breadcrumb, nav tab). */
+  | { kind: 'offer'; id: number; fromSlug: string | undefined };
 
 export type ThViewKind = ThView['kind'];
 

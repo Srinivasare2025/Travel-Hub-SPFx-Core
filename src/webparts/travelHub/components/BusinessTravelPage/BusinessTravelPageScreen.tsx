@@ -29,7 +29,7 @@ const StepsGrid: React.FC = () => {
     <div className={styles.stepsGrid}>
       {data.map((step: IBusinessTravelStep) => (
         <div key={step.id} className={styles.stepCard}>
-          <span className={styles.stepNumber} style={{ backgroundColor: step.backgroundColor }} aria-hidden="true">
+          <span className={styles.stepNumber} style={{ backgroundColor: step.backgroundColor, color: step.textColor }} aria-hidden="true">
             {step.number}
           </span>
           <h3 className={styles.stepTitle}>{step.title}</h3>

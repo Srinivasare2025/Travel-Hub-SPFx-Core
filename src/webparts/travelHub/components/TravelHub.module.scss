@@ -35,8 +35,12 @@
   width: 100%;
 }
 
+/* Full-bleed: the canvas colour runs edge to edge, but the content stops at
+   --full-content-max-wide (1600px) and centres - on large monitors (1920px,
+   2560px, ultrawide) photo cards, banners and heroes keep their proportions
+   instead of widening while their height stays the same ("stretched"). */
 .fullBleed .page {
-  max-width: none;
+  max-width: var(--full-content-max-wide, 1600px);
 }
 
 .page {
@@ -44,7 +48,7 @@
   flex-direction: column;
   gap: var(--full-section-gap, 48px);
   padding-block: var(--full-space-6, 32px);
-  background-color: var(--full-page-bg, #f8f9fa);
+  background-color: var(--full-page-bg, #faf8f6);
   @include th-container;
 
   @include th-desktop-up {
@@ -54,4 +58,12 @@
 
 .teams .page {
   padding-inline: var(--full-space-3, 12px);
+}
+
+/* Wrapper around the current screen - receives focus after navigation
+   (scrollToTop.ts) so it must not show a focus box. */
+.screen {
+  &:focus {
+    outline: none;
+  }
 }

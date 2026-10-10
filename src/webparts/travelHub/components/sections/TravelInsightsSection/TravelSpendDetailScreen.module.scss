@@ -20,13 +20,13 @@
     padding: 0;
     border: none;
     background: none;
-    color: var(--full-text-muted, #4a5568);
+    color: var(--full-text-muted, #46535c);
     font: inherit;
     cursor: pointer;
     @include th-focusable;
 
     &:hover {
-      color: var(--full-accent-text, #816630);
+      color: var(--full-accent-text, #7b6945);
       text-decoration: underline;
     }
   }
@@ -57,7 +57,7 @@
 
 .subtitle {
   @include th-body;
-  color: var(--full-text-muted, #4a5568);
+  color: var(--full-text-muted, #46535c);
   margin: var(--full-space-1, 4px) 0 0;
 }
 
@@ -66,7 +66,7 @@
    at a compact size. */
 .embedWrap {
   width: 100%;
-  border: 1px solid var(--full-border, #e2e8f0);
+  border: 1px solid var(--full-border, #d5dfe3);
   border-radius: var(--full-radius-md, 8px);
   overflow: hidden;
 }

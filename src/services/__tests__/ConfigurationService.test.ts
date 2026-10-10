@@ -32,6 +32,9 @@ describe('ConfigurationService', () => {
     expect(config.services.desktopVisibleCards).toBe(4);
     expect(config.sections.hero.isVisible).toBe(true);
     expect(config.dates.locale).toBe('en-GB');
+    expect(config.policyAssistant.url).toBeUndefined();
+    expect(config.policyAssistant.title).toBe('Ask Our Policy Assistant');
+    expect(config.pages.closingBannerImageUrl).toBeUndefined();
   });
 
   it('overlays active rows onto the defaults', async () => {

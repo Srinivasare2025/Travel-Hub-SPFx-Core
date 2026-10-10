@@ -35,7 +35,7 @@ const TravelServiceCardInner: React.FC<ITravelServiceCardProps> = ({ service }) 
           <ImageWithFallback src={service.imageUrl} alt="" aspectRatio="16 / 10" fit={service.imageFit} />
           <span
             className={styles.iconChip}
-            style={{ backgroundColor: service.iconBackgroundColor }}
+            style={{ backgroundColor: service.iconBackgroundColor, color: service.iconForegroundColor }}
             aria-hidden="true"
           >
             <Icon iconName={service.icon} />

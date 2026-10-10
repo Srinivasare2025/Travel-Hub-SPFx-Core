@@ -54,14 +54,14 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: var(--full-surface-alt, #faf8f4);
-  color: var(--full-text-muted, #4a5568);
+  background: var(--full-surface-alt, #faf8f6);
+  color: var(--full-text-muted, #46535c);
   font-size: 1.5rem;
 }
 
 .spendDeniedMessage {
   @include th-body;
-  color: var(--full-text-muted, #4a5568);
+  color: var(--full-text-muted, #46535c);
   max-width: 32ch;
   margin: 0;
 }
@@ -74,8 +74,8 @@
   height: 40px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: rgba(195, 161, 94, 0.16);
-  color: var(--full-accent-text, #816630);
+  background: rgba(184, 156, 103, 0.16);
+  color: var(--full-accent-text, #7b6945);
   font-size: 1.125rem;
 }
 
@@ -105,8 +105,8 @@
   gap: 2px;
   padding: var(--full-space-3, 12px);
   border-radius: var(--full-radius-md, 8px);
-  background: var(--full-surface-alt, #faf8f4);
-  border: 1px solid var(--full-border, #e8e5e0);
+  background: var(--full-surface-alt, #faf8f6);
+  border: 1px solid var(--full-border, #e2dcd5);
 }
 
 .spendTileLabel {
@@ -126,7 +126,7 @@
 
 .spendEmbedWrap {
   margin-top: var(--full-space-4, 16px);
-  border: 1px solid var(--full-border, #e2e8f0);
+  border: 1px solid var(--full-border, #d5dfe3);
   border-radius: var(--full-radius-md, 8px);
   overflow: hidden;
 }
@@ -180,7 +180,7 @@
 .greenImageOverlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(15, 44, 74, 0.35) 0%, rgba(15, 44, 74, 0) 45%);
+  background: linear-gradient(135deg, rgba(4, 37, 60, 0.35) 0%, rgba(4, 37, 60, 0) 45%);
 }
 
 .greenBody {
@@ -206,7 +206,7 @@
 
 .greenDescription {
   @include th-body;
-  color: var(--full-text-muted, #4a5568);
+  color: var(--full-text-muted, #46535c);
   margin: 0;
 }
 

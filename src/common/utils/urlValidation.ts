@@ -88,3 +88,20 @@ export function toTelHref(raw: string | null | undefined): string | undefined {
   const normalized = trimmed.replace(/[^\d+]/g, '');
   return normalized.length >= 4 ? `tel:${normalized}` : undefined;
 }
+
+/**
+ * Whether a (validated) URL leaves the current site - an absolute http(s)
+ * address on another host. Such links open in a new tab/window. Relative
+ * paths, `mailto:`/`tel:` and same-host links are not external.
+ */
+export function isExternalUrl(url: string | undefined, currentHost?: string): boolean {
+  if (url === undefined || !/^https?:\/\//i.test(url)) {
+    return false;
+  }
+  const host = currentHost ?? (typeof window !== 'undefined' ? window.location.host : '');
+  try {
+    return new URL(url).host.toLowerCase() !== host.toLowerCase();
+  } catch {
+    return true;
+  }
+}

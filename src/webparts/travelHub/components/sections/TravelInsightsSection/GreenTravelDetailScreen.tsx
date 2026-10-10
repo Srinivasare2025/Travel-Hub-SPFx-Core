@@ -3,7 +3,8 @@ import { Icon } from '@fluentui/react/lib/Icon';
 import { useServices } from '../../../../../common/context/ServiceContext';
 import { useNavigation } from '../../../../../common/context/NavigationContext';
 import { useAsyncData } from '../../../../../common/hooks';
-import { Button, LoadingState, ErrorState, EmptyState, ImageWithFallback } from '../../../../../common/components';
+import { Button, LoadingState, ErrorState, EmptyState } from '../../../../../common/components';
+import { PageHero } from '../../PolicyPages/PolicyPageScreen';
 import { parseGreenPoint } from './parseGreenPoint';
 import styles from './GreenTravelDetailScreen.module.scss';
 
@@ -49,15 +50,22 @@ export const GreenTravelDetailScreen: React.FC = () => {
         <span aria-current="page">{data.title}</span>
       </nav>
 
-      {data.imageUrl !== undefined && (
-        <div className={styles.hero}>
-          <ImageWithFallback src={data.imageUrl} alt="" aspectRatio="21 / 9" fallbackIcon="Leaf" />
-        </div>
-      )}
-
-      <h1 className={styles.title}>{data.title}</h1>
-      {data.subtitle !== undefined && <p className={styles.subtitle}>{data.subtitle}</p>}
-      <p className={styles.description}>{data.description}</p>
+      {/* Same banner as every Travel Hub page (title, text, photo on the right). */}
+      <PageHero
+        hero={{
+          icon: undefined,
+          eyebrow: 'Green Travel',
+          title: data.title,
+          subtitle: data.subtitle,
+          description: data.description.length > 0 ? data.description : undefined,
+          imageUrl: data.imageUrl,
+          tagline: undefined,
+          style: 'light',
+          links: [],
+          logoUrl: undefined,
+          highlights: []
+        }}
+      />
 
       {data.points.length > 0 && (
         <ol className={styles.points}>

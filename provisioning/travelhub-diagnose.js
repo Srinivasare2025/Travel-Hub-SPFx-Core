@@ -98,7 +98,7 @@
     if (expected.TH_TravelServices.every(() => true)) {
       try {
         const services = await items('TH_TravelServices', 'Id,Title,PageSlug,IsActive');
-        const want = { 'personal travel offers': 'personal-travel-offers', 'personal travel': 'personal-travel-offers', 'sap concur': 'sap-concur', 'meeting & events': 'meetings-events', 'meetings & events': 'meetings-events' };
+        const want = { 'personal travel offers': 'personal-travel-offers', 'personal travel': 'personal-travel-offers', 'sap concur': 'sap-concur', 'meeting & events': 'meetings-events', 'meetings & events': 'meetings-events', 'catering services': 'catering-services' };
         services.forEach((s) => {
           const key = String(s.Title || '').trim().toLowerCase();
           if (!want[key]) return;

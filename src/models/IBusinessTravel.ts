@@ -7,6 +7,8 @@ export interface IBusinessTravelStep {
   description: string;
   /** Validated CSS colour for the square's background. */
   backgroundColor: string;
+  /** Readable number colour on `backgroundColor`. */
+  textColor: string;
   displayOrder: number;
 }
 

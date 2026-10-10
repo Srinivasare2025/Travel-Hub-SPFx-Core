@@ -70,7 +70,7 @@ describe('PolicyService', () => {
 
     const tab = sections[0].tabs[0];
     expect(tab.sections.map((s) => s.layout)).toEqual(['banner', 'cardsGrid']);
-    expect(tab.sections[0].theme).toBe('blue');
+    expect(tab.sections[0].theme).toBe('crystal-waters'); // old "Blue" choice -> RSG Crystal Waters
     const grid = tab.sections[1];
     expect(grid.title).toBeUndefined(); // HideTitle
     expect(grid.columns).toBe(4);
@@ -111,6 +111,45 @@ describe('PolicyService', () => {
     expect([card.badge, card.value, card.valueLabel, card.valueNote, card.imageUrl, card.openInNewTab]).toEqual([
       'Special Offer', 'SAR 5,999', 'Starting From', 'per person', 'https://x/img.jpg', true
     ]);
+  });
+
+  describe('catering columns (PopupContent, HeroLogoUrl/HeroHighlights, PriceList/Gallery/ImageMenu)', () => {
+    const lists: Record<string, Row[]> = {
+      TH_PolicyPages: [
+        { Id: 3, Title: 'Catering Services', Slug: 'catering-services', IsActive: true, HeroEyebrow: 'Catering Services', HeroLogoUrl: { Url: 'https://x/logo.png' }, HeroHighlights: 'Diamond|Quality Catering Solutions\nTrusted Partner Network' }
+      ],
+      TH_PolicySections: [
+        { Id: 30, Title: 'Featured', PageIdId: 3, Layout: 'PriceList', DisplayOrder: 1, IsActive: true },
+        { Id: 31, Title: 'Gallery', PageIdId: 3, Layout: 'Gallery', DisplayOrder: 2, IsActive: true },
+        { Id: 32, Title: 'Menus', PageIdId: 3, Layout: 'ImageCards', CardStyle: 'Image Menu', DisplayOrder: 3, IsActive: true }
+      ],
+      TH_PolicyTabs: [],
+      TH_PolicyCards: [
+        { Id: 300, Title: 'City Guide', SectionIdId: 30, Kind: 'Info', PopupContent: 'Riyadh | https://x/riyadh.pdf\nJeddah | https://x/jeddah.pdf', DisplayOrder: 1, IsActive: true }
+      ],
+      TH_PolicyTables: [],
+      TH_PolicyTableRows: []
+    };
+
+    it('maps them', async () => {
+      const page = await new PolicyService(fakeSpo(lists), new MemoryCache(), new Logger('test')).getPage('catering-services');
+      expect(page!.hero.logoUrl).toBe('https://x/logo.png');
+      expect(page!.hero.highlights).toEqual([
+        { icon: 'Diamond', text: 'Quality Catering Solutions' },
+        { icon: undefined, text: 'Trusted Partner Network' }
+      ]);
+      expect(page!.sections.map((s) => s.layout)).toEqual(['priceList', 'gallery', 'imageCards']);
+      expect(page!.sections[2].cardStyle).toBe('imageMenu');
+      expect(page!.sections[0].cards[0].popupItems.map((i) => `${i.label}:${i.kind}`)).toEqual(['Riyadh:document', 'Jeddah:document']);
+    });
+
+    it('still loads the page and cards on a site without the new columns', async () => {
+      for (const column of ['PopupContent', 'HeroLogoUrl']) {
+        const page = await new PolicyService(fakeSpo(lists, { rejectSelect: column }), new MemoryCache(), new Logger('test')).getPage('catering-services');
+        expect(page!.hero.eyebrow).toBe('Catering Services');
+        expect(page!.sections[0].cards.map((c) => c.title)).toEqual(['City Guide']);
+      }
+    });
   });
 
   it('falls back to the legacy columns when the new ones are not provisioned', async () => {

@@ -103,6 +103,24 @@ export interface ITravelHubConfiguration {
     viewAll: IViewAll;
   };
 
+  /**
+   * "Ask Our Policy Assistant" on policy pages: launches the organisation's
+   * policy agent (e.g. Copilot Studio) in a new tab. A page's own
+   * TH_PolicyPages.AssistantLinkUrl wins over `url`; no URL = no button.
+   */
+  policyAssistant: {
+    url: string | undefined;
+    buttonText: string;
+    title: string;
+    description: string;
+  };
+
+  /** Defaults for every TH_PolicyPages page. */
+  pages: {
+    /** Background photo of the closing banner when a page has no ClosingBannerImageUrl of its own. */
+    closingBannerImageUrl: string | undefined;
+  };
+
   footer: {
     showQrCode: boolean;
     qrCodeUrl: string;

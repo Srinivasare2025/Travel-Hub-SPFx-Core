@@ -4,7 +4,7 @@
 .root {
   width: 100%;
   margin-top: var(--full-space-7, 48px);
-  border-top: 1px solid var(--full-border, #e8e5e0);
+  border-top: 1px solid var(--full-border, #e2dcd5);
   background: var(--full-bg, #fff);
 }
 
@@ -13,9 +13,10 @@
   @include th-container;
 }
 
-/* Matches TravelHub.module.scss `.fullBleed .page` - same edge-to-edge choice. */
+/* Matches TravelHub.module.scss `.fullBleed .page`: background edge to edge,
+   content aligned with the page content cap. */
 .fullBleedInner {
-  max-width: none;
+  max-width: var(--full-content-max-wide, 1600px);
 }
 
 .columns {
@@ -24,7 +25,7 @@
   gap: var(--full-space-5, 24px);
   padding-bottom: var(--full-space-5, 24px);
   margin-bottom: var(--full-space-5, 24px);
-  border-bottom: 1px solid var(--full-border, #e8e5e0);
+  border-bottom: 1px solid var(--full-border, #e2dcd5);
 
   @include th-tablet-up {
     grid-template-columns: repeat(3, 1fr);
@@ -43,11 +44,12 @@
 
 .columnTitle {
   @include th-font-base;
+  font-family: var(--full-font-family-accent, "Paralucent", "Noto Sans", sans-serif);
   font-size: var(--full-fs-meta, 0.8125rem);
   font-weight: var(--full-fw-bold, 700);
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--full-text-muted, #4a5568);
+  color: var(--full-text-muted, #46535c);
   margin: 0 0 var(--full-space-1, 4px);
 }
 
@@ -65,7 +67,7 @@
 
   &:hover,
   &:focus-visible {
-    color: var(--full-accent-text, #816630);
+    color: var(--full-accent-text, #7b6945);
   }
 }
 
@@ -98,5 +100,5 @@
   height: 72px;
   flex-shrink: 0;
   border-radius: var(--full-radius-sm, 4px);
-  border: 1px solid var(--full-border, #e8e5e0);
+  border: 1px solid var(--full-border, #e2dcd5);
 }

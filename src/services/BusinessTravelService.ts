@@ -4,7 +4,7 @@ import type { SharePointService } from './base/SharePointService';
 import { Logger } from './base/Logger';
 import type { ICache } from './base/MemoryCache';
 import { sanitizeUrl } from '../common/utils/urlValidation';
-import { safeColor } from '../common/utils/color';
+import { onColor, safeColor } from '../common/utils/color';
 import { orderBy, toBool, toNumber, toOptionalString, toStringOr } from '../common/utils/collection';
 
 const STEPS_LIST = 'TH_BusinessTravelSteps';
@@ -68,7 +68,8 @@ export class BusinessTravelService implements IBusinessTravelService {
         number: toNumber(item.Number, item.Id),
         title: toStringOr(item.Title, 'Untitled step'),
         description: toStringOr(item.Description, ''),
-        backgroundColor: safeColor(item.BackgroundColor, 'var(--full-primary, #b89c66)'),
+        backgroundColor: safeColor(item.BackgroundColor, 'var(--full-primary, #b89c67)'),
+        textColor: onColor(item.BackgroundColor, '#04253c'),
         displayOrder: toNumber(item.DisplayOrder, 0)
       }));
       return orderBy(mapped, (s) => s.displayOrder);

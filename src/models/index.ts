@@ -14,3 +14,4 @@ export * from './IGlobalNav';
 export * from './IPolicyPage';
 export * from './IBusinessTravel';
 export * from './ITravelHubConfiguration';
+export * from './IOffer';

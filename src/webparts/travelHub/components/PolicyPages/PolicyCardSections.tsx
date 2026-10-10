@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { Icon } from '@fluentui/react/lib/Icon';
 import { useNavigation } from '../../../../common/context/NavigationContext';
-import { ImageWithFallback } from '../../../../common/components';
+import { ImageWithFallback, MediaViewer } from '../../../../common/components';
+import type { IMediaItem } from '../../../../common/utils/mediaItems';
 import { IPolicyCard, IPolicySection, IPolicyTable, IPolicyTab, PolicyCardStyle, PolicySectionWidth } from '../../../../models';
 import { parseHighlightSubPoints, extractTag, ParsedSubPoint, IParseOptions } from './parseHighlightSubPoints';
 import { renderRichText } from './richText';
@@ -64,9 +65,60 @@ function renderSectionTitle(title: string): React.ReactNode {
 /** The reserved TargetSlug value that links a card to the dedicated Business Travel hub screen instead of a Policy page - see BUSINESS_TRAVEL_SLUG usage in PolicyPageScreen.tsx too. */
 export const BUSINESS_TRAVEL_SLUG = 'business-travel';
 
-/** A card that navigates in-app (TargetSlug) takes priority over an external LinkUrl. */
+/**
+ * A button that opens files in the in-app `MediaViewer` popup. The viewer is
+ * a sibling of the button, not inside it: cards lift with `transform` on
+ * hover, which would re-anchor the viewer's `position: fixed` overlay.
+ */
+function PopupTrigger({
+  items,
+  title,
+  startIndex,
+  className,
+  ariaLabel,
+  children
+}: {
+  items: IMediaItem[];
+  title: string;
+  startIndex?: number;
+  className: string;
+  ariaLabel?: string;
+  children: React.ReactNode;
+}): React.ReactElement {
+  const [open, setOpen] = React.useState(false);
+  const close = React.useCallback(() => setOpen(false), []);
+  return (
+    <>
+      <button type="button" className={className} aria-haspopup="dialog" aria-label={ariaLabel} onClick={() => setOpen(true)}>
+        {children}
+      </button>
+      <MediaViewer isOpen={open} onClose={close} title={title} items={items} startIndex={startIndex} />
+    </>
+  );
+}
+
+/**
+ * Where a card goes when clicked: its popup files (PopupContent) first, then
+ * an in-app page (TargetSlug), then an external LinkUrl.
+ */
 function CardLink({ card, children, className }: { card: IPolicyCard; children: React.ReactNode; className: string }): React.ReactElement {
-  const { navigate } = useNavigation();
+  const { navigate, view } = useNavigation();
+  if (card.offerId !== undefined) {
+    const id = card.offerId;
+    const fromSlug = view.kind === 'policyPage' ? view.slug : view.kind === 'businessTravel' ? BUSINESS_TRAVEL_SLUG : undefined;
+    return (
+      <button type="button" className={className} onClick={() => navigate({ kind: 'offer', id, fromSlug })}>
+        {children}
+      </button>
+    );
+  }
+  if (card.popupItems.length > 0) {
+    return (
+      <PopupTrigger items={card.popupItems} title={card.title || card.linkText || 'Document'} className={className}>
+        {children}
+      </PopupTrigger>
+    );
+  }
   if (card.targetSlug !== undefined) {
     const slug = card.targetSlug;
     return (
@@ -94,9 +146,9 @@ function CardLink({ card, children, className }: { card: IPolicyCard; children: 
   return <div className={className}>{children}</div>;
 }
 
-/** Whether a card has somewhere to go (in-app page or URL). */
+/** Whether a card has somewhere to go (popup files, in-app page or URL). */
 function hasCardLink(card: IPolicyCard): boolean {
-  return card.targetSlug !== undefined || card.linkUrl !== undefined;
+  return card.offerId !== undefined || card.popupItems.length > 0 || card.targetSlug !== undefined || card.linkUrl !== undefined;
 }
 
 /** An in-app page (slug) or a URL, as a button/anchor - used for section header links and hero buttons. */
@@ -144,7 +196,7 @@ export const CategoryCards: React.FC<{ cards: IPolicyCard[] }> = ({ cards }) => 
     <div className={styles.categoryGrid}>
       {cards.map((card) => (
         <CardLink key={card.id} card={card} className={styles.categoryCard}>
-          <span className={styles.categoryIcon} style={card.iconColor !== undefined ? { color: card.iconColor } : undefined} aria-hidden="true">
+          <span className={styles.categoryIcon} style={card.iconColorInk !== undefined ? { color: card.iconColorInk } : undefined} aria-hidden="true">
             <Icon iconName={card.icon} />
           </span>
           <div className={styles.categoryBody}>
@@ -227,7 +279,7 @@ function groupSubPoints(blocks: ParsedSubPoint[]): SubPointGroup[] {
  * the same order the lines are written - e.g. a `##` table followed by
  * bullets shows the table first.
  */
-const SubPointsBlocks: React.FC<{ subPoints: string[]; options?: IParseOptions }> = ({ subPoints, options }) => {
+export const SubPointsBlocks: React.FC<{ subPoints: string[]; options?: IParseOptions }> = ({ subPoints, options }) => {
   if (subPoints.length === 0) {
     return null;
   }
@@ -342,14 +394,14 @@ export interface IHighlightCardsProps {
 }
 
 /** A card-level title typed as "2. Employee Responsibilities" renders a number badge, coloured by the card's IconColor. */
-function renderCardTitle(title: string, color: string | undefined): React.ReactNode {
+function renderCardTitle(title: string, color: string | undefined, onColor?: string): React.ReactNode {
   const match = SECTION_NUMBER_RE.exec(title);
   if (match === null) {
     return title;
   }
   return (
     <>
-      <span className={styles.cardNumber} style={color !== undefined ? { backgroundColor: color } : undefined} aria-hidden="true">
+      <span className={styles.cardNumber} style={color !== undefined ? { backgroundColor: color, color: onColor } : undefined} aria-hidden="true">
         {match[1]}
       </span>
       {match[2]}
@@ -358,7 +410,8 @@ function renderCardTitle(title: string, color: string | undefined): React.ReactN
 }
 
 function cardAccentStyle(card: IPolicyCard, tint: boolean): React.CSSProperties | undefined {
-  return tint && card.iconColor !== undefined ? ({ '--th-card-accent': card.iconColor } as React.CSSProperties) : undefined;
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define -- shared helper defined with the image cards below.
+  return tint ? accentVar(card) : undefined;
 }
 
 export const HighlightCards: React.FC<IHighlightCardsProps> = ({ cards, sectionTitle, columns, cardStyle = 'default', tintCards = false }) => {
@@ -383,8 +436,8 @@ export const HighlightCards: React.FC<IHighlightCardsProps> = ({ cards, sectionT
           card.iconColor === undefined
             ? undefined
             : softIcon
-              ? { backgroundColor: `color-mix(in srgb, ${card.iconColor} 15%, transparent)`, color: card.iconColor }
-              : { backgroundColor: card.iconColor };
+              ? { backgroundColor: `color-mix(in srgb, ${card.iconColor} 15%, transparent)`, color: card.iconColorInk }
+              : { backgroundColor: card.iconColor, color: card.iconColorOn };
 
         // Opt-in layouts (TH_PolicySections.CardStyle) - the icon only shows
         // when the card's Icon column is actually filled in.
@@ -394,7 +447,7 @@ export const HighlightCards: React.FC<IHighlightCardsProps> = ({ cards, sectionT
               <Icon iconName={card.icon} />
             </span>
           ) : null;
-          const title = card.title.length > 0 ? <h3 className={styles.highlightTitle}>{renderCardTitle(card.title, card.iconColor)}</h3> : null;
+          const title = card.title.length > 0 ? <h3 className={styles.highlightTitle}>{renderCardTitle(card.title, card.iconColor, card.iconColorOn)}</h3> : null;
           const tagBadge = tag !== undefined ? <span className={styles.highlightHeaderTag}>{tag}</span> : null;
           const body = (
             <>
@@ -474,7 +527,7 @@ export const RuleCards: React.FC<{ cards: IPolicyCard[] }> = ({ cards }) => {
       {cards.map((card) => (
         <div key={card.id} className={styles.ruleCard}>
           <div className={styles.ruleBadgeGroup}>
-            <span className={styles.ruleNumber} style={card.iconColor !== undefined ? { backgroundColor: card.iconColor } : undefined}>
+            <span className={styles.ruleNumber} style={card.iconColor !== undefined ? { backgroundColor: card.iconColor, color: card.iconColorOn } : undefined}>
               {card.number ?? '•'}
             </span>
             <span className={styles.ruleIcon} aria-hidden="true">
@@ -524,7 +577,8 @@ export const HelpSteps: React.FC<{ cards: IPolicyCard[]; oneRow?: boolean; stack
           <React.Fragment key={card.id}>
             <li
               className={`${styles.stackedStep} ${isCompactStep(card) ? styles.stackedStepCompact : ''}`}
-              style={card.iconColor !== undefined ? ({ '--th-card-accent': card.iconColor } as React.CSSProperties) : undefined}
+              // eslint-disable-next-line @typescript-eslint/no-use-before-define -- shared helper defined with the image cards below.
+              style={accentVar(card)}
             >
               <div className={styles.stackedStepTop}>
                 {card.number !== undefined && <span className={styles.stackedStepNumber}>{card.number}</span>}
@@ -638,14 +692,14 @@ const SplitBlock: React.FC<{ cards: IPolicyCard[]; compact?: boolean }> = ({ car
   return (
     <div className={`${styles.split} ${compact ? styles.splitCompact : ''}`}>
       {cards.map((card) => {
-        const hasLink = card.linkText !== undefined && (card.targetSlug !== undefined || card.linkUrl !== undefined);
+        const hasLink = card.linkText !== undefined && hasCardLink(card);
         return (
           <div key={card.id} className={`${styles.splitPart} ${card.kind === 'linkItem' ? styles.splitPartTrailing : ''}`}>
             {card.imageUrl !== undefined ? (
               <img className={styles.splitImage} src={card.imageUrl} alt={card.title} loading="lazy" />
             ) : (
               card.iconExplicit && (
-                <span className={styles.splitIcon} style={card.iconColor !== undefined ? { color: card.iconColor } : undefined} aria-hidden="true">
+                <span className={styles.splitIcon} style={card.iconColorInk !== undefined ? { color: card.iconColorInk } : undefined} aria-hidden="true">
                   <Icon iconName={card.icon} />
                 </span>
               )
@@ -879,9 +933,21 @@ const ValueBlock: React.FC<{ card: IPolicyCard; className?: string }> = ({ card,
     </div>
   );
 
-/** The card's own colour as a CSS variable (buttons, icon discs, tints). */
+/**
+ * The card's own colour as CSS variables: `--th-card-accent` (fills, tints),
+ * `--th-card-accent-on` (text on that fill) and `--th-card-accent-ink` (text
+ * in that colour on a light background) - so light brand colours like Gold or
+ * Crystal Waters stay readable.
+ */
 function accentVar(card: IPolicyCard): React.CSSProperties | undefined {
-  return card.iconColor !== undefined ? ({ '--th-card-accent': card.iconColor } as React.CSSProperties) : undefined;
+  if (card.iconColor === undefined) {
+    return undefined;
+  }
+  return {
+    '--th-card-accent': card.iconColor,
+    '--th-card-accent-on': card.iconColorOn ?? '#ffffff',
+    '--th-card-accent-ink': card.iconColorInk ?? card.iconColor
+  } as React.CSSProperties;
 }
 
 /**
@@ -895,18 +961,29 @@ function accentVar(card: IPolicyCard): React.CSSProperties | undefined {
  *   room banners.
  * - `ImageLeft`: photo (or icon) on the left, text and an arrow on the right -
  *   link cards ("Accommodation & Site Services", "More Details").
- * The whole card is the link (TargetSlug / LinkUrl). `Columns` sets cards per row.
+ * - `ImageMenu`: a menu card - photo with the Badge as a ribbon and the
+ *   Value as a price tag, then the menu items (SubPoints, flowing into two
+ *   columns when the card is wide enough). With `wide` (a Full-width section
+ *   of 1-2 columns) the photo sits on the left - Catering's main-course menus.
+ * The whole card is the link (PopupContent / TargetSlug / LinkUrl). `Columns` sets cards per row.
  */
-const ImageCards: React.FC<{ cards: IPolicyCard[]; columns: number | undefined; cardStyle: PolicyCardStyle }> = ({ cards, columns, cardStyle }) => {
+const ImageCards: React.FC<{ cards: IPolicyCard[]; columns: number | undefined; cardStyle: PolicyCardStyle; wide?: boolean }> = ({
+  cards,
+  columns,
+  cardStyle,
+  wide = false
+}) => {
   if (cards.length === 0) {
     return null;
   }
-  const look = cardStyle === 'imageTile' || cardStyle === 'imageBanner' || cardStyle === 'imageLeft' ? cardStyle : 'imageTop';
+  const look =
+    cardStyle === 'imageTile' || cardStyle === 'imageBanner' || cardStyle === 'imageLeft' || cardStyle === 'imageMenu' ? cardStyle : 'imageTop';
   const gridClass = {
     imageTop: styles.imageCardsTop,
     imageTile: styles.imageCardsTile,
     imageBanner: styles.imageCardsBanner,
-    imageLeft: styles.imageCardsLeft
+    imageLeft: styles.imageCardsLeft,
+    imageMenu: styles.imageCardsMenu
   }[look];
   const gridStyle = columns !== undefined ? ({ '--th-cols': String(columns) } as React.CSSProperties) : undefined;
 
@@ -919,6 +996,39 @@ const ImageCards: React.FC<{ cards: IPolicyCard[]; columns: number | undefined; 
           </span>
         ) : null;
         const cardClass = `${styles.imageCard} ${hasCardLink(card) ? styles.imageCardLinked : ''}`;
+
+        if (look === 'imageMenu') {
+          const priceTag = card.value !== undefined ? <ValueBlock card={card} className={styles.menuPrice} /> : null;
+          return (
+            <CardLink key={card.id} card={card} className={`${cardClass} ${styles.imageCardMenu} ${wide ? styles.imageCardMenuWide : ''}`}>
+              <span className={styles.imageCardMedia}>
+                {card.imageUrl !== undefined && <img src={card.imageUrl} alt="" loading="lazy" />}
+                {card.badge !== undefined && (
+                  <span className={styles.menuRibbon} style={accentVar(card)}>
+                    {card.badge}
+                  </span>
+                )}
+                {!wide && priceTag !== null && <span className={styles.menuPriceTag}>{priceTag}</span>}
+              </span>
+              <span className={styles.imageCardBody} style={accentVar(card)}>
+                {wide && priceTag}
+                {card.title.length > 0 && <span className={styles.imageCardTitle}>{card.title}</span>}
+                {card.subtitle !== undefined && <span className={styles.imageCardSubtitle}>{card.subtitle}</span>}
+                {card.description.length > 0 && <span className={styles.imageCardText}>{renderRichText(card.description)}</span>}
+                {card.subPoints.length > 0 && (
+                  <span className={styles.menuPoints}>
+                    <SubPointsBlocks subPoints={card.subPoints} />
+                  </span>
+                )}
+                {card.linkText !== undefined && (
+                  <span className={styles.featureLink}>
+                    {card.linkText} <Icon iconName="ArrowRight" aria-hidden="true" />
+                  </span>
+                )}
+              </span>
+            </CardLink>
+          );
+        }
 
         if (look === 'imageBanner') {
           return (
@@ -958,6 +1068,7 @@ const ImageCards: React.FC<{ cards: IPolicyCard[]; columns: number | undefined; 
                 <span className={styles.imageCardTitle}>{card.title}</span>
                 {card.subtitle !== undefined && <span className={styles.imageCardSubtitle}>{card.subtitle}</span>}
                 {card.description.length > 0 && <span className={styles.imageCardText}>{renderRichText(card.description)}</span>}
+                <ValueBlock card={card} className={styles.imageCardValue} />
               </span>
               {hasCardLink(card) && (
                 <span className={styles.imageCardArrow} style={accentVar(card)} aria-hidden="true">
@@ -995,7 +1106,13 @@ const ImageCards: React.FC<{ cards: IPolicyCard[]; columns: number | undefined; 
 
         // imageTop
         return (
-          <CardLink key={card.id} card={card} className={`${cardClass} ${styles.imageCardTop}`}>
+          // Three body rows - head (logo/title/subtitle), text, foot (points/value/button) - so the
+          // same row lines up across every card in the grid (CSS subgrid, PolicyPageScreen.module.scss).
+          <CardLink
+            key={card.id}
+            card={card}
+            className={`${cardClass} ${styles.imageCardTop} ${card.imageUrl !== undefined && iconDisc !== null ? styles.imageCardTopWithIcon : ''}`}
+          >
             {card.imageUrl !== undefined ? (
               <span className={styles.imageCardMedia}>
                 <img src={card.imageUrl} alt="" loading="lazy" />
@@ -1010,28 +1127,33 @@ const ImageCards: React.FC<{ cards: IPolicyCard[]; columns: number | undefined; 
               )
             )}
             <span className={styles.imageCardBody} style={accentVar(card)}>
-              <span className={styles.imageCardTitle}>{card.title}</span>
-              {card.subtitle !== undefined && <span className={styles.imageCardSubtitle}>{card.subtitle}</span>}
+              <span className={styles.imageCardHead}>
+                {card.logoUrl !== undefined && <img className={styles.imageCardLogo} src={card.logoUrl} alt="" loading="lazy" />}
+                <span className={styles.imageCardTitle}>{card.title}</span>
+                {card.subtitle !== undefined && <span className={styles.imageCardSubtitle}>{card.subtitle}</span>}
+              </span>
               {card.description.length > 0 && <span className={styles.imageCardText}>{renderRichText(card.description)}</span>}
-              {card.subPoints.length > 0 && (
-                <span className={styles.imageCardPoints}>
-                  <SubPointsBlocks subPoints={card.subPoints} />
-                </span>
-              )}
-              <ValueBlock card={card} />
-              {card.linkText !== undefined && (
-                <span
-                  className={
-                    card.imageUrl === undefined
-                      ? styles.featureLink
-                      : card.iconExplicit
-                        ? styles.imageCardButton
-                        : `${styles.imageCardButton} ${styles.imageCardButtonOutline}`
-                  }
-                >
-                  {card.linkText} <Icon iconName="ArrowRight" aria-hidden="true" />
-                </span>
-              )}
+              <span className={styles.imageCardFoot}>
+                {card.subPoints.length > 0 && (
+                  <span className={styles.imageCardPoints}>
+                    <SubPointsBlocks subPoints={card.subPoints} />
+                  </span>
+                )}
+                <ValueBlock card={card} />
+                {card.linkText !== undefined && (
+                  <span
+                    className={
+                      card.imageUrl === undefined
+                        ? styles.featureLink
+                        : card.iconExplicit
+                          ? styles.imageCardButton
+                          : `${styles.imageCardButton} ${styles.imageCardButtonOutline}`
+                    }
+                  >
+                    {card.linkText} <Icon iconName="ArrowRight" aria-hidden="true" />
+                  </span>
+                )}
+              </span>
             </span>
           </CardLink>
         );
@@ -1224,6 +1346,118 @@ const SearchBlock: React.FC<{ section: IPolicySection }> = ({ section }) => {
   );
 };
 
+const PRICE_ROW_ICON_RE = /^[A-Za-z0-9]+$/;
+
+interface IPriceRow {
+  icon: string | undefined;
+  label: string;
+  price: string | undefined;
+  note: string | undefined;
+}
+
+/**
+ * One `PriceList` row from a SubPoints line: `Icon|Label|Price|Note`
+ * (`Coffee|Coffee Break|SAR 120|per person`), or without the icon
+ * `Label|Price|Note` / `Label|Price`.
+ */
+function parsePriceRow(line: string): IPriceRow {
+  const parts = line.split('|').map((p) => p.trim());
+  const opt = (v: string | undefined): string | undefined => (v !== undefined && v.length > 0 ? v : undefined);
+  if (parts.length >= 4 && PRICE_ROW_ICON_RE.test(parts[0])) {
+    return { icon: parts[0], label: parts[1], price: opt(parts[2]), note: opt(parts.slice(3).join(' | ')) };
+  }
+  return { icon: undefined, label: parts[0], price: opt(parts[1]), note: opt(parts.slice(2).join(' | ')) };
+}
+
+/**
+ * `Layout: 'priceList'` - one panel per card: the photo (or partner logo) on
+ * the left, then the card's SubPoints as price rows ("icon / Coffee Break /
+ * SAR 120 per person") on the right, and the card's Description as a small
+ * note under the panel ("Prices are in Saudi Riyal..."). The panel is washed
+ * with the card's IconColor and links like any card (PopupContent /
+ * TargetSlug / LinkUrl), e.g. Catering "Featured Menu Options - Starting From".
+ */
+const PriceList: React.FC<{ cards: IPolicyCard[]; columns: number | undefined }> = ({ cards, columns }) => {
+  if (cards.length === 0) {
+    return null;
+  }
+  return (
+    <div className={styles.priceList} style={{ '--th-cols': String(columns ?? Math.min(cards.length, 2)) } as React.CSSProperties}>
+      {cards.map((card) => (
+        <div key={card.id} className={styles.pricePanelWrap}>
+          <CardLink card={card} className={`${styles.pricePanel} ${hasCardLink(card) ? styles.imageCardLinked : ''}`}>
+            <span className={styles.pricePanelInner} style={accentVar(card)}>
+              {card.imageUrl !== undefined && (
+                <span className={styles.pricePanelMedia}>
+                  <img src={card.imageUrl} alt={card.title} loading="lazy" />
+                </span>
+              )}
+              <span className={styles.pricePanelBody}>
+                {card.title.length > 0 && <span className={styles.pricePanelTitle}>{card.title}</span>}
+                <span className={styles.priceRows}>
+                  {card.subPoints.map(parsePriceRow).map((row, index) => (
+                    <span key={index} className={styles.priceRow}>
+                      <span className={styles.priceRowIcon} aria-hidden="true">
+                        {row.icon !== undefined && <Icon iconName={row.icon} />}
+                      </span>
+                      <span className={styles.priceRowLabel}>{row.label}</span>
+                      {row.price !== undefined && (
+                        <span className={styles.priceRowValue}>
+                          <strong>{row.price}</strong>
+                          {row.note !== undefined && <small>{row.note}</small>}
+                        </span>
+                      )}
+                    </span>
+                  ))}
+                </span>
+                {card.linkText !== undefined && (
+                  <span className={styles.featureLink}>
+                    {card.linkText} <Icon iconName="ArrowRight" aria-hidden="true" />
+                  </span>
+                )}
+              </span>
+            </span>
+          </CardLink>
+          {card.description.length > 0 && <p className={styles.priceNote}>{renderRichText(card.description)}</p>}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+/**
+ * `Layout: 'gallery'` - a strip of photos (each card's ImageUrl; Title or
+ * Description = alt text and caption). Clicking one opens the whole set in
+ * the in-app popup at that photo, with prev/next - e.g. a partner's
+ * "Catering Setup Gallery". `Columns` sets photos per row (default 4).
+ */
+const GalleryBlock: React.FC<{ cards: IPolicyCard[]; columns: number | undefined; title: string | undefined }> = ({ cards, columns, title }) => {
+  const photos = cards.filter((c) => c.imageUrl !== undefined);
+  if (photos.length === 0) {
+    return null;
+  }
+  const items: IMediaItem[] = photos.map((c) => ({ label: c.title || c.description, url: c.imageUrl as string, kind: 'image' }));
+  return (
+    <div className={styles.gallery} style={{ '--th-cols': String(columns ?? 4) } as React.CSSProperties}>
+      {photos.map((card, index) => {
+        const label = items[index].label;
+        return (
+          <PopupTrigger
+            key={card.id}
+            items={items}
+            startIndex={index}
+            title={title ?? 'Gallery'}
+            className={styles.galleryItem}
+            ariaLabel={`Open photo ${String(index + 1)} of ${String(photos.length)}${label.length > 0 ? `: ${label}` : ''}`}
+          >
+            <img src={card.imageUrl} alt="" loading="lazy" />
+          </PopupTrigger>
+        );
+      })}
+    </div>
+  );
+};
+
 const WIDTH_SPAN: Record<PolicySectionWidth, number> = { full: 12, half: 6, oneThird: 4, twoThirds: 8 };
 
 /**
@@ -1287,7 +1521,9 @@ export const SectionFlow: React.FC<{ sections: IPolicySection[] }> = ({ sections
 const SELF_HEADED_LAYOUTS: ReadonlySet<string> = new Set(['callout', 'imageBlock', 'banner', 'feature', 'search']);
 
 /** Layouts that don't use `Body` themselves - for these, `Body` is a short note at the right of the section header. */
-const HEADER_NOTE_LAYOUTS: ReadonlySet<string> = new Set(['cardsGrid', 'imageCards', 'processSteps', 'split', 'tabs', 'table', 'linksList', 'faq', 'numberedSteps']);
+const HEADER_NOTE_LAYOUTS: ReadonlySet<string> = new Set([
+  'cardsGrid', 'imageCards', 'processSteps', 'split', 'tabs', 'table', 'linksList', 'faq', 'numberedSteps', 'priceList', 'gallery'
+]);
 
 /** CSS classes for the opt-in section container (TH_PolicySections.SectionStyle). */
 function sectionContainerClass(section: IPolicySection, base: string): string {
@@ -1446,13 +1682,24 @@ function renderLayout(section: IPolicySection): React.ReactElement | undefined {
     case 'banner':
       return <BannerBlock section={section} />;
     case 'imageCards':
-      return <ImageCards cards={section.cards} columns={section.columns} cardStyle={section.cardStyle} />;
+      return (
+        <ImageCards
+          cards={section.cards}
+          columns={section.columns}
+          cardStyle={section.cardStyle}
+          wide={section.width === 'full' && section.columns !== undefined && section.columns <= 2}
+        />
+      );
     case 'feature':
       return <FeatureBlock section={section} />;
     case 'faq':
       return <FaqBlock cards={section.cards} />;
     case 'search':
       return <SearchBlock section={section} />;
+    case 'priceList':
+      return <PriceList cards={section.cards} columns={section.columns} />;
+    case 'gallery':
+      return <GalleryBlock cards={section.cards} columns={section.columns} title={section.title} />;
     default:
       return undefined;
   }

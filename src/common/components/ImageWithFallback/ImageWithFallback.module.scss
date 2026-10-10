@@ -2,7 +2,7 @@
   position: relative;
   width: 100%;
   overflow: hidden;
-  background: var(--full-surface-alt, #faf8f4);
+  background: var(--full-surface-alt, #faf8f6);
 
   > picture {
     display: block;
@@ -30,7 +30,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--full-text-muted, #7b8794);
+  color: var(--full-text-muted, #6f7271);
   font-size: 2rem;
-  background: var(--full-surface-alt, #faf8f4);
+  background: var(--full-surface-alt, #faf8f6);
 }

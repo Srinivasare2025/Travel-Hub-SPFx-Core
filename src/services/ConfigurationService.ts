@@ -271,6 +271,15 @@ export class ConfigurationService implements IConfigurationService {
           url: url('team.viewAllUrl', '#')
         }
       },
+      policyAssistant: {
+        url: url('policyAssistant.url', '') || undefined,
+        buttonText: str('policyAssistant.buttonText', 'Ask Policy Assistant'),
+        title: str('policyAssistant.title', 'Ask Our Policy Assistant'),
+        description: str('policyAssistant.description', 'Get instant answers to your travel policy questions.')
+      },
+      pages: {
+        closingBannerImageUrl: url('pages.closingBannerImageUrl', '') || undefined
+      },
       footer: {
         showQrCode: bool('footer.showQrCode', false),
         qrCodeUrl: url('footer.qrCodeUrl', '#'),

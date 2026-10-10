@@ -20,13 +20,13 @@
     padding: 0;
     border: none;
     background: none;
-    color: var(--full-text-muted, #4a5568);
+    color: var(--full-text-muted, #46535c);
     font: inherit;
     cursor: pointer;
     @include th-focusable;
 
     &:hover {
-      color: var(--full-accent-text, #816630);
+      color: var(--full-accent-text, #7b6945);
       text-decoration: underline;
     }
   }
@@ -40,31 +40,6 @@
     color: var(--full-heading, #04253c);
     font-weight: var(--full-fw-semibold, 600);
   }
-}
-
-.hero {
-  width: 100%;
-  aspect-ratio: 21 / 9;
-  border-radius: var(--full-radius-lg, 12px);
-  overflow: hidden;
-}
-
-.title {
-  @include th-page-title;
-  margin: 0;
-}
-
-.subtitle {
-  @include th-body;
-  font-weight: var(--full-fw-semibold, 600);
-  color: var(--full-heading, #04253c);
-  margin: -12px 0 0;
-}
-
-.description {
-  @include th-body;
-  color: var(--full-text-muted, #4a5568);
-  max-width: 60rem;
 }
 
 .points {
@@ -94,7 +69,7 @@
   height: 28px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: var(--full-success, #107c41);
+  background: var(--full-success, #00946e);
   color: #fff;
   font-weight: var(--full-fw-bold, 700);
   font-size: 0.875rem;

@@ -62,7 +62,7 @@ export const ServicePageScreen: React.FC<IServicePageScreenProps> = ({ serviceId
       {status === 'success' && service !== undefined && (
         <>
           <div className={styles.header}>
-            <span className={styles.icon} style={{ backgroundColor: service.iconBackgroundColor }} aria-hidden="true">
+            <span className={styles.icon} style={{ backgroundColor: service.iconBackgroundColor, color: service.iconForegroundColor }} aria-hidden="true">
               <Icon iconName={service.icon} />
             </span>
             <h1 className={styles.title}>{service.title}</h1>

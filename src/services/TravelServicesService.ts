@@ -5,7 +5,7 @@ import { Logger } from './base/Logger';
 import type { ICache } from './base/MemoryCache';
 import { sanitizeUrl } from '../common/utils/urlValidation';
 import { orderBy, toBool, toNumber, toOptionalString, toStringOr } from '../common/utils/collection';
-import { safeColor } from '../common/utils/color';
+import { onColor, safeColor } from '../common/utils/color';
 
 const LIST = 'TH_TravelServices';
 const TTL_SECONDS = 300;
@@ -184,7 +184,9 @@ export class TravelServicesService implements ITravelServicesService {
       imageUrl: sanitizeUrl(item.ImageUrl?.Url),
       imageFit: (item.ImageFit ?? '').toLowerCase() === 'contain' ? 'contain' : 'cover',
       icon: toStringOr(item.Icon, 'Page'),
-      iconBackgroundColor: safeColor(item.IconBackgroundColor, 'var(--full-primary, #b89c66)'),
+      iconBackgroundColor: safeColor(item.IconBackgroundColor, 'var(--full-primary, #b89c67)'),
+      // Default fill is RSG Gold, which needs navy (not white) on top.
+      iconForegroundColor: onColor(item.IconBackgroundColor, '#04253c'),
       linkUrl,
       linkType,
       openInNewTab: toBool(item.OpenInNewTab, linkType === 'external'),

@@ -34,12 +34,12 @@ function storedCanvas(): string {
 
 const SPLASH_CSS =
   '@keyframes thSplashSlide{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}' +
-  '.th-splash-bar{position:relative;width:160px;height:3px;margin:18px auto 0;border-radius:9999px;overflow:hidden;background:rgba(195,161,94,.22)}' +
-  '.th-splash-bar>span{position:absolute;inset:0;width:40%;border-radius:inherit;background:#c3a15e;animation:thSplashSlide 1.1s cubic-bezier(.2,0,0,1) infinite}' +
+  '.th-splash-bar{position:relative;width:160px;height:3px;margin:18px auto 0;border-radius:9999px;overflow:hidden;background:rgba(184, 156, 103,.22)}' +
+  '.th-splash-bar>span{position:absolute;inset:0;width:40%;border-radius:inherit;background:#b89c67;animation:thSplashSlide 1.1s cubic-bezier(.2,0,0,1) infinite}' +
   '@media (prefers-reduced-motion:reduce){.th-splash-bar>span{animation:none;width:100%;opacity:.6}}';
 
 const FONT_BODY = "'Noto Sans',system-ui,-apple-system,'Segoe UI',sans-serif";
-const FONT_DISPLAY = "'Cormorant Garamond',Georgia,serif";
+const FONT_ACCENT = "'Paralucent','Noto Sans',system-ui,sans-serif";
 
 /** Paint the splash into the web part's element (replaced by React's first render). */
 export function renderSplash(el: HTMLElement): void {
@@ -47,10 +47,10 @@ export function renderSplash(el: HTMLElement): void {
   el.innerHTML =
     `<style>${SPLASH_CSS}</style>` +
     `<div class="th-splash" role="status" aria-live="polite" style="min-height:100vh;display:flex;flex-direction:column;background:${canvas};color:${ink};font-family:${FONT_BODY}">` +
-    `<div style="height:64px;flex:none;background:${raised};border-bottom:1px solid rgba(195,161,94,.32);box-shadow:0 7px 24px rgba(8,28,50,.045)"></div>` +
+    `<div style="height:64px;flex:none;background:${raised};border-bottom:1px solid rgba(184, 156, 103,.32);box-shadow:0 7px 24px rgba(4, 37, 60,.045)"></div>` +
     '<div style="flex:1;display:flex;align-items:center;justify-content:center;padding:48px 16px">' +
     '<div style="text-align:center">' +
-    `<div style="font-family:${FONT_DISPLAY};font-style:italic;font-size:15px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:${muted}">Travel Hub</div>` +
+    `<div style="font-family:${FONT_ACCENT};font-size:14px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:${muted}">Travel Hub</div>` +
     '<div class="th-splash-bar"><span></span></div>' +
     '<div style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Loading Travel Hub</div>' +
     '</div></div></div>';

@@ -12,6 +12,7 @@ code per page:
 - Personal Travel Offers
 - Meetings & Events
 - SAP Concur and its 4 sub-pages
+- Catering Services and its Mövenpick / Marriott menu sub-pages
 
 A new page is a new row plus its sections and cards. Code is needed only for a
 genuinely new *kind* of block that none of the layouts in §4 can produce.
@@ -33,6 +34,7 @@ genuinely new *kind* of block that none of the layouts in §4 can produce.
 13. [Recipes: mockup pattern → configuration](#13-recipes-mockup-pattern--configuration)
 14. [Administrator tasks](#14-administrator-tasks)
 15. [Troubleshooting](#15-troubleshooting)
+16. [Offers and partnered hotels: `TH_Offers`](#16-offers-and-partnered-hotels-th_offers)
 
 ---
 
@@ -87,7 +89,7 @@ Every row in every list has `IsActive` (Yes/No) and `DisplayOrder`
 6. **Check it.** Refresh the Travel Hub page and open the new page.
 
 > Fastest way to start: copy the structure of an existing page that looks
-> similar. The sample-data script (§14) builds 18 working pages; each one is
+> similar. The sample-data script (§14) builds 21 working pages; each one is
 > a complete example.
 
 ---
@@ -108,7 +110,7 @@ Every row in every list has `IsActive` (Yes/No) and `DisplayOrder`
 
 | Column | What it does |
 | --- | --- |
-| `HeroStyle` | `Dark` (default): text over a darkened photo. `Light`: the mockups' light band with a big icon disc and the photo fading in on the right. |
+| `HeroStyle` | No longer changes the look: **every page uses the same banner** (the SAP Concur style: text on a light band, photo fading in on the right, tagline over the photo). Kept only so existing rows stay valid. |
 | `HeroIcon` | Icon name for the disc (§11) |
 | `HeroEyebrow` | Small spaced capitals above the title, e.g. `TRAVEL POLICY`, `SAP Concur` |
 | `HeroTitle` | Big title (falls back to `Title`) |
@@ -118,6 +120,8 @@ Every row in every list has `IsActive` (Yes/No) and `DisplayOrder`
 | `HeroTagline` | Script text over the photo. **One phrase per line**, e.g. `People Closer` / `A Brighter Tomorrow`. |
 | `HeroLinkText` + `HeroLinkUrl` or `HeroLinkTargetSlug` | First hero button (gold), e.g. "Access SAP Concur". An external URL opens in a new tab. |
 | `HeroLink2Text` + `HeroLink2Url` or `HeroLink2TargetSlug` | Second button (outlined), e.g. "New to SAP Concur? Start Here" |
+| `HeroLogoUrl` | Optional brand logo above the eyebrow, e.g. the Mövenpick or Marriott logo (a PNG with a transparent background, about 440 × 128) |
+| `HeroHighlights` | Optional small icon + text badges under the description, **one per line** as `Icon\|Text`, e.g. `Diamond\|Quality Catering Solutions`. A line without `\|` shows text only. |
 
 When both a URL and a TargetSlug are set, the **TargetSlug wins**
 (in-app page). This applies everywhere in this guide.
@@ -129,9 +133,9 @@ When both a URL and a TargetSlug are set, the **TargetSlug wins**
 | Info banner (under the hero) | `InfoBannerText` | One sentence with an info icon |
 | Note banner (after the sections) | `NoteBannerText` | Warning-style sentence |
 | "Ready to proceed?" row | `CtaTitle`, `CtaDescription`, `CtaLinkText` + `CtaLinkUrl`, `CtaPrimaryText` + `CtaPrimaryUrl` | Title/description on the left; the two links on the right, e.g. "Full Rules & Conditions \| Apply →". Either link may be blank. |
-| Ask Policy Assistant | `SuggestedQuestions` (one per line), optionally `AssistantLinkText` + `AssistantLinkUrl` | Without a link: search box with "Try asking:" and the questions 2 per line. With a link: an "Ask a Question" button. |
+| Ask Our Policy Assistant | `SuggestedQuestions` (one per line, shown as "Try asking:"), optionally `AssistantLinkUrl` + `AssistantLinkText` | A button that **opens your policy agent in a new tab** (no search box on the page). The link is the page's `AssistantLinkUrl`, else the site-wide `policyAssistant.url` setting (`TH_SiteConfiguration`). With neither, the block shows without a button. |
 | Need Help? | `NeedHelpTitle`, `NeedHelpSupportLabel`, `NeedHelpDescription`, `NeedHelpEmail` | Steps such as "Ask HR" = `TH_PolicyCards` rows with `PageId` = the page and `Kind = HelpStep` (shown in one row beside the text) |
-| Closing band | `ClosingBannerTitle`, `ClosingBannerDescription`, `ClosingBadges` (one per line) | Badge icons are picked from the words: "people", "planet", "future"; anything else gets a check mark |
+| Closing band | `ClosingBannerTitle`, `ClosingBannerDescription`, `ClosingBadges` (one per line), `ClosingBannerImageUrl` | With a photo (`ClosingBannerImageUrl`, else the site-wide `pages.closingBannerImageUrl` setting) the title, text and badges sit on top of the photo; without one, the plain green band. Badge icons are picked from the words: "people", "planet", "future"; anything else gets a check mark. Photo size: about 1600 × 400. |
 
 > For the newer pages, contact details are often better as a **Split**
 > section (§4). It can hold a QR code, phone numbers and emails, which the
@@ -177,6 +181,8 @@ When both a URL and a TargetSlug are set, the **TargetSlug wins**
 | **Feature** | One rich panel: icon disc, title and text, optional small cards, figure tiles and a photo ("Shipping Assistance", "Discover Joule", "Key Facilities") | `Icon`, `Title`, `Subtitle`, `Body` (§9.2), `ImageUrl` (photo right; `CardStyle = ImageLeft` for left), cards (a card with a `Value` = figure tile, otherwise a small info card), `LinkText` = a button |
 | **Faq** | Numbered questions that expand ("Most Asked Questions") | Cards: `Title` = question, `Description` / `SubPoints` = answer. A card with only a link is a link row. |
 | **Search** | Search box + "Quick links:" pills (SAP Concur) | `Subtitle` = placeholder, `LinkUrl` = search address (`{query}` is replaced by the typed words; otherwise `?q=` is added), `LinkText` = button text, `Body` = quick-links label, cards = the pills |
+| **PriceList** | One panel per partner: photo on the left, price rows on the right, a small note under the panel (Catering "Featured Menu Options – Starting From") | Cards, one per panel: `ImageUrl`, `Title`, `IconColor` (panel tint and row icons), `SubPoints` = one price row per line as `Icon\|Label\|Price\|Note`, e.g. `Coffee\|Coffee Break\|SAR 120\|per person` (the icon is optional: `Label\|Price\|Note`), `Description` = the note under the panel, `LinkText` + `TargetSlug` = "View Mövenpick Menus". `Columns` = panels per row (default 2). |
+| **Gallery** | A strip of photos; clicking one opens all of them in a popup with previous / next (Catering "Setup Gallery") | Cards, one per photo: `ImageUrl`, `Title` = caption and alt text. `Columns` = photos per row (default 4). |
 
 **ImageCards styles (`CardStyle`)**
 
@@ -185,7 +191,8 @@ When both a URL and a TargetSlug are set, the **TargetSlug wins**
 | `ImageTop` (default) | Photo on top with a `Badge` pill and an icon disc; then title, subtitle, text, SubPoints, `Value` ("Starting From / SAR 5,999 / per person") and a button (`LinkText`). The button is solid in `IconColor` when the card has an icon, outlined when it doesn't, and a text link when there's no photo. | Featured offers, partnered hotels, "Business Travel & Mobility", "Types of Meeting Room Setup", "What would you like to do today?" (no photo) |
 | `ImageTile` | Compact tile: photo (or a big icon when there's no photo), icon disc, title and an arrow | "Explore Our Personal Travel Offers", "Key Business Travel Policy Highlights" |
 | `ImageBanner` | Big photo with the text over it: `Badge` as eyebrow, title, subtitle, text, button | "Visit Red Sea / AMAALA", "Meeting Rooms at KAFD Offices" |
-| `ImageLeft` | Photo or icon on the left, text and arrow on the right | "Accommodation & Site Services", "Quick Actions", "More Details / Contact HR Support" |
+| `ImageLeft` | Photo or icon on the left, text and arrow on the right; a `Value` shows under the text | "Accommodation & Site Services", "Quick Actions", "More Details / Contact HR Support", Catering "Special Add-ons" |
+| `ImageMenu` | Menu card: photo with the `Badge` as a coloured ribbon (`IconColor`) and the `Value` + `ValueNote` as a price tag, then the menu items (`SubPoints`, one per line; they flow into two columns when the card is wide enough). In a **Full**-width section with `Columns` 1 or 2, the photo sits on the left and the price above the items. | Catering menus ("Menu 1 – SAR 120 per person", "Option 2", "Menu 2 – VIP Lunch") |
 
 ---
 
@@ -196,10 +203,10 @@ All are optional. Left blank, a section looks as it always has.
 | Column | Values | Effect |
 | --- | --- | --- |
 | `SectionStyle` | `Plain` / `Card` / `Tinted` | `Card` = white card around the section. `Tinted` = a coloured panel, colour from `Theme`. |
-| `Theme` | `Gold`, `Blue`, `Green`, `Amber`, `Red`, `Purple`, `Teal` | Colour of a Tinted panel, the `1.` number badge, the header icon, a Banner, a Feature's icon disc |
+| `Theme` | RSG colours: `Navy`, `Gold`, `Crystal Waters`, `Blue Lagoon`, `Blooming Nature`, `Majestic Mountains`, `Thriving Corals`, `Sandy Dunes`, `Volcanic Ash` | Colour of a Tinted panel, the `1.` number badge, the header icon, a Banner, a Feature's icon disc. The older choices still work and show as the nearest brand colour: Blue → Crystal Waters, Teal → Blue Lagoon, Green → Blooming Nature, Amber → Sandy Dunes, Red → Thriving Corals, Purple → Majestic Mountains. |
 | `Width` | `Full` / `Half` / `OneThird` / `TwoThirds` | Consecutive non-Full sections share a row: Half + Half, TwoThirds + OneThird, OneThird × 3. They stack on tablets and phones. |
 | `Columns` | 1–6 | Cards per row on desktop (CardsGrid Highlight, ImageCards). Tablets show at most 2, phones 1. |
-| `CardStyle` | `Default`, `IconHeader`, `IconMedia`, `Stacked`, `ImageTop`, `ImageLeft`, `ImageTile`, `ImageBanner` | **Highlight cards:** `IconHeader` = icon + title in one row; `IconMedia` = bigger icon in a left column. **ProcessSteps:** `Stacked`. **ImageCards:** the four image styles. **Feature:** `ImageLeft` = photo on the left. |
+| `CardStyle` | `Default`, `IconHeader`, `IconMedia`, `Stacked`, `ImageTop`, `ImageLeft`, `ImageTile`, `ImageBanner`, `ImageMenu` | **Highlight cards:** `IconHeader` = icon + title in one row; `IconMedia` = bigger icon in a left column. **ProcessSteps:** `Stacked`. **ImageCards:** the five image styles. **Feature:** `ImageLeft` = photo on the left. |
 | `TintCards` | Yes/No | Highlight cards washed with their own `IconColor` (blue / green / purple cards) |
 | `Icon` | icon name | Icon before the section heading (CardsGrid, ImageCards, Split, Checklist, ProcessSteps, Table, Faq, Tabs) |
 | `Body` | text | For CardsGrid, ImageCards, ProcessSteps, Split, Tabs, Table, LinksList, Faq and NumberedSteps: a small **note box at the right of the heading**, e.g. `@Info\|These trips are paid by the company…` or `@Coffee\|One Coffee Break & Lunch Included` |
@@ -231,7 +238,7 @@ A card belongs to **exactly one** parent:
 | `Kind` | `Category`, `Info`, `Highlight`, `Rule`, `HelpStep`, `LinkItem`. It matters for CardsGrid variants, NumberedSteps (Rule), ProcessSteps and Need Help (HelpStep), LinksList (LinkItem) and a Split's compact end part (LinkItem). Other layouts accept any Kind. |
 | `Number` | Step or rule number |
 | `Icon` | Icon name (§11). Leave blank for no icon. The opt-in styles (IconHeader, IconMedia, Split, ImageCards) only show an icon when this is filled in. |
-| `IconColor` | Hex colour, e.g. `#2563eb`. Used for the icon disc, card tint (TintCards), photo-card button, badge and number badge. |
+| `IconColor` | An RSG colour **name**, e.g. `Blue Lagoon` (§11), or a hex value. Used for the icon disc, card tint (TintCards), photo-card button, badge and number badge. Text on and in the colour is picked automatically so it stays readable. |
 | `Description` | Main text (inline formatting, §9.3) |
 | `SubPoints` | Rich multi-line content: bullets, numbers, tables, notes, icon lines (§9.1) |
 | `Subtitle` | Small line under the title, e.g. "5 Nights Holiday Package", "Employee Handbook" |
@@ -241,6 +248,7 @@ A card belongs to **exactly one** parent:
 | `TargetSlug` | Opens an in-app page (wins over LinkUrl) |
 | `LinkUrl` + `OpenInNewTab` | External link. Web links usually need `OpenInNewTab = Yes`. `mailto:` works. |
 | `LinkText` | Button or link text: "View Details", "Get Started", "View Gallery" |
+| `PopupContent` | Files the card opens **in a popup on the page** instead of navigating: PDFs, documents or images, one per line (§6.1). Wins over `TargetSlug` and `LinkUrl`. |
 
 **Which columns each layout reads**
 
@@ -255,6 +263,83 @@ A card belongs to **exactly one** parent:
 | Feature | ✔ | ✔ | ✔ | ✔ | ✔ | | | ✔ | ✔ |
 | Faq | ✔ | ✔ | ✔ | | | | | | ✔ |
 | LinksList / Search pills | ✔ | | | ✔ | | | | | ✔ |
+| PriceList | ✔ | note | price rows | | ✔ | ✔ | | | ✔ |
+| Gallery | caption | | | | | ✔ | | | |
+
+`PopupContent` works on every card that is clickable as a whole or has a
+link: ImageCards (all styles), PriceList panels, CardsGrid Category / Info
+cards, Split parts and Feature info cards with a `LinkText`, Faq link rows,
+LinksList and Search pills.
+
+### 6.1 Opening PDFs and images in a popup (`PopupContent`)
+
+Some content is a **file**, not a page: a City Guide PDF per city, a visa
+guidance poster, a partner's photo gallery. Put those files in
+`PopupContent` and the card opens them in a popup over the Travel Hub page.
+The viewer is never sent to the document library.
+
+**Step by step**
+
+1. **Upload the file.**
+   - PDFs and documents: the **Travel Hub Documents** library.
+   - Images and posters: the **Travel Hub Images** library.
+2. **Copy its link.** In the library, select the file → **⋯** → **Copy link**
+   → choose *People in your organization*, or open the file and copy the
+   address bar. A direct file address looks like
+   `https://<tenant>.sharepoint.com/sites/TravelHub/Travel%20Hub%20Documents/City%20Guide%20-%20Riyadh.pdf`.
+3. **Edit the card** (`TH_PolicyCards`) and type one line per file into
+   `PopupContent`:
+
+   ```
+   Label | URL
+   ```
+
+4. Leave `LinkUrl` as it is (or blank). `PopupContent` wins while it has a
+   valid line; clear it to go back to the link.
+
+**What the popup does**
+
+| `PopupContent` holds | Popup shows |
+| --- | --- |
+| One PDF / document | That document, full screen |
+| Two or more PDFs / documents | One **tab per line**, labelled with `Label` (e.g. **Riyadh \| Jeddah**) |
+| One image | The image, like the Travel Care poster |
+| Two or more images | A gallery: previous / next arrows, arrow keys, thumbnails, "2 / 4" counter, `Label` as caption |
+
+Every popup also has **Open in new tab** (top right), which is the fallback
+when a browser won't display a file inline.
+
+**Examples**
+
+City Guide with a PDF for each city (Personal Travel Offers → "City Guide
+(Riyadh & Jeddah)"):
+
+```
+Riyadh | https://<tenant>.sharepoint.com/sites/TravelHub/Travel%20Hub%20Documents/City%20Guide%20-%20Riyadh.pdf
+Jeddah | https://<tenant>.sharepoint.com/sites/TravelHub/Travel%20Hub%20Documents/City%20Guide%20-%20Jeddah.pdf
+```
+
+A poster image (e.g. "Visa Guidance"):
+
+```
+Visa Guidance | https://<tenant>.sharepoint.com/sites/TravelHub/Travel%20Hub%20Images/Visa-Guidance.png
+```
+
+A partner's setup gallery (Catering Services → "Marriott Setup Gallery"):
+
+```
+Coffee break station | https://…/Travel%20Hub%20Images/Marriott-Setup-1.jpg
+Buffet lunch setup   | https://…/Travel%20Hub%20Images/Marriott-Setup-2.jpg
+Meeting room catering | https://…/Travel%20Hub%20Images/Marriott-Setup-3.jpg
+```
+
+**Rules**
+
+- **Image or document?** It's decided from the file extension: `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.svg` are images, anything else is a document. When a link has no extension (e.g. a "Copy link" sharing link `…/:b:/s/…`, or a picture service), add the type at the end: `Poster | <link> | image` or `Guide | <link> | pdf`.
+- **Label** is optional. Without one, write just the URL; tabs then read "Document 1", "Document 2".
+- Images and documents can be mixed on one card; the popup then uses tabs.
+- Only `https://`, `http://` and site-relative (`/sites/…`) addresses are accepted. Other lines are ignored.
+- **Large PDFs**: keep them under about 10 MB so they open quickly on phones.
 
 ---
 
@@ -404,22 +489,31 @@ remove them, since every plain line is already a bullet.
 - The full list is at https://developer.microsoft.com/fluentui#/styles/web/icons.
 - A misspelled or unknown name shows an **empty circle**. `Bed`, `Leaf` and `Receipt` are *not* valid.
 
-**Colours**
+**Colours: the RSG palette**
 
-- **`IconColor`** takes any hex colour. The palette used across the pages:
+Every colour column takes an RSG brand colour **name** (spacing and capitals
+don't matter). Prefer names over hex codes: the exact shade is defined once in
+the code, so a future brand update changes every page at once.
 
-  | Colour | Hex |
-  | --- | --- |
-  | Blue | `#2563eb` |
-  | Green | `#16a34a` |
-  | Amber | `#d97706` |
-  | Red | `#dc2626` |
-  | Purple | `#7c3aed` |
-  | Teal | `#0d9488` |
-  | Pink | `#e11d48` |
-  | Navy | `#1e3a8a` |
+| Name | Hex | Typical use |
+| --- | --- | --- |
+| `Navy Blue` (or `Navy`) | `#04253c` | Primary. Headings, text, main buttons, dark bands |
+| `Gold` | `#b89c67` | Primary. Accents, rules, highlights (navy text on it) |
+| `White` / `Black` | `#ffffff` / `#000000` | Primary |
+| `Crystal Waters` | `#54c0e8` | Light blue accents, info panels |
+| `Blue Lagoon` | `#007481` | Links/icons in blue-green, "travel" accents |
+| `Blooming Nature` | `#00946e` | Green: wellness, success, sustainability |
+| `Majestic Mountains` | `#852e2c` | Deep red: badges, documents, important notes |
+| `Thriving Corals` | `#ff5c35` | Coral: offers, promotions |
+| `Sandy Dunes` | `#f4b223` | Yellow: highlights, warnings |
+| `Volcanic Ash` | `#6f7271` | Neutral grey |
+| `Pearl Bush` | `#f3efeb` | Light background tint only (not for icons) |
 
-- **`Theme`** (sections) uses the named colours in §5.
+- **Where names work:** `TH_PolicyCards.IconColor`, `TH_Offers.IconColor`, `TH_TravelServices.IconBackgroundColor`, `TH_BusinessTravelSteps.BackgroundColor`.
+- **Readability is automatic.** Gold, Crystal Waters, Sandy Dunes, Thriving Corals and Blooming Nature are light, so white text on them would be hard to read. The page puts navy text on them and uses a darker shade when the colour is used *as* text. You don't need to do anything.
+- **Section colours** use the `Theme` column (§5), with the same names.
+- **Old hex values** keep working. `provisioning/travelhub-rebrand-colors.js` converts them to brand names in one go (§14).
+- **Page backgrounds** (the top-bar theme menu: Sky / Cream / Dark) are separate from these colours and unchanged by the rebrand.
 
 ---
 
@@ -470,6 +564,17 @@ remove them, since every plain line is already a bullet.
 | Contact block with QR, phones, emails | `Split`: a card with `ImageUrl` = QR; a card with SubPoints `@Phone\|Call +966…`, `@Mail\|Email name@…` |
 | FAQ | `Faq`, cards `Title` = question, `Description` = answer |
 | Search box with quick links | `Search`: `Subtitle` placeholder, `LinkUrl` with `{query}`, `LinkItem` cards |
+| A tile that opens one or more PDFs (City Guide: Riyadh / Jeddah) | Any card; `PopupContent` = `Riyadh \| <pdf link>` and `Jeddah \| <pdf link>` (§6.1) |
+| A tile that opens a poster image | Any card; `PopupContent` = `Title \| <image link>` |
+| Hero with partner logo and small badges ("Premium Quality", "Tailored for RSG Events") | Page `HeroLogoUrl`, `HeroHighlights` = `Diamond\|Premium Quality` per line |
+| Partner price panels ("Featured Menu Options – Starting From") | `PriceList`, `Columns = 2`; a card per partner with `ImageUrl`, `SubPoints` `Coffee\|Coffee Break\|SAR 120\|per person`, `Description` = VAT note, `TargetSlug` = the menu page |
+| Gallery buttons that open a partner's photos ("Mövenpick Setup Gallery →") | `ImageCards`, `CardStyle = ImageBanner`, `Columns = 3`; each card `ImageUrl` + `PopupContent` with the photos |
+| Photo strip that opens in a popup ("Catering Setup Gallery") | `Gallery`, `Icon = Camera`; a card per photo with `ImageUrl` and `Title` |
+| Menu cards with ribbon and price ("Menu 1 – SAR 120 per person") | `ImageCards`, `CardStyle = ImageMenu`; cards `Badge`, `Value`, `ValueNote`, `SubPoints` = items, `IconColor` = ribbon colour; title in `[brackets]` to hide it |
+| Two menu groups side by side 50/50 ("Coffee Break Menus" + "Lunch Menus – Finger Food") | Two `ImageCards` `ImageMenu` sections, `Width = Half`, `Columns = 2` |
+| Wide menu cards, photo left ("Lunch Menus – Main Course") | `ImageCards`, `CardStyle = ImageMenu`, `Width = Full`, `Columns = 2` |
+| Add-on cards with guest basis and price ("Ice Cream Cart – SAR 2,500") | `ImageCards`, `CardStyle = ImageLeft`; cards `Subtitle` + `Value` |
+| "Need to Book …? / Book Catering Services" | Page `CtaTitle`, `CtaDescription`, `CtaPrimaryText` + `CtaPrimaryUrl` |
 
 ---
 
@@ -482,11 +587,13 @@ All scripts run from the browser console on the Travel Hub site. Check
 | --- | --- |
 | Create lists and columns, or **add new columns / layout choices after an upgrade** | Run `provisioning/travelhub-provision.js`. It only adds what's missing and never deletes data. Step 4b adds new `Layout` and `CardStyle` choices to existing columns. |
 | Load demo content into an empty site | `provisioning/travelhub-sample-data.js` with default settings |
-| **Rebuild specific pages from the sample content** (existing site) | In `travelhub-sample-data.js`, set `CONFIG.RESEED_SLUGS` to the pages' Slugs, e.g. `['business-travel', 'sap-concur']`, and run it. Each listed page and everything under it is deleted and recreated. **Edits made to those pages are replaced; nothing else is touched.** It also fills `TH_TravelServices.PageSlug` for Personal Travel Offers, SAP Concur and Meeting(s) & Events if still empty. |
+| **Rebuild specific pages from the sample content** (existing site) | In `travelhub-sample-data.js`, set `CONFIG.RESEED_SLUGS` to the pages' Slugs, e.g. `['business-travel', 'sap-concur']`, and run it. Each listed page and everything under it is deleted and recreated. **Edits made to those pages are replaced; nothing else is touched.** It also fills `TH_TravelServices.PageSlug` for Personal Travel Offers, SAP Concur, Meeting(s) & Events and Catering Services if still empty. |
+| **Add just some pages' sample content** (Personal Travel Offers, Meetings & Events, SAP Concur + sub-pages, Catering Services + menus, Family Relocation, Employee Relocation, Business Travel) | `provisioning/travelhub-add-pages.js`: edit `CONFIG.PAGES` to the pages you want and run it. **Pages that already have sections are skipped** (nothing existing is changed); an empty page row (no sections) is filled; `REPLACE_EXISTING: true` re-creates just those pages instead. Fills `TH_Offers` only when empty. It is generated from `travelhub-sample-data.js` - after changing sample content there, run `node provisioning/tools/build-add-pages.js` to refresh it. |
+| **Switch existing list colours to the RSG palette** | `provisioning/travelhub-rebrand-colors.js`: first run with `DRY_RUN: true` (prints the planned changes), then `DRY_RUN: false`. It converts hex values in `IconColor` / `IconBackgroundColor` / `BackgroundColor` to brand names and renames old `Theme` choices (Blue → Crystal Waters …). |
 | Name untitled sections and find orphaned cards | `provisioning/travelhub-fix-section-titles.js` (report only by default; set `DRY_RUN: false` to apply) |
 | Deploy code changes | Raise `version` in `config/package-solution.json`, `npm run build`, upload `sharepoint/solution/travel-hub.sppkg` to the App Catalog (replace), then **Deploy** |
 
-All 18 sample pages (Slugs for `RESEED_SLUGS`):
+All 21 sample pages (Slugs for `RESEED_SLUGS`):
 - `travel-policy`, `annual-flight-ticket-benefits` (built with the landing
   data; not in the re-seed list)
 - `purpose-scope`, `guiding-principles`, `travel-planning-approvals`,
@@ -495,6 +602,8 @@ All 18 sample pages (Slugs for `RESEED_SLUGS`):
 - `personal-travel-offers`, `meetings-events`
 - `sap-concur`, `sap-concur-plan-book`, `sap-concur-review-approve`,
   `sap-concur-claim-expense`, `sap-concur-mobile`
+- `catering-services`, `catering-services-movenpick`,
+  `catering-services-marriott`
 
 ---
 
@@ -513,3 +622,101 @@ All 18 sample pages (Slugs for `RESEED_SLUGS`):
 | Sections don't sit side by side | Their `Width` values add up to more than a full row, a Full section sits between them, or you're on a tablet/phone (they stack by design) |
 | A photo is blank | The link isn't a direct file URL, or the viewer has no access to the library |
 | An edit doesn't show | Refresh the page (the open page keeps its copy for up to 10 minutes) |
+| A card still opens its link instead of the popup | `PopupContent` is empty, the column doesn't exist yet (run `travelhub-provision.js`), or no line has a valid `https://` / `/sites/…` address |
+| The popup is blank, or the PDF downloads instead of showing | The file link is a sharing link or the browser blocks inline PDFs. Use the file's direct address (§6.1 step 2), or SharePoint's **Embed** code: open the PDF in the library → **⋯** → **Embed** → copy the `src="…"` address into `PopupContent`. **Open in new tab** always works. |
+| A popup photo shows as a document frame | The link has no image extension; add `\| image` at the end of the line |
+| An offer / hotel card is missing | `TH_Offers` row: `IsActive = No`, `Collection` doesn't exactly match the section's `OfferCollection`, or today is outside `ValidFrom`–`ValidTo` |
+| An offer card opens a popup, but I wanted the details screen | Set `ClickAction = Details Page`. With `Auto`, attachments open a popup unless the offer has `Details` or `Inclusions` text. |
+| An icon colour is ignored | `IconColor` isn't a brand name, `#hex` or `--full-…` token (e.g. a typo such as `Blue Lagon`) |
+
+---
+
+## 16. Offers and partnered hotels: `TH_Offers`
+
+Cards that change often are kept in their own list, **`TH_Offers`**, instead
+of `TH_PolicyCards`. Each item is one card. Today it holds:
+
+- **Personal Travel Offers:** "Featured Personal Travel Offers" (each with its own details screen) and the "Explore Our Personal Travel Offers" tiles (each opening images / PDFs in a popup).
+- **Meetings & Events:** "Riyadh Partnered Hotels" and "Jeddah Partnered Hotels" ("View Gallery" opens the hotel's photos / PDF, or a link).
+
+### 16.1 How a section shows offers
+
+A section (`TH_PolicySections`) with **`OfferCollection`** filled in shows
+every active `TH_Offers` item whose **`Collection`** has the same text, in
+`DisplayOrder`. The section's `Layout`, `CardStyle` and `Columns` still decide
+the look (`ImageTop` for featured offers and hotels, `ImageTile` for the
+explore tiles).
+
+| Section | `OfferCollection` |
+| --- | --- |
+| Featured Personal Travel Offers | `Featured Personal Offers` |
+| Explore Our Personal Travel Offers | `Explore Personal Offers` |
+| Riyadh Partnered Hotels | `Riyadh Partnered Hotels` |
+| Jeddah Partnered Hotels | `Jeddah Partnered Hotels` |
+
+To start a **new group** (e.g. "Ramadan Offers"), type the new value in an
+item's `Collection` (the field accepts new values). Then add a section with
+the same text in `OfferCollection`.
+
+### 16.2 Columns
+
+| Column | What it does |
+| --- | --- |
+| `Title` | Offer / tile / hotel name |
+| `Collection` | Which group it belongs to (§16.1) |
+| `Subtitle` | Line under the title, e.g. "5 Nights Holiday Package" |
+| `Badge` | Pill on the photo, e.g. "Special Offer" |
+| `CardImage` | **Upload** the card photo here (Image column). Or paste a link in `ImageUrl`. |
+| `Logo` / `LogoUrl` | Partner logo under the photo (e.g. hotel logos) |
+| `Icon`, `IconColor` | Icon disc on the photo (tiles) and its RSG colour name |
+| `ValueLabel`, `Value`, `ValueNote` | "Starting From" / "SAR 5,999" / "per person" |
+| `Summary` | Short text on the card and under the title on the details screen |
+| `Details` | Details screen text, one paragraph per line; `- ` starts a bullet |
+| `Inclusions` | "What's included", one item per line |
+| `Terms` | Terms & conditions, one paragraph per line |
+| `Partner`, `Location` | Shown on the details screen, e.g. "Saudia Holidays", "London, UK" |
+| `ValidFrom`, `ValidTo` | Validity shown on the details screen. **The card is hidden automatically outside these dates.** |
+| `LinkText` | Card button, e.g. "View Details", "View Gallery" |
+| `LinkUrl` | The offer's source / booking page. **A link to another website opens in a new window automatically.** |
+| `CtaText` | Main button on the details screen (default "View Offer") |
+| `ContactEmail`, `ContactPhone` | Contact line on the details screen |
+| **Attachments** | **Images and PDFs for the popup / details screen** (§16.3) |
+| `PopupContent` | Optional extra files by link, `Label \| URL` per line (§6.1) |
+| `ClickAction` | What a click does (§16.4). Leave `Auto`. |
+| `DisplayOrder`, `IsActive` | Order / show or hide |
+
+### 16.3 Images and PDFs: just attach them
+
+1. Open the item.
+2. Choose **Add attachments**.
+3. Pick the files: JPG/PNG images and PDFs, as many as you need.
+
+How the attachments are used:
+
+- **Explore tile or hotel:** clicking the card opens the files in the popup. Several PDFs show as **tabs**; several images show as a **gallery** with previous / next; one file opens on its own.
+- **Featured offer:** the details screen shows the photos as a gallery and the PDFs under **Documents**.
+- **Order and labels** come from the file names. Name them `1 - Riyadh City Guide.pdf`, `2 - Jeddah City Guide.pdf`: the number sets the order and is hidden; the rest becomes the tab label / caption.
+- To replace a file, delete the attachment and attach the new one.
+
+### 16.4 What a click does (`ClickAction`)
+
+| `ClickAction` | Click opens |
+| --- | --- |
+| `Auto` (default) | The **details screen** if `Details` or `Inclusions` has text; otherwise the **popup** if there are attachments / `PopupContent`; otherwise `LinkUrl`; otherwise nothing (an information-only card) |
+| `Details Page` | Always the details screen |
+| `Popup` | The attachments in the popup (falls back to Auto when there are none) |
+| `Link` | `LinkUrl` (new window if it's another website) |
+| `None` | Nothing |
+
+### 16.5 Recipes
+
+| You want… | Do this |
+| --- | --- |
+| Add a featured offer | New `TH_Offers` item: `Collection = Featured Personal Offers`, `Title`, `Subtitle`, `Badge`, `CardImage`, `Value`…, `Summary`, `Details`, `Inclusions`, `Terms`, `ValidTo`, `LinkUrl` + `CtaText`, `LinkText = View Details`; attach gallery photos / a brochure PDF |
+| Update a price or date | Edit the item; refresh the page |
+| Remove an expired offer | Nothing: it disappears after `ValidTo`. Or set `IsActive = No`. |
+| City Guide with a PDF per city | Item in `Explore Personal Offers`; attach `1 - Riyadh City Guide.pdf` and `2 - Jeddah City Guide.pdf` |
+| A tile that shows several posters | Attach the images; they open as a gallery |
+| A hotel whose "View Gallery" opens its website | No attachments; `LinkUrl` = the website, `LinkText = View Gallery` |
+| Reorder cards | `DisplayOrder` (10, 20, 30…) |
+

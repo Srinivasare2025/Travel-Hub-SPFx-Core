@@ -47,9 +47,12 @@
     //       'business-travel', 'employee-relocation', 'family-relocation',
     //       'personal-travel-offers', 'meetings-events', 'sap-concur',
     //       'sap-concur-plan-book', 'sap-concur-review-approve',
-    //       'sap-concur-claim-expense', 'sap-concur-mobile'].
+    //       'sap-concur-claim-expense', 'sap-concur-mobile',
+    //       'catering-services', 'catering-services-movenpick',
+    //       'catering-services-marriott'].
     // Also sets TH_TravelServices.PageSlug for Personal Travel Offers,
-    // SAP Concur and Meeting(s) & Events when it is still empty.
+    // SAP Concur, Meeting(s) & Events and Catering Services when it is
+    // still empty.
     // Deletes each listed page (and its sections/tabs/cards/tables) and seeds
     // it again from this file; every other step and list is skipped.
     RESEED_SLUGS: [],
@@ -230,13 +233,13 @@
 
   async function seedServices() {
     const rows = [
-      ['Business Travel', 'Book flights, hotels and ground transport in line with the travel policy.', 'Airplane', '#04253c', 'Learn More'],
-      ['Personal Travel Offers', 'Exclusive leisure travel discounts for employees and their families.', 'Suitcase', '#b89c66', 'Explore Offers'],
-      ['Travel Policy', 'Read the current travel policy, approval limits and per-diem rules.', 'DocumentApproval', '#04253c', 'View Policies'],
-      ['SAP Concur', 'Sign in to Concur to raise requests, book trips and submit expenses.', 'Financial', '#0b6a3a', 'Open Concur'],
-      ['Catering Services', 'Arrange catering for meetings, workshops and corporate events.', 'Cake', '#b89c66', 'Explore Services'],
-      ['Meeting & Events', 'Plan and manage internal events, offsites and venue bookings.', 'Group', '#04253c', 'Learn More'],
-      ['Expense Claim', 'Submit receipts, track reimbursements, and manage corporate card expenses seamlessly.', 'Receipt', '#04253c', 'Learn More']
+      ['Business Travel', 'Book flights, hotels and ground transport in line with the travel policy.', 'Airplane', 'Navy Blue', 'Learn More'],
+      ['Personal Travel Offers', 'Exclusive leisure travel discounts for employees and their families.', 'Suitcase', 'Gold', 'Explore Offers'],
+      ['Travel Policy', 'Read the current travel policy, approval limits and per-diem rules.', 'DocumentApproval', 'Navy Blue', 'View Policies'],
+      ['SAP Concur', 'Sign in to Concur to raise requests, book trips and submit expenses.', 'Financial', 'Blooming Nature', 'Open Concur'],
+      ['Catering Services', 'Arrange catering for meetings, workshops and corporate events.', 'Cake', 'Gold', 'Explore Services'],
+      ['Meeting & Events', 'Plan and manage internal events, offsites and venue bookings.', 'Group', 'Navy Blue', 'Learn More'],
+      ['Expense Claim', 'Submit receipts, track reimbursements, and manage corporate card expenses seamlessly.', 'Receipt', 'Navy Blue', 'Learn More']
     ];
     let order = 1;
     for (const [title, desc, icon, colour, cta] of rows) {
@@ -244,7 +247,7 @@
       await addItem('TH_TravelServices', {
         Title: title,
         // Opens the list-driven page (TH_PolicyPages Slug) from the nav tab and the card.
-        PageSlug: { 'Personal Travel Offers': 'personal-travel-offers', 'SAP Concur': 'sap-concur', 'Meeting & Events': 'meetings-events' }[title] || null,
+        PageSlug: { 'Personal Travel Offers': 'personal-travel-offers', 'SAP Concur': 'sap-concur', 'Meeting & Events': 'meetings-events', 'Catering Services': 'catering-services' }[title] || null,
         Description: desc,
         ImageUrl: link(img('svc-' + order, 800, 500)),
         // The demo images are all cropped photography (`Cover`); a real SAP
@@ -589,6 +592,8 @@
       LinkText: opts.linkText || null,
       LinkUrl: opts.linkUrl ? link(opts.linkUrl) : null,
       TargetSlug: opts.targetSlug || null,
+      // Show TH_Offers items of this Collection as the section's cards.
+      OfferCollection: opts.offerCollection || null,
       DisplayOrder: opts.order,
       IsActive: true
     });
@@ -625,6 +630,8 @@
         Value: c.value || null,
         ValueLabel: c.valueLabel || null,
         ValueNote: c.valueNote || null,
+        // In-app popup files, one per line `Label | URL [| image|pdf]` (travelhub-provision.js adds the column).
+        PopupContent: c.popup ? c.popup.join('\n') : null,
         DisplayOrder: order++,
         IsActive: true
       };
@@ -662,7 +669,10 @@
   // Card colours below are IconColor values; with a section's TintCards =
   // Yes they also tint the card. Titles typed "1. …" get a number badge.
   // -------------------------------------------------------------------
-  const C = { blue: '#2563eb', green: '#16a34a', amber: '#d97706', red: '#dc2626', purple: '#7c3aed', teal: '#0d9488', pink: '#e11d48' };
+  // IconColor values are RSG brand colour NAMES (src/common/utils/color.ts):
+  // Navy Blue, Gold, Crystal Waters, Blue Lagoon, Blooming Nature, Majestic
+  // Mountains, Thriving Corals, Sandy Dunes, Volcanic Ash, Pearl Bush.
+  const C = { blue: 'Blue Lagoon', green: 'Blooming Nature', amber: 'Sandy Dunes', red: 'Thriving Corals', purple: 'Majestic Mountains', teal: 'Blue Lagoon', pink: 'Thriving Corals' };
 
   const COMMON_SUBPAGE_FIELDS = {
     HeroStyle: 'Light',
@@ -676,7 +686,8 @@
     NeedHelpEmail: 'TravelServices@RedSeaGlobal.com',
     ClosingBannerTitle: 'Travel with Purpose',
     ClosingBannerDescription: 'Connecting people. Supporting communities. A more sustainable tomorrow.',
-    ClosingBadges: ['Our People', 'Our Planet', 'Our Future'].join('\n')
+    ClosingBadges: ['Our People', 'Our Planet', 'Our Future'].join('\n'),
+    ClosingBannerImageUrl: link(img('closing-banner-1', 1600, 400))
   };
 
   async function addSubPage(order, fields) {
@@ -697,7 +708,7 @@
         SuggestedQuestions: ['Which policy applies to me?', 'Can I combine business travel with vacation?', 'What expenses are covered?'].join('\n')
       });
       await addPolicySection(pageId, {
-        layout: 'Paragraph', order: 1, title: 'Purpose', icon: 'BullseyeTarget', sectionStyle: 'Card', theme: 'Blue',
+        layout: 'Paragraph', order: 1, title: 'Purpose', icon: 'BullseyeTarget', sectionStyle: 'Card', theme: 'Crystal Waters',
         body: [
           'The following policy guidelines specify conditions for travel arrangements and the reimbursement of expenses incurred while employees are traveling on company business.',
           'In order to be covered under the terms of this policy, expenses must be supported with valid documentation and approval, and must meet the requirement of being reasonable and necessary business travel-related expenses.'
@@ -725,7 +736,7 @@
         }
       ]);
       await addPolicySection(pageId, {
-        layout: 'Paragraph', order: 3, title: 'Business Travel + Annual Vacation', icon: 'Sunny', sectionStyle: 'Tinted', theme: 'Amber',
+        layout: 'Paragraph', order: 3, title: 'Business Travel + Annual Vacation', icon: 'Sunny', sectionStyle: 'Tinted', theme: 'Sandy Dunes',
         body: "Business Travel shall not normally be combined with the employee's annual vacation. However, it can be allowed upon approval of the Group Chief Administrative Officer. In that case, the employee will be responsible for bearing the accommodation cost for the extended period and the cost of the return air ticket if the destination of the return flight differs from the business trip's destination."
       });
     },
@@ -743,7 +754,7 @@
         SuggestedQuestions: ['Do I need approval before travelling?', 'What does "no loss, no gain" mean?', 'When should I consider alternatives to travel?'].join('\n')
       });
       await addPolicySection(pageId, {
-        layout: 'Paragraph', order: 1, title: 'Our Commitment', icon: 'BullseyeTarget', sectionStyle: 'Card', theme: 'Blue',
+        layout: 'Paragraph', order: 1, title: 'Our Commitment', icon: 'BullseyeTarget', sectionStyle: 'Card', theme: 'Crystal Waters',
         body: 'Our guiding principles ensure that business travel at RSG is purposeful, responsible and aligned with our values. They help us make the right decisions, represent the company professionally and create value for our people, our business and our planet.'
       });
       // Title kept as "How We Approach Business Travel": that title also turns
@@ -762,7 +773,7 @@
         { kind: 'Highlight', title: 'Travel Responsibly & Professionally', icon: 'Shield', iconColor: C.teal, description: 'Employees are expected to understand and follow the Travel Policy, minimize travel costs where reasonably possible, retain required invoices and documentation, and conduct themselves in accordance with RSG professional standards, values and Code of Conduct.' }
       ]);
       await addPolicySection(pageId, {
-        layout: 'Paragraph', order: 3, title: 'Company-Determined Travel Arrangements', icon: 'Settings', sectionStyle: 'Tinted', theme: 'Amber',
+        layout: 'Paragraph', order: 3, title: 'Company-Determined Travel Arrangements', icon: 'Settings', sectionStyle: 'Tinted', theme: 'Sandy Dunes',
         body: 'RSG reserves the right to determine appropriate transportation and accommodation arrangements based on the best interests of the company.'
       });
     },
@@ -780,7 +791,7 @@
         SuggestedQuestions: ['How early should I submit my travel request?', 'Who approves my business trip?', 'What if I need an urgent travel change?'].join('\n')
       });
       await addPolicySection(pageId, {
-        layout: 'Paragraph', order: 1, title: 'Our Commitment', icon: 'BullseyeTarget', sectionStyle: 'Card', theme: 'Blue',
+        layout: 'Paragraph', order: 1, title: 'Our Commitment', icon: 'BullseyeTarget', sectionStyle: 'Card', theme: 'Crystal Waters',
         body: 'We aim to make travel planning simple, consistent and efficient, while ensuring the right approvals are in place, costs are optimized and employees are supported throughout their journey.'
       });
       // Two cards side by side - each holds its own intro, table and note in
@@ -815,7 +826,7 @@
       const beforeId = await addPolicySection(pageId, {
         layout: 'CardsGrid', cardVariant: 'Highlight', order: 3, title: '3. Before Making Travel Arrangements',
         subtitle: 'Ensure the following steps are completed before proceeding with your travel:',
-        columns: 3, cardStyle: 'IconMedia', sectionStyle: 'Tinted', theme: 'Purple'
+        columns: 3, cardStyle: 'IconMedia', sectionStyle: 'Tinted', theme: 'Majestic Mountains'
       });
       await addPolicyCards('SectionIdId', beforeId, [
         { kind: 'Highlight', title: 'Get Manager Approval', icon: 'AddFriend', iconColor: C.pink, description: 'Obtain prior authorization from your Manager before proceeding with business travel.' },
@@ -823,7 +834,7 @@
         { kind: 'Highlight', title: 'Use the Approved Travel Channel', icon: 'Airplane', iconColor: C.blue, description: 'Once approved, proceed with travel arrangements through the approved RSG travel process/channel.' }
       ]);
       await addPolicySection(pageId, {
-        layout: 'Paragraph', order: 4, title: '4. Business Travel + Annual Vacation', icon: 'Sunny', sectionStyle: 'Tinted', theme: 'Amber',
+        layout: 'Paragraph', order: 4, title: '4. Business Travel + Annual Vacation', icon: 'Sunny', sectionStyle: 'Tinted', theme: 'Sandy Dunes',
         body: "Business travel shall not normally be combined with an employee's annual vacation. However, it may be permitted with approval from the Group Chief Administrative Officer (GCAO), subject to the applicable policy conditions."
       });
     },
@@ -863,7 +874,7 @@
       // --- Tab 1: Business Travel (sections nested via TabId) ---
       const tab = (tabId) => ({ tabId });
       await addPolicySection(pageId, Object.assign(tab(btTab), {
-        layout: 'Banner', order: 1, title: 'Business Travel Entitlements', subtitle: 'Less than 30 days', icon: 'Airplane', theme: 'Blue',
+        layout: 'Banner', order: 1, title: 'Business Travel Entitlements', subtitle: 'Less than 30 days', icon: 'Airplane', theme: 'Crystal Waters',
         body: ['Travel for today.', 'Opportunities for tomorrow.']
       }));
       const btGrid = await addPolicySection(pageId, Object.assign(tab(btTab), {
@@ -917,7 +928,7 @@
         }
       ]);
       await addPolicySection(pageId, Object.assign(tab(btTab), {
-        layout: 'Paragraph', order: 3, title: 'Additional Entitlement – Extra Travel Day', icon: 'Calendar', sectionStyle: 'Card', theme: 'Blue',
+        layout: 'Paragraph', order: 3, title: 'Additional Entitlement – Extra Travel Day', icon: 'Calendar', sectionStyle: 'Card', theme: 'Crystal Waters',
         body: [
           'For international travel excluding GCC and domestic travel, one additional day may be added to the total travel duration.',
           'The employee may request the additional day before or after the business trip.'
@@ -926,7 +937,7 @@
 
       // --- Tab 2: Business Assignment ---
       await addPolicySection(pageId, Object.assign(tab(baTab), {
-        layout: 'Banner', order: 1, title: 'Business Assignment Entitlements', subtitle: 'More than 30 continuous days', icon: 'Suitcase', theme: 'Green',
+        layout: 'Banner', order: 1, title: 'Business Assignment Entitlements', subtitle: 'More than 30 continuous days', icon: 'Suitcase', theme: 'Blooming Nature',
         body: ['Different locations,', 'Greater opportunities.']
       }));
       const baGrid = await addPolicySection(pageId, Object.assign(tab(baTab), {
@@ -966,7 +977,7 @@
         }
       ]);
       const baInfo = await addPolicySection(pageId, Object.assign(tab(baTab), {
-        layout: 'Split', order: 3, title: 'Important Assignment Information', icon: 'Info', sectionStyle: 'Tinted', theme: 'Green'
+        layout: 'Split', order: 3, title: 'Important Assignment Information', icon: 'Info', sectionStyle: 'Tinted', theme: 'Blooming Nature'
       }));
       await addPolicyCards('SectionIdId', baInfo, [
         { kind: 'Info', title: 'Assignment Duration', icon: 'Calendar', description: 'Applies when travel exceeds 30 continuous days.' },
@@ -989,7 +1000,7 @@
         SuggestedQuestions: ['Is this expense reimbursable?', 'What documents do I need for a business meal?', 'When must I submit my expense claim?'].join('\n')
       });
       const principles = await addPolicySection(pageId, {
-        layout: 'Split', order: 1, title: '1. Expense Reimbursement Principles', sectionStyle: 'Tinted', theme: 'Blue'
+        layout: 'Split', order: 1, title: '1. Expense Reimbursement Principles', sectionStyle: 'Tinted', theme: 'Crystal Waters'
       });
       await addPolicyCards('SectionIdId', principles, [
         { kind: 'Info', icon: 'BullseyeTarget', description: 'Business travel expenses must be reasonable, necessary and related to company business. Eligible expenses must be supported by the required documentation and approvals.' },
@@ -998,7 +1009,7 @@
       const allowable = await addPolicySection(pageId, {
         layout: 'CardsGrid', cardVariant: 'Highlight', order: 2, title: '2. Allowable Expenses',
         subtitle: 'The following expenses are generally eligible for reimbursement, provided they are reasonable, necessary and supported by valid documentation.',
-        columns: 4, cardStyle: 'IconHeader', tintCards: true, sectionStyle: 'Tinted', theme: 'Green'
+        columns: 4, cardStyle: 'IconHeader', tintCards: true, sectionStyle: 'Tinted', theme: 'Blooming Nature'
       });
       await addPolicyCards('SectionIdId', allowable, [
         { kind: 'Highlight', title: 'Meals & Business Meals', icon: 'EatDrink', iconColor: C.blue, subPoints: ['Eligible meals within the applicable Daily Allowance limit.', 'For business meals, provide the invoice and attendee details, including company and title.'] },
@@ -1009,7 +1020,7 @@
       const nonAllowable = await addPolicySection(pageId, {
         layout: 'CardsGrid', cardVariant: 'Highlight', order: 3, title: '3. Non-Allowable Expenses',
         subtitle: 'The following expenses are not eligible for reimbursement.',
-        columns: 4, cardStyle: 'IconHeader', tintCards: true, sectionStyle: 'Tinted', theme: 'Red'
+        columns: 4, cardStyle: 'IconHeader', tintCards: true, sectionStyle: 'Tinted', theme: 'Thriving Corals'
       });
       await addPolicyCards('SectionIdId', nonAllowable, [
         { kind: 'Highlight', title: 'Personal & Lifestyle', icon: 'Cancel', iconColor: C.red, subPoints: ['Barber/hairdresser', 'Clothing', 'Health club/spa/lounge', 'Gum/candy', 'Cigarettes', 'Alcohol', 'Personal/vacation-day expenses'] },
@@ -1019,13 +1030,13 @@
       ]);
       const claim = await addPolicySection(pageId, {
         layout: 'ProcessSteps', order: 4, title: '4. Before You Submit Your Claim',
-        subtitle: 'Follow these steps to ensure a smooth and timely reimbursement process.', sectionStyle: 'Tinted', theme: 'Blue'
+        subtitle: 'Follow these steps to ensure a smooth and timely reimbursement process.', sectionStyle: 'Tinted', theme: 'Crystal Waters'
       });
       // Number AND Icon set -> icon in the badge, "1. Check Eligibility" title.
       await addPolicyCards('SectionIdId', claim, [
         { kind: 'HelpStep', number: 1, icon: 'Search', title: 'Check Eligibility', description: 'Ensure the expense is allowable under the policy.' },
         { kind: 'HelpStep', number: 2, icon: 'Page', title: 'Keep Documentation', description: 'Retain all required invoices and supporting documents.' },
-        { kind: 'HelpStep', number: 3, icon: 'System', title: 'Submit in SAP Concur', description: 'Submit your expense claim with complete information.' },
+        { kind: 'HelpStep', number: 3, icon: 'System', title: 'Submit in SAP Concur', description: ' ' },
         { kind: 'HelpStep', number: 4, icon: 'Contact', title: 'Manager Review', description: 'Approvers typically review and approve claims within 3 business days, while validating eligibility, receipts and reasonableness.' }
       ]);
       await addPolicySection(pageId, {
@@ -1033,7 +1044,7 @@
         body: 'Submit your expense claim within 30 business days after the end of your business trip.'
       });
       const reminder = await addPolicySection(pageId, {
-        layout: 'Split', order: 6, title: 'Important Reminder', icon: 'Warning', sectionStyle: 'Tinted', theme: 'Amber'
+        layout: 'Split', order: 6, title: 'Important Reminder', icon: 'Warning', sectionStyle: 'Tinted', theme: 'Sandy Dunes'
       });
       await addPolicyCards('SectionIdId', reminder, [
         { kind: 'Info', title: 'Not sure whether an expense is allowable?', description: 'Check the policy before incurring the expense or use the Policy Assistant for guidance.' },
@@ -1053,7 +1064,7 @@
         HeroImageUrl: link(img('policy-compliance-hero', 1600, 500)),
         SuggestedQuestions: ['What are my responsibilities as a traveler?', 'What should an approver check?', 'What happens if the Travel Policy is not followed?'].join('\n')
       });
-      const shared = await addPolicySection(pageId, { layout: 'Split', order: 1, title: '1. Shared Responsibility', sectionStyle: 'Tinted', theme: 'Blue' });
+      const shared = await addPolicySection(pageId, { layout: 'Split', order: 1, title: '1. Shared Responsibility', sectionStyle: 'Tinted', theme: 'Crystal Waters' });
       await addPolicyCards('SectionIdId', shared, [
         { kind: 'Info', icon: 'People', title: 'Travel policy compliance is a shared responsibility.', description: 'Employees and approvers are responsible for understanding the applicable policy requirements, ensuring appropriate approvals are obtained, and maintaining accurate supporting documentation.' },
         { kind: 'Info', icon: 'Globe', description: 'Compliant travel protects our people, our business and our reputation.' }
@@ -1087,14 +1098,14 @@
       ]);
       const before = await addPolicySection(pageId, {
         layout: 'ProcessSteps', order: 3, title: '4. Compliance Starts Before Travel',
-        subtitle: 'Follow these key steps to ensure a compliant and cost-effective trip.', sectionStyle: 'Tinted', theme: 'Blue'
+        subtitle: 'Follow these key steps to ensure a compliant and cost-effective trip.', sectionStyle: 'Tinted', theme: 'Crystal Waters'
       });
       await addPolicyCards('SectionIdId', before, [
         { kind: 'HelpStep', icon: 'Calendar', title: 'Plan Early', description: "Employees should request travel arrangements with RSG's travel agency as far in advance as possible in order to obtain the lowest possible cost/fare." },
         { kind: 'HelpStep', icon: 'Page', title: 'Obtain Approval', description: "All business trips require prior authorization from the employee's Manager." },
         { kind: 'HelpStep', icon: 'Airplane', title: 'Use Approved Travel Channels', description: 'Travel arrangements should be processed through the approved RSG travel process and channels.' }
       ]);
-      const audit = await addPolicySection(pageId, { layout: 'Split', order: 4, title: '5. Audit & Accountability', sectionStyle: 'Tinted', theme: 'Amber' });
+      const audit = await addPolicySection(pageId, { layout: 'Split', order: 4, title: '5. Audit & Accountability', sectionStyle: 'Tinted', theme: 'Sandy Dunes' });
       await addPolicyCards('SectionIdId', audit, [
         {
           kind: 'Info', icon: 'DocumentSearch', title: 'Policy Compliance & Audit',
@@ -1104,7 +1115,7 @@
       ]);
       await addPolicySection(pageId, {
         layout: 'Checklist', order: 5, title: '6. Before You Travel – Quick Compliance Check',
-        subtitle: 'Run through this checklist before you make your travel arrangements.', sectionStyle: 'Tinted', theme: 'Green',
+        subtitle: 'Run through this checklist before you make your travel arrangements.', sectionStyle: 'Tinted', theme: 'Blooming Nature',
         body: ['Business need confirmed', 'Manager approval obtained', 'Policy entitlement checked', 'Travel requested through approved channel', 'Required documentation understood']
       });
     }
@@ -1160,8 +1171,12 @@
   // can be re-seeded alone with CONFIG.RESEED_SLUGS.
   // -------------------------------------------------------------------
   const qr = (data) => (P ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(data)}` : '');
+  // Placeholder PDFs for popup content (City Guide). With placeholders off,
+  // they point at files you upload to the "Travel Hub Documents" library.
+  const SAMPLE_PDF_1 = P ? 'https://pdfobject.com/pdf/sample.pdf' : encodeURI(webUrl + '/Travel Hub Documents/City Guide - Riyadh.pdf');
+  const SAMPLE_PDF_2 = P ? 'https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf' : encodeURI(webUrl + '/Travel Hub Documents/City Guide - Jeddah.pdf');
   const CONCUR_URL = 'https://www.concursolutions.com';
-  const NAVY = '#1e3a8a';
+  const NAVY = 'Navy Blue';
 
   async function addPage(order, fields) {
     return addItem('TH_PolicyPages', Object.assign({ DisplayOrder: order, IsActive: true, HeroStyle: 'Light' }, fields));
@@ -1170,12 +1185,14 @@
   const TRAVEL_HUB_CLOSING = {
     ClosingBannerTitle: 'Travel Hub',
     ClosingBannerDescription: 'Together for a more connected world.',
-    ClosingBadges: ['People First', 'Responsible Travel', 'Extraordinary Destinations', 'Lasting Impact'].join('\n')
+    ClosingBadges: ['People First', 'Responsible Travel', 'Extraordinary Destinations', 'Lasting Impact'].join('\n'),
+    ClosingBannerImageUrl: link(img('closing-banner-2', 1600, 400))
   };
   const RELOCATION_CLOSING = {
     ClosingBannerTitle: 'People move the world forward.',
     ClosingBannerDescription: 'We make the journey smoother. A more connected and sustainable tomorrow.',
-    ClosingBadges: ['Our People', 'Our Planet', 'Our Future'].join('\n')
+    ClosingBadges: ['Our People', 'Our Planet', 'Our Future'].join('\n'),
+    ClosingBannerImageUrl: link(img('closing-banner-3', 1600, 400))
   };
 
   // Shared "Need help" parts used by the SAP Concur pages.
@@ -1198,7 +1215,8 @@
         HeroImageUrl: link(img('bt-hero', 1600, 500)), HeroTagline: 'People Closer\nA Brighter Tomorrow',
         ClosingBannerTitle: 'Travel with Purpose',
         ClosingBannerDescription: 'Connecting people. Supporting communities. A more sustainable tomorrow.',
-        ClosingBadges: ['Our People', 'Our Planet', 'Our Future'].join('\n')
+        ClosingBadges: ['Our People', 'Our Planet', 'Our Future'].join('\n'),
+        ClosingBannerImageUrl: link(img('closing-banner-4', 1600, 400))
       });
       const strip = await addPolicySection(pageId, { layout: 'Split', order: 1, sectionStyle: 'Card' });
       await addPolicyCards('SectionIdId', strip, [
@@ -1215,8 +1233,8 @@
         { kind: 'Highlight', title: 'Business Travel', icon: 'Airplane', iconColor: NAVY, imageUrl: img('bt-card-1', 600, 380), description: 'Site travel, meetings, factory visits, training, events and conferences.', subPoints: ['@System|Through SAP Concur'], linkText: 'View', targetSlug: 'travel-policy' },
         { kind: 'Highlight', title: 'Business Assignment', icon: 'Suitcase', iconColor: NAVY, imageUrl: img('bt-card-2', 600, 380), description: 'Travel for approved business assignments.', subPoints: ['@System|Through SAP Concur'], linkText: 'View', targetSlug: 'travel-entitlement' },
         { kind: 'Highlight', title: 'Employee Relocation', icon: 'MapPin', iconColor: NAVY, imageUrl: img('bt-card-3', 600, 380), description: 'Relocating between Riyadh Headquarters and Project Site? Explore your travel entitlement, shipping assistance and mobilization requirements.', subPoints: ['@System|Through SAP Concur'], linkText: 'View', targetSlug: 'employee-relocation' },
-        { kind: 'Highlight', title: 'Family Relocation', icon: 'People', iconColor: '#be123c', imageUrl: img('bt-card-4', 600, 380), description: 'Explore relocation benefits available for eligible new joiners and accompanying dependents.', subPoints: ['@Mail|Offline: onboarding@RedSeaGlobal.com'], linkText: 'View', targetSlug: 'family-relocation' },
-        { kind: 'Highlight', title: 'Consultants | Guests Travel', icon: 'People', iconColor: '#7c3aed', imageUrl: img('bt-card-5', 600, 380), description: 'Travel for consultants and external guests.', subPoints: ['@Mail|Offline: rsgtravel@travelats.com'] }
+        { kind: 'Highlight', title: 'Family Relocation', icon: 'People', iconColor: 'Majestic Mountains', imageUrl: img('bt-card-4', 600, 380), description: 'Explore relocation benefits available for eligible new joiners and accompanying dependents.', subPoints: ['@Mail|Offline: onboarding@RedSeaGlobal.com'], linkText: 'View', targetSlug: 'family-relocation' },
+        { kind: 'Highlight', title: 'Consultants | Guests Travel', icon: 'People', iconColor: 'Majestic Mountains', imageUrl: img('bt-card-5', 600, 380), description: 'Travel for consultants and external guests.', subPoints: ['@Mail|Offline: rsgtravel@travelats.com'] }
       ]);
       const concurFlow = await addPolicySection(pageId, {
         layout: 'ProcessSteps', order: 3, title: 'SAP Concur Workflow Cycle', cardStyle: 'Stacked', width: 'Half', sectionStyle: 'Card',
@@ -1227,7 +1245,7 @@
         ['Travel arrangement', 'Airplane'], ['Confirmation', 'Page'], ['Travel', 'Suitcase'], ['Expense claim', 'ReceiptCheck']
       ].map(([title, icon], i) => ({ kind: 'HelpStep', number: i + 1, icon, iconColor: C.blue, title })));
       const offline = await addPolicySection(pageId, {
-        layout: 'ProcessSteps', order: 4, title: 'Offline Travel Process', cardStyle: 'Stacked', width: 'Half', sectionStyle: 'Tinted', theme: 'Green',
+        layout: 'ProcessSteps', order: 4, title: 'Offline Travel Process', cardStyle: 'Stacked', width: 'Half', sectionStyle: 'Tinted', theme: 'Blooming Nature',
         subtitle: 'For Family Relocation, Consultants | Guests Travel'
       });
       await addPolicyCards('SectionIdId', offline, [
@@ -1273,7 +1291,7 @@
       });
       await addPolicyCards('SectionIdId', site, [
         { kind: 'Info', title: 'Turtle Bay Accommodation', icon: 'Hotel', iconColor: NAVY, imageUrl: img('bt-turtle', 500, 300), description: 'How to request and book Turtle Bay accommodation.', linkUrl: 'https://www.redseaglobal.com', openInNewTab: true },
-        { kind: 'Info', title: 'Red Sea & AMAALA Site Services', icon: 'Car', iconColor: '#7c3aed', imageUrl: img('bt-site', 500, 300), description: 'Transportation, fleet management and access permits.', linkUrl: 'https://www.redseaglobal.com', openInNewTab: true }
+        { kind: 'Info', title: 'Red Sea & AMAALA Site Services', icon: 'Car', iconColor: 'Majestic Mountains', imageUrl: img('bt-site', 500, 300), description: 'Transportation, fleet management and access permits.', linkUrl: 'https://www.redseaglobal.com', openInNewTab: true }
       ]);
       const quick = await addPolicySection(pageId, {
         layout: 'ImageCards', order: 10, title: 'Quick Actions', cardStyle: 'ImageLeft', columns: 1, width: 'OneThird',
@@ -1284,7 +1302,7 @@
         { kind: 'Info', title: 'Employee Handbook', icon: 'Library', iconColor: NAVY, description: 'Explore employee & family relocation useful information and resources.', linkUrl: 'https://www.redseaglobal.com', openInNewTab: true }
       ]);
       const help = await addPolicySection(pageId, {
-        layout: 'Split', order: 11, title: 'Need Help?', icon: 'Headset', subtitle: "We're here to support your travel needs.", sectionStyle: 'Tinted', theme: 'Blue'
+        layout: 'Split', order: 11, title: 'Need Help?', icon: 'Headset', subtitle: "We're here to support your travel needs.", sectionStyle: 'Tinted', theme: 'Crystal Waters'
       });
       await addPolicyCards('SectionIdId', help, [
         { kind: 'Info', title: 'Business Travel', imageUrl: qr('RSG Business Travel Care'), description: 'Scan to connect with RSG Travel Care.' },
@@ -1310,15 +1328,15 @@
         { kind: 'Info', title: 'Smooth Arrival', icon: 'Car', description: 'Transportation arrangements' }
       ]);
       await addPolicySection(pageId, {
-        layout: 'Feature', order: 2, title: 'Job Mobility', icon: 'People', width: 'Half', theme: 'Blue',
+        layout: 'Feature', order: 2, title: 'Job Mobility', icon: 'People', width: 'Half', theme: 'Crystal Waters',
         body: 'In the event of a relocation between Riyadh Headquarters and Project Site, your HRBP will be your primary point of contact and will guide you through your relocation journey.'
       });
       await addPolicySection(pageId, {
-        layout: 'Feature', order: 3, title: 'Site Allowance', icon: 'Money', width: 'Half', theme: 'Green',
+        layout: 'Feature', order: 3, title: 'Site Allowance', icon: 'Money', width: 'Half', theme: 'Blooming Nature',
         body: 'To support with the cost of flying to your loved ones, all site-based colleagues whose point of origin is not Umluj, Dhiba or Al Wajh cities, will receive the Site Allowance, a cash allowance paid monthly.'
       });
       await addPolicySection(pageId, {
-        layout: 'Feature', order: 4, title: 'Flight Tickets', icon: 'Airplane', width: 'Half', theme: 'Blue',
+        layout: 'Feature', order: 4, title: 'Flight Tickets', icon: 'Airplane', width: 'Half', theme: 'Crystal Waters',
         body: [
           'Once the mobilization date is confirmed, relocating employees need to book their relocation flight ticket through SAP Concur.',
           '!!In case of unavailability of the eligible travel class, the employee can be upgraded to Business Class, subject to HR approval.'
@@ -1338,7 +1356,7 @@
         ]
       });
       const shipping = await addPolicySection(pageId, {
-        layout: 'Feature', order: 6, title: 'Shipping Assistance', icon: 'Package', theme: 'Purple', imageUrl: img('reloc-boxes', 600, 400),
+        layout: 'Feature', order: 6, title: 'Shipping Assistance', icon: 'Package', theme: 'Majestic Mountains', imageUrl: img('reloc-boxes', 600, 400),
         body: [
           'The Company will provide Shipping Assistance to cover the cost of freight of your personal items from Headquarters to Project Site or vice versa up to SAR 25,000 based on submission of actual paid receipts that includes your name, date, location, and total paid amount, along with a copy of the bank transaction as a proof of payment. Cash payments will not be accepted.',
           'You will arrange for your shipment directly with your preferred shipping partner and submit your receipts through SAP SuccessFactors for reimbursement.'
@@ -1346,7 +1364,7 @@
       });
       await addPolicyCards('SectionIdId', shipping, [{ kind: 'Info', title: '[Shipping cap]', icon: 'Package', iconColor: C.blue, valueLabel: 'Up to', value: 'SAR 25,000', valueNote: 'Shipping Assistance' }]);
       const transport = await addPolicySection(pageId, {
-        layout: 'Feature', order: 7, title: 'Transportation', icon: 'Car', theme: 'Green', imageUrl: img('reloc-van', 600, 400),
+        layout: 'Feature', order: 7, title: 'Transportation', icon: 'Car', theme: 'Blooming Nature', imageUrl: img('reloc-van', 600, 400),
         body: [
           'The Facilities Management team will arrange the airport pick-up to the assigned accommodation drop-off. Note that Airport pick up and drop off from and to Yanbu or Al Wajh should be requested through Base Camp Helpdesk accessible via ITHelpDesk, a minimum of 48 hours prior to the arrival or departure date. Alternatively, you may also place your request at BCS@RedSeaGlobal.com.',
           '!!Note that personal cars are welcomed on-site.'
@@ -1354,12 +1372,12 @@
       });
       await addPolicyCards('SectionIdId', transport, [{ kind: 'Info', title: '[Pick-up notice]', icon: 'Airplane', iconColor: C.green, value: '48 hours', valueNote: 'Prior request for Yanbu / Al Wajh pick up & drop off' }]);
       const assets = await addPolicySection(pageId, {
-        layout: 'Feature', order: 8, title: 'Work Assets Transportation', icon: 'System', theme: 'Purple', imageUrl: img('reloc-assets', 600, 400),
+        layout: 'Feature', order: 8, title: 'Work Assets Transportation', icon: 'System', theme: 'Majestic Mountains', imageUrl: img('reloc-assets', 600, 400),
         body: "Relocating employees' work assets such as monitor and docking station will be shipped to site by our Administration team. They will provide you with boxes to pack the required items which will take two to three days to reach the site."
       });
-      await addPolicyCards('SectionIdId', assets, [{ kind: 'Info', title: '[Delivery time]', icon: 'Package', iconColor: '#7c3aed', value: '2–3 days', valueNote: 'Delivery time to site' }]);
+      await addPolicyCards('SectionIdId', assets, [{ kind: 'Info', title: '[Delivery time]', icon: 'Package', iconColor: 'Majestic Mountains', value: '2–3 days', valueNote: 'Delivery time to site' }]);
       await addPolicySection(pageId, {
-        layout: 'Feature', order: 9, title: 'Effective Date', icon: 'Calendar', theme: 'Blue',
+        layout: 'Feature', order: 9, title: 'Effective Date', icon: 'Calendar', theme: 'Crystal Waters',
         body: 'The effective date for the relocation will be considered as the day of arrival to site or to our Riyadh offices and will reflect on SAP SuccessFactors.'
       });
       const more = await addPolicySection(pageId, { layout: 'ImageCards', order: 10, cardStyle: 'ImageLeft', columns: 2 });
@@ -1386,7 +1404,7 @@
         { kind: 'Info', title: 'Settle In', icon: 'Home', description: 'with Confidence' }
       ]);
       const types = await addPolicySection(pageId, {
-        layout: 'Feature', order: 2, title: 'Types of Relocation', icon: 'Sync', theme: 'Purple', imageUrl: img('reloc-map', 600, 360),
+        layout: 'Feature', order: 2, title: 'Types of Relocation', icon: 'Sync', theme: 'Majestic Mountains', imageUrl: img('reloc-map', 600, 360),
         body: 'We have two types of relocations:'
       });
       await addPolicyCards('SectionIdId', types, [
@@ -1394,7 +1412,7 @@
         { kind: 'Info', title: 'International', icon: 'Globe', iconColor: C.blue, description: 'Relocation of a new hire moving from outside KSA.' }
       ]);
       await addPolicySection(pageId, {
-        layout: 'Feature', order: 3, title: 'Flight Tickets', icon: 'Airplane', theme: 'Green', imageUrl: img('reloc-plane', 600, 400),
+        layout: 'Feature', order: 3, title: 'Flight Tickets', icon: 'Airplane', theme: 'Blooming Nature', imageUrl: img('reloc-plane', 600, 400),
         body: [
           'We provide flight tickets for new joiners and accompanying dependents eligible for domestic and international relocation, from the nearest airport from the point of origin (home country or current place of work) to their relocation destination in the Kingdom as follows:',
           '##Grade|Class of Travel',
@@ -1403,7 +1421,7 @@
         ]
       });
       await addPolicySection(pageId, {
-        layout: 'Feature', order: 4, title: 'Shipping Assistance', icon: 'Package', theme: 'Purple', imageUrl: img('reloc-belongings', 600, 500),
+        layout: 'Feature', order: 4, title: 'Shipping Assistance', icon: 'Package', theme: 'Majestic Mountains', imageUrl: img('reloc-belongings', 600, 500),
         body: [
           'All domestic and international new joiners relocating from outside their employment location will benefit from a Shipping Assistance to cover the cost of freight of personal items from their point of origin (home country or current place of work) to their employment location upon joining as follows:',
           '##Relocation Type|Maximum Shipping Assistance Allowance',
@@ -1414,14 +1432,14 @@
         ]
       });
       await addPolicySection(pageId, {
-        layout: 'Feature', order: 5, title: 'Temporary Accommodation', icon: 'Hotel', theme: 'Teal', imageUrl: img('reloc-room', 600, 360),
+        layout: 'Feature', order: 5, title: 'Temporary Accommodation', icon: 'Hotel', theme: 'Blue Lagoon', imageUrl: img('reloc-room', 600, 360),
         body: [
           '- We will provide temporary accommodation assistance to new joiners and their accompanying eligible dependents from their first employment day, for a maximum of 30 nights.',
           '- Employees and accompanying dependents relocating from Project Site to Riyadh will be provided with accommodation up to two weeks.'
         ]
       });
       await addPolicySection(pageId, {
-        layout: 'Feature', order: 6, title: 'Important Notes', icon: 'Warning', theme: 'Purple',
+        layout: 'Feature', order: 6, title: 'Important Notes', icon: 'Warning', theme: 'Majestic Mountains',
         body: [
           '- New joiners hired from Riyadh and joining our Riyadh Headquarters do not qualify for relocation. Similarly, new joiners to be located at site and hired from Umluj, Dhiba or Al Wajh do not qualify for relocation either.',
           '- Foreign currency transaction fees are not included in any benefits provided.'
@@ -1442,32 +1460,19 @@
         HeroDescription: 'Exclusive travel offers, experiences and benefits for you and your family — curated with our trusted partners.',
         HeroImageUrl: link(img('pto-hero', 1600, 500)), HeroTagline: 'Explore\nRelax\nExperience\nTogether'
       });
-      const featured = await addPolicySection(pageId, {
+      // Cards = TH_Offers items with Collection "Featured Personal Offers"
+      // (seedOffers below) - each opens its own details screen.
+      await addPolicySection(pageId, {
         layout: 'ImageCards', order: 1, title: 'Featured Personal Travel Offers', cardStyle: 'ImageTop', columns: 5,
         subtitle: 'Handpicked deals and seasonal offers from our trusted travel partners.',
-        linkText: 'View All Offers', linkUrl: 'https://www.redseaglobal.com'
+        linkText: 'View All Offers', linkUrl: 'https://www.redseaglobal.com', offerCollection: 'Featured Personal Offers'
       });
-      await addPolicyCards('SectionIdId', featured, [
-        ['Maldives', '5 Nights Holiday Package', 'Special Offer', 'SAR 5,999', 'per person'],
-        ['Istanbul', '4 Nights City Break', 'Exclusive Rate', 'SAR 3,499', 'per person'],
-        ['Dubai', '4 Nights Family Package', 'Family Offer', 'SAR 4,999', 'per family'],
-        ['London', 'Airfare + Hotel Package', 'Special Fare', 'SAR 3,999', 'per person'],
-        ['Baku', '4 Nights City Break', 'New Destination', 'SAR 2,999', 'per person']
-      ].map(([title, subtitle, badge, value, note], i) => ({
-        kind: 'Info', title, subtitle, badge, iconColor: '#dc2626', imageUrl: img('offer-' + i, 600, 400),
-        valueLabel: 'Starting From', value, valueNote: note, linkText: 'View Details', linkUrl: 'https://www.redseaglobal.com', openInNewTab: true
-      })));
-      const explore = await addPolicySection(pageId, {
+      // Cards = TH_Offers "Explore Personal Offers" - each opens its attached
+      // images / PDFs in the popup viewer.
+      await addPolicySection(pageId, {
         layout: 'ImageCards', order: 2, title: 'Explore Our Personal Travel Offers', cardStyle: 'ImageTile', columns: 5,
-        body: '@GiftCard|Exclusive offers from our trusted partners just for you and your family.'
+        body: '@GiftCard|Exclusive offers from our trusted partners just for you and your family.', offerCollection: 'Explore Personal Offers'
       });
-      await addPolicyCards('SectionIdId', explore, [
-        ['Flights', 'Airplane', C.blue], ['Hotels', 'Hotel', '#7c3aed'], ['Car Rental', 'Car', C.green], ['Holiday Packages', 'Sunny', '#ea580c'],
-        ['Wellness Beyond Office', 'Health', C.green], ['F&B Offers', 'EatDrink', '#dc2626'], ['Outlet Malls', 'Shop', '#db2777'],
-        ['Visa Guidance', 'Certificate', C.blue], ['International Driving License', 'Car', '#b45309'], ['City Guide (Riyadh & Jeddah)', 'MapPin', '#7c3aed']
-      ].map(([title, icon, color], i) => ({
-        kind: 'Info', title, icon, iconColor: color, imageUrl: img('pto-tile-' + i, 500, 300), linkUrl: 'https://www.redseaglobal.com', openInNewTab: true
-      })));
       const staff = await addPolicySection(pageId, {
         layout: 'ImageCards', order: 3, title: 'RSG Staff Offers – Visit Our Destinations', cardStyle: 'ImageBanner', columns: 2,
         subtitle: "Exclusive offers for Red Sea'ers at our destinations."
@@ -1477,7 +1482,7 @@
         { kind: 'Info', title: 'AMAALA', imageUrl: img('pto-amaala', 900, 400), linkUrl: 'https://www.visitredsea.com', openInNewTab: true }
       ]);
       const care = await addPolicySection(pageId, {
-        layout: 'Split', order: 4, title: 'Personal Travel Care', icon: 'Headset', sectionStyle: 'Tinted', theme: 'Blue'
+        layout: 'Split', order: 4, title: 'Personal Travel Care', icon: 'Headset', sectionStyle: 'Tinted', theme: 'Crystal Waters'
       });
       await addPolicyCards('SectionIdId', care, [
         { kind: 'Info', title: 'Planning a personal trip or need assistance?', description: 'Connect with Personal Travel Care for support with your personal travel requirements and available offers.' },
@@ -1508,27 +1513,19 @@
         ]
       });
       const hotelNote = '@Coffee|One Coffee Break & Lunch Included\n@People|Starting From (per participant)';
-      const riyadh = await addPolicySection(pageId, {
+      // Cards = TH_Offers "Riyadh Partnered Hotels" / "Jeddah Partnered Hotels"
+      // (seedOffers below). "View Gallery" opens each hotel's attached photos /
+      // PDF in the popup, or its LinkUrl when it has no attachments.
+      await addPolicySection(pageId, {
         layout: 'ImageCards', order: 3, title: 'Riyadh Partnered Hotels', cardStyle: 'ImageTop', columns: 6, sectionStyle: 'Card',
-        subtitle: 'Host your meetings, workshops, trainings and events at our partnered hotels in Riyadh.', body: hotelNote
+        subtitle: 'Host your meetings, workshops, trainings and events at our partnered hotels in Riyadh.', body: hotelNote,
+        offerCollection: 'Riyadh Partnered Hotels'
       });
-      await addPolicyCards('SectionIdId', riyadh, [
-        ['W Riyadh - KAFD', 'SAR 450'], ['Atheel KAFD', 'SAR 350'], ['Sofitel Riyadh Hotel & Convention Centre', 'SAR 425'],
-        ['Mövenpick Hotel and Residences Riyadh', 'SAR 350'], ['Executives Hotel - KAFD', 'SAR 280'], ['Crowne Plaza Riyadh RDC Hotel & Convention', 'SAR 300']
-      ].map(([title, value], i) => ({
-        kind: 'Info', title, imageUrl: img('me-ruh-' + i, 500, 320), valueLabel: 'Starting From', value, valueNote: 'per participant',
-        linkText: 'View Gallery', linkUrl: 'https://www.redseaglobal.com', openInNewTab: true
-      })));
-      const jeddah = await addPolicySection(pageId, {
+      await addPolicySection(pageId, {
         layout: 'ImageCards', order: 4, title: 'Jeddah Partnered Hotels', cardStyle: 'ImageTop', columns: 5, sectionStyle: 'Card',
-        subtitle: 'Host your meetings, workshops, trainings and events at our partnered hotels in Jeddah.', body: hotelNote
+        subtitle: 'Host your meetings, workshops, trainings and events at our partnered hotels in Jeddah.', body: hotelNote,
+        offerCollection: 'Jeddah Partnered Hotels'
       });
-      await addPolicyCards('SectionIdId', jeddah, [
-        ['Asila Jeddah', 'SAR 450'], ['Shangri-La Jeddah', 'SAR 350'], ['Crowne Plaza Jeddah Al Salam', 'SAR 300'], ['Hilton Jeddah', 'SAR 280'], ['Sheraton Jeddah', 'SAR 325']
-      ].map(([title, value], i) => ({
-        kind: 'Info', title, imageUrl: img('me-jed-' + i, 500, 320), valueLabel: 'Starting From', value, valueNote: 'per participant',
-        linkText: 'View Gallery', linkUrl: 'https://www.redseaglobal.com', openInNewTab: true
-      })));
       const sites = await addPolicySection(pageId, { layout: 'ImageCards', order: 5, cardStyle: 'ImageBanner', columns: 2 });
       await addPolicyCards('SectionIdId', sites, [
         { kind: 'Info', title: 'Red Sea Site Meeting Rooms', badge: 'Red Sea Site', imageUrl: img('me-rs', 900, 420), description: 'Well-equipped meeting spaces at our Red Sea site for internal and external meetings, trainings and events.', linkText: 'Book Now', linkUrl: 'https://outlook.office.com/calendar', openInNewTab: true },
@@ -1610,15 +1607,15 @@
         ['Expense', 'ReceiptCheck', 'Submit expenses with receipts'], ['Reimbursement', 'Money', 'Track your claim to payment']
       ].map(([title, icon, description]) => ({ kind: 'HelpStep', icon, iconColor: C.blue, title, description })));
       const joule = await addPolicySection(pageId, {
-        layout: 'Feature', order: 5, title: 'Discover Joule — Your AI Assistant in SAP Concur', icon: 'Robot', cardStyle: 'ImageLeft', sectionStyle: 'Tinted', theme: 'Purple',
+        layout: 'Feature', order: 5, title: 'Discover Joule — Your AI Assistant in SAP Concur', icon: 'Robot', cardStyle: 'ImageLeft', sectionStyle: 'Tinted', theme: 'Majestic Mountains',
         subtitle: 'Smarter travel. Faster answers. Built for the way you work at RSG.', imageUrl: img('sap-joule', 600, 420),
         linkText: 'Learn More About Joule', linkUrl: 'https://www.sap.com/products/artificial-intelligence/ai-assistant.html'
       });
       await addPolicyCards('SectionIdId', joule, [
-        { kind: 'Info', title: 'Get Answers', icon: 'Chat', iconColor: '#7c3aed', description: 'Ask questions and get instant help on travel, expenses and policy.' },
-        { kind: 'Info', title: 'Plan & Book', icon: 'Airplane', iconColor: '#7c3aed', description: 'Use natural language to find policy-aligned travel options.' },
-        { kind: 'Info', title: 'Manage Your Trip', icon: 'Clock', iconColor: '#7c3aed', description: 'Get help with eligible trip changes and updates.' },
-        { kind: 'Info', title: 'Understand Policy', icon: 'Shield', iconColor: '#7c3aed', description: 'Ask RSG travel and expense policy questions in simple language.' }
+        { kind: 'Info', title: 'Get Answers', icon: 'Chat', iconColor: 'Majestic Mountains', description: 'Ask questions and get instant help on travel, expenses and policy.' },
+        { kind: 'Info', title: 'Plan & Book', icon: 'Airplane', iconColor: 'Majestic Mountains', description: 'Use natural language to find policy-aligned travel options.' },
+        { kind: 'Info', title: 'Manage Your Trip', icon: 'Clock', iconColor: 'Majestic Mountains', description: 'Get help with eligible trip changes and updates.' },
+        { kind: 'Info', title: 'Understand Policy', icon: 'Shield', iconColor: 'Majestic Mountains', description: 'Ask RSG travel and expense policy questions in simple language.' }
       ]);
       const faq = await addPolicySection(pageId, {
         layout: 'Faq', order: 6, title: 'Most Asked Questions', width: 'Half', sectionStyle: 'Card',
@@ -1643,7 +1640,7 @@
         { kind: 'Highlight', title: 'Expense Requirements', icon: 'ReceiptCheck', iconColor: C.blue, description: 'Receipts, eligible expenses and policy compliance.' }
       ]);
       const support = await addPolicySection(pageId, {
-        layout: 'Split', order: 8, title: 'Need Support?', subtitle: "We're here to help.", sectionStyle: 'Tinted', theme: 'Blue'
+        layout: 'Split', order: 8, title: 'Need Support?', subtitle: "We're here to help.", sectionStyle: 'Tinted', theme: 'Crystal Waters'
       });
       await addPolicyCards('SectionIdId', support, concurSupportCards);
     }
@@ -1694,7 +1691,7 @@
         { kind: 'Highlight', title: 'Hotel Accommodation', icon: 'Hotel', iconColor: NAVY, description: 'Check the latest accommodation caps for KSA and international travel.', linkText: 'View Accommodation Cap', targetSlug: 'travel-entitlement' },
         { kind: 'Highlight', title: 'Changes & Cancellations', icon: 'Cancel', iconColor: NAVY, description: 'Understand the rules for changes, cancellations and no-shows.', linkText: 'View Guidance', targetSlug: 'travel-policy' }
       ]);
-      const help = await addPolicySection(pageId, { layout: 'Split', order: 5, title: 'Need Help?', subtitle: 'Get the right support, at the right time.', sectionStyle: 'Tinted', theme: 'Blue' });
+      const help = await addPolicySection(pageId, { layout: 'Split', order: 5, title: 'Need Help?', subtitle: 'Get the right support, at the right time.', sectionStyle: 'Tinted', theme: 'Crystal Waters' });
       await addPolicyCards('SectionIdId', help, concurSupportCards);
     },
 
@@ -1712,18 +1709,18 @@
         ['Approve or Send Back', 'Like', "After reviewing the details and Joule's insights, approve the request or send it back with comments if more information is needed."]
       ].map(([title, icon, description], i) => ({ kind: 'HelpStep', number: i + 1, icon, iconColor: NAVY, title, description })));
       await addPolicySection(pageId, {
-        layout: 'Feature', order: 2, title: 'Tips for Approvers', icon: 'Lightbulb', width: 'OneThird', sectionStyle: 'Tinted', theme: 'Green',
+        layout: 'Feature', order: 2, title: 'Tips for Approvers', icon: 'Lightbulb', width: 'OneThird', sectionStyle: 'Tinted', theme: 'Blooming Nature',
         body: ['@CheckMark|Use Joule to get a quick summary.', '@CheckMark|Focus on highlighted policy exceptions.', '@CheckMark|Add comments when sending back for clarification.', '@CheckMark|Approve requests regularly to keep travel plans on track.']
       });
       const help = await addPolicySection(pageId, {
-        layout: 'Feature', order: 3, title: 'Need Help?', icon: 'Headset', width: 'OneThird', theme: 'Blue', body: 'Get the right support, at the right time.'
+        layout: 'Feature', order: 3, title: 'Need Help?', icon: 'Headset', width: 'OneThird', theme: 'Crystal Waters', body: 'Get the right support, at the right time.'
       });
       await addPolicyCards('SectionIdId', help, [
         { kind: 'Info', title: 'SAP Concur Support (System Help Desk)', icon: 'Mail', iconColor: NAVY, description: 'helpdesk.ksaobt@travelats.com' },
         { kind: 'Info', title: 'Approval Guidelines', icon: 'Library', iconColor: NAVY, description: 'Understand your role as an approver', targetSlug: 'compliance-responsibilities' }
       ]);
       await addPolicySection(pageId, {
-        layout: 'Feature', order: 4, title: 'Meet Joule', icon: 'Robot', width: 'OneThird', sectionStyle: 'Tinted', theme: 'Purple',
+        layout: 'Feature', order: 4, title: 'Meet Joule', icon: 'Robot', width: 'OneThird', sectionStyle: 'Tinted', theme: 'Majestic Mountains',
         subtitle: 'Your AI assistant in SAP Concur',
         body: ['@CheckMark|Get quick answers', '@CheckMark|Summarize requests', '@CheckMark|Understand policy exceptions', '@CheckMark|Save time, approve with confidence'],
         linkText: 'Learn More About Joule', linkUrl: 'https://www.sap.com/products/artificial-intelligence/ai-assistant.html'
@@ -1739,11 +1736,11 @@
       await addPolicyCards('SectionIdId', how, [
         ['Create Expense Report', 'Page', C.blue, 'Open Concur Mobile or desktop and create a new expense report.'],
         ['Add Expense', 'Add', C.green, 'Add your expenses (reimbursable items as mentioned in the travel policy).'],
-        ['Scan & Attach Receipts', 'Camera', '#ea580c', 'Use your mobile camera to scan and upload receipts (photos or PDF). Ensure the details are clear and readable.'],
-        ['Submit', 'Send', '#7c3aed', 'Review the details and submit your expense report.']
+        ['Scan & Attach Receipts', 'Camera', 'Thriving Corals', 'Use your mobile camera to scan and upload receipts (photos or PDF). Ensure the details are clear and readable.'],
+        ['Submit', 'Send', 'Majestic Mountains', 'Review the details and submit your expense report.']
       ].map(([title, icon, color, description], i) => ({ kind: 'HelpStep', number: i + 1, icon, iconColor: color, title, description })));
       await addPolicySection(pageId, {
-        layout: 'Feature', order: 2, title: 'Reimbursable Items', icon: 'Page', width: 'OneThird', theme: 'Blue',
+        layout: 'Feature', order: 2, title: 'Reimbursable Items', icon: 'Page', width: 'OneThird', theme: 'Crystal Waters',
         body: [
           'You can claim expenses for eligible items as mentioned in the RSG Travel Policy, including:',
           '@CheckMark|Flights', '@CheckMark|Hotels', '@CheckMark|Ground transportation', '@CheckMark|Meals (as per policy)',
@@ -1758,17 +1755,17 @@
       await addPolicyCards('SectionIdId', track, [
         { kind: 'HelpStep', icon: 'CheckMark', iconColor: C.green, title: 'Submitted', description: 'Your expense report has been submitted successfully.' },
         { kind: 'HelpStep', icon: 'Search', iconColor: C.blue, title: 'Under Review', subtitle: 'Concur Audit Team', description: 'Your report is being reviewed by the Concur audit team.' },
-        { kind: 'HelpStep', icon: 'CheckMark', iconColor: '#d97706', title: 'Approved', description: 'Your expense report has been approved.' },
-        { kind: 'HelpStep', icon: 'Database', iconColor: '#7c3aed', title: 'Reimbursed', description: 'The reimbursement has been processed to your bank account.' }
+        { kind: 'HelpStep', icon: 'CheckMark', iconColor: 'Sandy Dunes', title: 'Approved', description: 'Your expense report has been approved.' },
+        { kind: 'HelpStep', icon: 'Database', iconColor: 'Majestic Mountains', title: 'Reimbursed', description: 'The reimbursement has been processed to your bank account.' }
       ]);
       await addPolicySection(pageId, {
-        layout: 'Feature', order: 4, title: 'Helpful Tips', icon: 'Lightbulb', width: 'OneThird', sectionStyle: 'Tinted', theme: 'Green',
+        layout: 'Feature', order: 4, title: 'Helpful Tips', icon: 'Lightbulb', width: 'OneThird', sectionStyle: 'Tinted', theme: 'Blooming Nature',
         body: ['@CheckMark|Just scan receipts and submit.', '@CheckMark|Ensure receipts are clear and readable.', '@CheckMark|Add a short description for each expense.', '@CheckMark|Submit regularly to keep your travel plans on track.']
       });
       await addPolicySection(pageId, {
         layout: 'Callout', order: 5, icon: 'Megaphone', body: "You'll be notified at each stage through email and in the Concur app."
       });
-      const help = await addPolicySection(pageId, { layout: 'Split', order: 6, title: 'Need Help?', icon: 'Robot', subtitle: 'Ask Joule or contact Travel Services.', sectionStyle: 'Tinted', theme: 'Purple' });
+      const help = await addPolicySection(pageId, { layout: 'Split', order: 6, title: 'Need Help?', icon: 'Robot', subtitle: 'Ask Joule or contact Travel Services.', sectionStyle: 'Tinted', theme: 'Majestic Mountains' });
       await addPolicyCards('SectionIdId', help, [
         { kind: 'Info', title: 'Ask Joule', icon: 'Robot', description: 'Your AI assistant in SAP Concur.', linkText: 'Ask Joule', linkUrl: CONCUR_URL, openInNewTab: true },
         { kind: 'Info', title: 'SAP Concur Support', icon: 'Mail', description: 'helpdesk.ksaobt@travelats.com' }
@@ -1781,8 +1778,8 @@
       await addPolicyCards('SectionIdId', uses, [
         ['Book Travel', 'Airplane', C.blue, 'Search and book flights, hotels and more.'],
         ['Submit Expenses', 'ReceiptCheck', C.green, 'Capture receipts and submit on the go.'],
-        ['Get Approvals', 'CheckMark', '#d97706', 'Stay informed and take action anytime.'],
-        ['Manage Trips', 'Suitcase', '#7c3aed', 'View itineraries, travel updates and more.']
+        ['Get Approvals', 'CheckMark', 'Sandy Dunes', 'Stay informed and take action anytime.'],
+        ['Manage Trips', 'Suitcase', 'Majestic Mountains', 'View itineraries, travel updates and more.']
       ].map(([title, icon, color, description]) => ({ kind: 'Info', title, icon, iconColor: color, description })));
       const why = await addPolicySection(pageId, { layout: 'Feature', order: 2, title: 'Why Use Concur Mobile?', width: 'OneThird' });
       await addPolicyCards('SectionIdId', why, [
@@ -1792,7 +1789,7 @@
         { kind: 'Info', title: 'Secure', icon: 'Shield', iconColor: NAVY, description: 'Your data is protected.' }
       ]);
       const download = await addPolicySection(pageId, {
-        layout: 'Split', order: 3, title: 'Download the SAP Concur App', width: 'TwoThirds', sectionStyle: 'Tinted', theme: 'Blue',
+        layout: 'Split', order: 3, title: 'Download the SAP Concur App', width: 'TwoThirds', sectionStyle: 'Tinted', theme: 'Crystal Waters',
         subtitle: 'Scan the QR code or search "SAP Concur" in your app store.'
       });
       await addPolicyCards('SectionIdId', download, [
@@ -1801,14 +1798,380 @@
         { kind: 'Info', title: 'Travel Smarter On the Go', subPoints: ['@Clock|Anytime', '@MapPin|Anywhere', '@CellPhone|On Any Device'] }
       ]);
       await addPolicySection(pageId, {
-        layout: 'Feature', order: 4, title: 'Need Help?', icon: 'Robot', width: 'OneThird', sectionStyle: 'Tinted', theme: 'Purple',
+        layout: 'Feature', order: 4, title: 'Need Help?', icon: 'Robot', width: 'OneThird', sectionStyle: 'Tinted', theme: 'Majestic Mountains',
         body: 'Contact Travel Services or ask Joule in Concur.', linkText: 'Ask Joule', linkUrl: CONCUR_URL
       });
     }
   });
 
+  // -------------------------------------------------------------------
+  // Catering Services (home) + Mövenpick and Marriott menu sub-pages, laid
+  // out as in Catering_Services.pdf (01OCT2026) and its Content
+  // Specification. Prices, menus and photos are all list content - see
+  // docs/POLICY-CONTENT-GUIDE.md §13 for the PriceList / Gallery / ImageMenu
+  // building blocks. Sub-page Slugs start with "catering-services-" so the
+  // Catering Services nav tab stays highlighted on them.
+  // -------------------------------------------------------------------
+  const CATERING_EMAIL = 'TravelServices@RedSeaGlobal.com';
+  const CATERING_VAT = 'Prices are in Saudi Riyal (SAR) and exclude applicable VAT.';
+  // Placeholder - replace with the approved Helpdesk / request destination.
+  const CATERING_BOOKING_URL = 'https://www.redseaglobal.com';
+  const CATERING_MAROON = 'Majestic Mountains';
+  const CATERING_GREEN = 'Blooming Nature';
+  const CATERING_HELP = {
+    NeedHelpTitle: 'Need Help? Contact Travel Services',
+    NeedHelpDescription: 'Our team is here to assist you with catering options, menus and bookings.',
+    NeedHelpEmail: CATERING_EMAIL
+  };
+  const CATERING_BOOKING_CTA = {
+    CtaTitle: 'Need to Book Catering Services?',
+    CtaDescription: 'Selected your preferred menu?',
+    CtaPrimaryText: 'Book Catering Services',
+    CtaPrimaryUrl: link(CATERING_BOOKING_URL)
+  };
+  const CATERING_HERO_TAGLINE = 'Great Food\nBrings\nPeople\nTogether';
+
+  async function addCateringBookingProcess(pageId, order) {
+    const steps = await addPolicySection(pageId, {
+      layout: 'ProcessSteps', order, title: 'Catering Booking Process', cardStyle: 'Stacked',
+      subtitle: 'A simple process to arrange catering for your meeting, workshop or event.'
+    });
+    await addPolicyCards('SectionIdId', steps, [
+      ['Raise a request through Helpdesk', 'CalendarAgenda'],
+      ['Proposals submitted by Corp. F&A Team', 'Group'],
+      ['Raise a PR', 'ClipboardList'],
+      ['Share the approved PO with Corp. F&A Team', 'Documentation'],
+      ['Catering Services Confirmation', 'RingerSolid']
+    ].map(([title, icon], i) => ({ kind: 'HelpStep', number: i + 1, icon, iconColor: C.blue, title })));
+  }
+
+  async function addCateringGallery(pageId, order, seed) {
+    const gallery = await addPolicySection(pageId, {
+      layout: 'Gallery', order, title: 'Catering Setup Gallery', icon: 'Camera', columns: 4,
+      subtitle: 'See how our catering could look at the KAFD Office.'
+    });
+    await addPolicyCards('SectionIdId', gallery, [
+      'Coffee break station', 'Finger food display', 'Buffet lunch setup', 'Meeting room catering'
+    ].map((title, i) => ({ kind: 'Info', title, imageUrl: img(seed + '-gallery-' + i, 1200, 800) })));
+  }
+
+  // One popup gallery per partner (home page "Catering Setup Gallery" buttons).
+  const cateringGalleryPopup = (seed, partner) =>
+    [1, 2, 3, 4].map((n) => `${partner} setup ${n} | ${img(seed + '-gallery-' + (n - 1), 1200, 800)} | image`);
+
+  // Menu card (ImageCards / ImageMenu): ribbon, price tag, items.
+  const menuCard = (seed, badge, price, items, color) => ({
+    kind: 'Info', title: '[' + badge + ']', badge, iconColor: color || CATERING_MAROON,
+    imageUrl: img(seed, 700, 420), value: 'SAR ' + price, valueNote: 'per person', subPoints: items
+  });
+
+  Object.assign(MORE_PAGE_SEEDERS, {
+    // --- Catering Services (home) ---------------------------------------------
+    'catering-services': async () => {
+      const pageId = await addPage(40, Object.assign({
+        Title: 'Catering Services', Slug: 'catering-services',
+        HeroEyebrow: 'Catering Services', HeroTitle: 'Catering Services',
+        HeroDescription: 'Explore catering solutions for meetings, workshops and events at the KAFD Office, delivered through our trusted catering partners.',
+        HeroImageUrl: link(img('catering-hero', 1600, 500)), HeroTagline: CATERING_HERO_TAGLINE,
+        HeroHighlights: ['Diamond|Quality Catering Solutions', 'Group|Tailored for RSG Events', 'Ribbon|Trusted Partner Network'].join('\n')
+      }, CATERING_HELP));
+
+      // 1.2 Partner cards are informational - no "View Menus" link.
+      const partners = await addPolicySection(pageId, {
+        layout: 'ImageCards', order: 1, title: 'Our Catering Partners', cardStyle: 'ImageTop', columns: 3,
+        subtitle: 'Exceptional catering experiences from our trusted partners at the KAFD Office.'
+      });
+      await addPolicyCards('SectionIdId', partners, [
+        ['Mövenpick Hotel & Residences Riyadh', 'Premium catering for your meetings and events with a wide range of menu options.', 'cat-movenpick'],
+        ['Marriott Riyadh', 'Inspired catering for corporate events with diverse menu options.', 'cat-marriott'],
+        ['Mayyar Catering Services', 'Customized catering arrangements based on your event requirements. Catering is on demand.', 'cat-mayyar']
+      ].map(([title, description, seed]) => ({ kind: 'Info', title, description, imageUrl: img(seed, 700, 420) })));
+
+      // 1.3 Image/icon + title tiles, no arrows (no links).
+      const experience = await addPolicySection(pageId, {
+        layout: 'ImageCards', order: 2, title: 'Choose Your Catering Experience', cardStyle: 'ImageTile', columns: 5,
+        body: 'A range of catering options to suit your meeting, workshop or event.'
+      });
+      await addPolicyCards('SectionIdId', experience, [
+        ['Coffee Break', 'Coffee', 'Sandy Dunes'], ['Finger Food Lunch', 'Cake', 'Thriving Corals'], ['Coffee Break & Lunch', 'Breakfast', 'Majestic Mountains'],
+        ['Healthy Options', 'Health', C.green], ['Buffet Lunch', 'EatDrink', C.blue]
+      ].map(([title, icon, color], i) => ({ kind: 'Info', title, icon, iconColor: color, imageUrl: img('cat-exp-' + i, 500, 300) })));
+
+      // 1.4 Starting-from prices per partner; each panel opens that partner's menus.
+      const featured = await addPolicySection(pageId, {
+        layout: 'PriceList', order: 3, title: 'Featured Menu Options – Starting From', columns: 2,
+        body: 'Indicative starting prices. Rates vary by selected menu/package and applicable conditions.'
+      });
+      await addPolicyCards('SectionIdId', featured, [
+        {
+          kind: 'Info', title: 'Mövenpick Hotel & Residences Riyadh', iconColor: 'Thriving Corals', imageUrl: img('cat-movenpick', 600, 500),
+          subPoints: ['Coffee|Coffee Break|SAR 120|per person', 'Cake|Finger Food Lunch|SAR 225|per person',
+            'Breakfast|Coffee Break & Finger Food Lunch|SAR 225|per person', 'Health|Healthy Options|SAR 225|per person'],
+          description: CATERING_VAT, linkText: 'View Mövenpick Menus', targetSlug: 'catering-services-movenpick'
+        },
+        {
+          kind: 'Info', title: 'Marriott Riyadh', iconColor: 'Majestic Mountains', imageUrl: img('cat-marriott', 600, 500),
+          subPoints: ['Coffee|Coffee Break|SAR 120|per person', 'Cake|Finger Food Lunch|SAR 225|per person',
+            'Breakfast|Coffee Break & Finger Food Lunch|SAR 225|per person', 'EatDrink|Buffet Lunch|SAR 230|per person'],
+          description: CATERING_VAT, linkText: 'View Marriott Menus', targetSlug: 'catering-services-marriott'
+        }
+      ]);
+
+      // 1.5 One button per partner -> that partner's photos in a popup gallery.
+      const gallery = await addPolicySection(pageId, {
+        layout: 'ImageCards', order: 4, title: 'Catering Setup Gallery', cardStyle: 'ImageBanner', columns: 3,
+        subtitle: 'See how our catering could look at the KAFD Office.'
+      });
+      await addPolicyCards('SectionIdId', gallery, [
+        ['Mövenpick Setup Gallery', 'cat-movenpick', 'Mövenpick'],
+        ['Marriott Setup Gallery', 'cat-marriott', 'Marriott'],
+        ['Mayyar Setup Gallery', 'cat-mayyar', 'Mayyar']
+      ].map(([title, seed, partner]) => ({ kind: 'Info', title, imageUrl: img(seed + '-gallery-0', 900, 420), popup: cateringGalleryPopup(seed, partner) })));
+
+      await addCateringBookingProcess(pageId, 5);
+    },
+
+    // --- Mövenpick menu ------------------------------------------------------------
+    'catering-services-movenpick': async () => {
+      const pageId = await addPage(41, Object.assign({
+        Title: 'Mövenpick Menu', Slug: 'catering-services-movenpick',
+        ParentSlug: 'catering-services', ParentTitle: 'Catering Services',
+        // HeroLogoUrl: link('<Mövenpick logo in Travel Hub Images>'),
+        HeroEyebrow: 'Mövenpick Hotel & Residences Riyadh', HeroTitle: 'Catering Menus',
+        HeroDescription: 'Premium catering for RSG meetings, workshops and events at the KAFD Office.',
+        HeroImageUrl: link(img('cat-movenpick-hero', 1600, 500)), HeroTagline: CATERING_HERO_TAGLINE,
+        HeroHighlights: ['Diamond|Premium Quality', 'EatDrink|Wide Range of Menu Options', 'Health|Fresh & Healthy Ingredients', 'Group|Tailored for RSG Events'].join('\n'),
+        NoteBannerText: CATERING_VAT
+      }, CATERING_BOOKING_CTA, CATERING_HELP));
+
+      const coffeeItems = ['Mini Cold Sandwiches', 'Savory Shooters', 'Mini Croissants', 'Pastries', 'Hot Bites', 'Selection of Nuts', 'Sliced Fruits', 'Fresh Juices & Detox Water'];
+      // 2.2 Coffee Break + Finger Food side by side (50/50), stacked on smaller screens.
+      const coffee = await addPolicySection(pageId, {
+        layout: 'ImageCards', order: 1, title: 'Coffee Break Menus', icon: 'Coffee', cardStyle: 'ImageMenu', columns: 2, width: 'Half', sectionStyle: 'Card'
+      });
+      await addPolicyCards('SectionIdId', coffee, [
+        menuCard('cat-mov-menu-1', 'Menu 1', 120, coffeeItems),
+        menuCard('cat-mov-menu-2', 'Menu 2', 150, coffeeItems)
+      ]);
+      const finger = await addPolicySection(pageId, {
+        layout: 'ImageCards', order: 2, title: 'Lunch Menus – Finger Food', icon: 'EatDrink', cardStyle: 'ImageMenu', columns: 2, width: 'Half', sectionStyle: 'Card',
+        subtitle: 'A variety of delicious bite-sized selections, perfect for working meetings and informal gatherings.'
+      });
+      await addPolicyCards('SectionIdId', finger, [
+        menuCard('cat-mov-menu-3', 'Menu 3', 225, ['Mini Sandwiches', 'Mini Salads', 'Hot Snacks', 'Finger Food Selections', 'Pastries & Desserts', 'Sliced Fruits', 'Fresh Juices & Detox Water']),
+        menuCard('cat-mov-menu-4', 'Menu 4 – Healthy', 225, ['Healthy Mini Sandwiches', 'Healthy Salads', 'Healthy Hot Snacks', 'Finger Food Selections', 'Healthy Pastries', 'Sliced Fruits', 'Fresh Juices & Detox Water'], CATERING_GREEN)
+      ]);
+
+      // 2.3 Main course: Menu 1 before Menu 2 - VIP Lunch (wide cards, photo left).
+      const mainItems = ['Salads', 'Main Courses (Chicken, Beef, Fish, Vegetarian)', 'Rice Selections', 'Hot Side Dishes', 'Pastries & Desserts', 'Sliced Fruits', 'Fresh Juices & Detox Water'];
+      const main = await addPolicySection(pageId, {
+        layout: 'ImageCards', order: 3, title: 'Lunch Menus – Main Course', icon: 'Breakfast', cardStyle: 'ImageMenu', columns: 2, sectionStyle: 'Card',
+        body: 'Complete lunch selections, from buffet to plated options, with international and local flavours.'
+      });
+      await addPolicyCards('SectionIdId', main, [
+        menuCard('cat-mov-lunch-1', 'Menu 1 – Lunch', 250, mainItems),
+        menuCard('cat-mov-lunch-2', 'Menu 2 – VIP Lunch', 275, mainItems)
+      ]);
+
+      // 2.4 Special add-ons (photo left, guest basis, price).
+      const addons = await addPolicySection(pageId, {
+        layout: 'ImageCards', order: 4, title: 'Special Add-ons', subtitle: 'Available upon request', icon: 'Starburst', cardStyle: 'ImageLeft', columns: 3,
+        body: 'Enhance your event with our premium live stations.'
+      });
+      await addPolicyCards('SectionIdId', addons, [
+        ['Ice Cream Cart', 'SAR 2,500'], ['Chocolate Station', 'SAR 2,500'], ['Sushi Station', 'SAR 6,000']
+      ].map(([title, value], i) => ({
+        kind: 'Info', title, subtitle: '30 to 40 guests daily', value, iconColor: CATERING_MAROON, imageUrl: img('cat-mov-addon-' + i, 400, 300)
+      })));
+
+      // 2.5 Menu highlights strip.
+      const highlights = await addPolicySection(pageId, {
+        layout: 'Split', order: 5, title: 'Menu Highlights', icon: 'Info', sectionStyle: 'Tinted', theme: 'Crystal Waters'
+      });
+      await addPolicyCards('SectionIdId', highlights, [
+        ['Premium catering experience', 'Diamond'], ['Wide range of menu options', 'EatDrink'], ['Fresh and seasonal ingredients', 'Health'],
+        ['Ideal for RSG meetings, workshops and events', 'Group'], ['Available at KAFD Office', 'MapPin']
+      ].map(([title, icon]) => ({ kind: 'Info', title, icon, iconColor: C.blue })));
+
+      // 2.6 Photos only - no arrows; each opens the gallery popup.
+      await addCateringGallery(pageId, 6, 'cat-movenpick');
+      await addCateringBookingProcess(pageId, 7);
+    },
+
+    // --- Marriott menu -------------------------------------------------------------
+    'catering-services-marriott': async () => {
+      const pageId = await addPage(42, Object.assign({
+        Title: 'Marriott Menu', Slug: 'catering-services-marriott',
+        ParentSlug: 'catering-services', ParentTitle: 'Catering Services',
+        // HeroLogoUrl: link('<Marriott logo in Travel Hub Images>'),
+        HeroEyebrow: 'Marriott Riyadh', HeroTitle: 'Catering Menus',
+        HeroDescription: 'Exceptional catering for RSG meetings, workshops and events at the KAFD Office.',
+        HeroImageUrl: link(img('cat-marriott-hero', 1600, 500)), HeroTagline: CATERING_HERO_TAGLINE,
+        HeroHighlights: ['Diamond|Premium Quality', 'EatDrink|Wide Range of Menu Options', 'Health|Fresh & Seasonal Ingredients', 'Group|Tailored for RSG Events'].join('\n')
+      }, CATERING_BOOKING_CTA, CATERING_HELP));
+
+      // 3.2 First menu section.
+      const finger = await addPolicySection(pageId, {
+        layout: 'ImageCards', order: 1, title: 'Finger Food Menus', icon: 'EatDrink', cardStyle: 'ImageMenu', columns: 3, sectionStyle: 'Card',
+        body: 'A selection of delicious bite-sized options, perfect for short meetings, working lunches and informal gatherings.'
+      });
+      await addPolicyCards('SectionIdId', finger, [
+        menuCard('cat-mar-ff-1', 'Option 1', 160, ['Mini Sandwiches', 'Mini Wraps', 'Savory Bites', 'Mini Quiches', 'Pastries', 'Mini Desserts']),
+        menuCard('cat-mar-ff-2', 'Option 2', 210, ['Premium Mini Sandwiches', 'Gourmet Savory Bites', 'Mini Wraps & Sliders', 'Pastries', 'Mini Desserts', 'Hot & Cold Beverages', 'International Selections']),
+        menuCard('cat-mar-ff-3', 'Option 3', 240, ['Premium Mini Sandwiches', 'Gourmet Canapés', 'Hot Savory Bites', 'Pastries', 'Mini Desserts', 'Fresh Fruits', 'International Selections'])
+      ]);
+
+      // 3.3 Second section, with the single VAT statement under it.
+      const combo = await addPolicySection(pageId, {
+        layout: 'ImageCards', order: 2, title: 'Coffee Breaks & Finger Food Menus', icon: 'Coffee', cardStyle: 'ImageMenu', columns: 3, sectionStyle: 'Card',
+        body: 'Combine refreshing coffee breaks with a selection of finger foods for a complete catering experience.'
+      });
+      await addPolicyCards('SectionIdId', combo, [
+        menuCard('cat-mar-cb-1', 'Option 1', 200, ['Freshly Brewed Coffee & Tea', 'Selection of Juices', 'Mini Pastries & Croissants', 'Seasonal Fresh Fruits', 'Mini Sandwiches', 'Savory Bites', 'Mini Desserts']),
+        menuCard('cat-mar-cb-2', 'Option 2', 250, ['Freshly Brewed Coffee & Tea', 'Assorted Juices & Detox Water', 'Pastries & Danish Selection', 'Seasonal Fresh Fruits', 'Mini Sandwiches', 'Gourmet Savory Bites', 'Mini Desserts', 'International Selections']),
+        menuCard('cat-mar-cb-3', 'Option 3', 290, ['Freshly Brewed Coffee & Tea', 'Premium Juice Selection', 'Gourmet Pastries & Croissants', 'Seasonal Fresh Fruits', 'Premium Mini Sandwiches', 'Hot & Cold Savory Bites', 'Mini Desserts', 'International Selections'])
+      ]);
+      await addPolicySection(pageId, { layout: 'Callout', order: 3, icon: 'Info', body: CATERING_VAT });
+
+      // 3.4 Third menu section.
+      const buffetBase = ['Rice & Side Dishes', 'International & Local Selections', 'Bread Selection', 'Fresh Fruits', 'Juices & Water'];
+      const buffet = await addPolicySection(pageId, {
+        layout: 'ImageCards', order: 4, title: 'Buffet Lunch Menus', icon: 'Breakfast', cardStyle: 'ImageMenu', columns: 3, sectionStyle: 'Card',
+        body: 'A wide range of international and local flavours, ideal for larger meetings, events and formal gatherings.'
+      });
+      await addPolicyCards('SectionIdId', buffet, [
+        menuCard('cat-mar-bl-1', 'Option 1', 230, ['Salad Bar', 'Hot Main Courses (2–3 options)'].concat(buffetBase, ['Desserts'])),
+        menuCard('cat-mar-bl-2', 'Option 2', 260, ['Salad Bar', 'Hot Main Courses (3–4 options)'].concat(buffetBase, ['Desserts'])),
+        menuCard('cat-mar-bl-3', 'Option 3', 300, ['Premium Salad Bar', 'Hot Main Courses (4–5 options)'].concat(buffetBase, ['Premium Desserts']))
+      ]);
+
+      await addCateringGallery(pageId, 5, 'cat-marriott');
+      await addCateringBookingProcess(pageId, 6);
+    }
+  });
+
+  // -------------------------------------------------------------------
+  // TH_Offers - list-maintained cards for Personal Travel Offers (Featured +
+  // Explore tiles) and Meetings & Events (partnered hotels). Popup content
+  // is uploaded as ITEM ATTACHMENTS (what editors do: open the item, "Add
+  // attachments"); if an upload fails it falls back to PopupContent links.
+  // -------------------------------------------------------------------
+  // Uploads `url` as an attachment of TH_Offers item `itemId`; false on failure.
+  async function attachFromUrl(itemId, fileName, url) {
+    try {
+      const file = await fetch(url, { mode: 'cors' });
+      if (!file.ok) throw new Error('HTTP ' + file.status);
+      const body = await file.arrayBuffer();
+      const res = await fetch(webUrl + `/_api/web/lists/getbytitle('TH_Offers')/items(${itemId})/AttachmentFiles/add(FileName='${encodeURIComponent(esc(fileName))}')`, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { Accept: 'application/json;odata=verbose', 'X-RequestDigest': digest },
+        body
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      await sleep(CONFIG.THROTTLE_MS);
+      return true;
+    } catch (e) {
+      warn(`  attachment ${fileName} on TH_Offers ${itemId} failed (${e.message}) - using a PopupContent link instead`);
+      return false;
+    }
+  }
+
+  // files: [fileName, url] - uploaded as attachments in this order (names start "1 - ", "2 - " to fix the order).
+  async function addOffer(fields, files) {
+    const id = await addItem('TH_Offers', Object.assign({ IsActive: true, ClickAction: 'Auto' }, fields));
+    const fallback = [];
+    let n = 1;
+    for (const [name, url] of files || []) {
+      if (!url) continue;
+      const ext = /\.pdf$/i.test(url) ? '.pdf' : '.jpg';
+      const fileName = `${n++} - ${name}${ext}`;
+      if (!(await attachFromUrl(id, fileName, url))) fallback.push(`${name} | ${url}${ext === '.jpg' ? ' | image' : ''}`);
+    }
+    if (fallback.length) {
+      const type = await entityType('TH_Offers');
+      await spSend('MERGE', `/_api/web/lists/getbytitle('TH_Offers')/items(${id})`, { __metadata: { type }, PopupContent: fallback.join('\n') });
+    }
+    return id;
+  }
+
+  async function seedOffers() {
+    const validTo = addDays(120).slice(0, 10) + 'T00:00:00Z';
+    const OFFERS_LINK = 'https://www.redseaglobal.com';
+    const featured = [
+      ['Maldives', '5 Nights Holiday Package', 'Special Offer', 'SAR 5,999', 'per person', 'Maldives', 'Sun Siyam Resorts'],
+      ['Istanbul', '4 Nights City Break', 'Exclusive Rate', 'SAR 3,499', 'per person', 'Istanbul, Türkiye', 'Turkish Airlines Holidays'],
+      ['Dubai', '4 Nights Family Package', 'Family Offer', 'SAR 4,999', 'per family', 'Dubai, UAE', 'Emirates Holidays'],
+      ['London', 'Airfare + Hotel Package', 'Special Fare', 'SAR 3,999', 'per person', 'London, UK', 'Saudia Holidays'],
+      ['Baku', '4 Nights City Break', 'New Destination', 'SAR 2,999', 'per person', 'Baku, Azerbaijan', 'flynas Holidays']
+    ];
+    let order = 10;
+    for (const [title, subtitle, badge, value, note, location, partner] of featured) {
+      const seed = 'offer-' + title.toLowerCase();
+      await addOffer({
+        Title: title, Collection: 'Featured Personal Offers', Subtitle: subtitle, Badge: badge, IconColor: 'Thriving Corals',
+        ImageUrl: link(img(seed, 900, 600)), ValueLabel: 'Starting From', Value: value, ValueNote: note,
+        Partner: partner, Location: location, ValidTo: validTo,
+        Summary: `${subtitle} in ${location} at an exclusive RSG employee rate.`,
+        Details: [
+          `Enjoy ${subtitle.toLowerCase()} in ${location}, arranged by ${partner} for RSG employees and their families.`,
+          'Book through Personal Travel Care and quote your RSG employee ID to receive the special rate.',
+          '- Flexible travel dates within the validity period',
+          '- Prices subject to availability at the time of booking'
+        ].join('\n'),
+        Inclusions: ['Return economy airfare from Riyadh or Jeddah', 'Hotel accommodation with breakfast', 'Airport transfers', 'Travel insurance'].join('\n'),
+        Terms: ['Offer valid for RSG employees and their immediate family members.', 'Rates are per person based on twin sharing unless stated otherwise.', 'Blackout dates may apply during peak seasons.'].join('\n'),
+        LinkText: 'View Details', LinkUrl: link(OFFERS_LINK), CtaText: 'Book This Offer',
+        ContactEmail: 'holidays.ksa@travelats.com', ContactPhone: '+966 11 413 6116', DisplayOrder: order
+      }, [['Gallery 1', img(seed + '-g1', 1200, 800)], ['Gallery 2', img(seed + '-g2', 1200, 800)], ['Offer brochure', SAMPLE_PDF_2]]);
+      order += 10;
+    }
+
+    // Explore tiles: icon + colour + photo; the popup content is the attachments.
+    const poster = (s) => img(s, 1000, 1400);
+    const explore = [
+      ['Flights', 'Airplane', 'Blue Lagoon', [['Flight offers', poster('pto-flights')]]],
+      ['Hotels', 'Hotel', 'Majestic Mountains', [['Riyadh hotels', poster('pto-hotels-1')], ['Jeddah hotels', poster('pto-hotels-2')], ['International hotels', poster('pto-hotels-3')]]],
+      ['Car Rental', 'Car', 'Blooming Nature', [['Car rental offers', poster('pto-car')], ['Car rental terms', SAMPLE_PDF_1]]],
+      ['Holiday Packages', 'Sunny', 'Thriving Corals', [['Holiday packages brochure', SAMPLE_PDF_2]]],
+      ['Wellness Beyond Office', 'Health', 'Blooming Nature', [['Wellness partners', poster('pto-wellness-1')], ['Fitness offers', poster('pto-wellness-2')]]],
+      ['F&B Offers', 'EatDrink', 'Thriving Corals', [['Restaurant offers', poster('pto-fnb-1')], ['Cafe offers', poster('pto-fnb-2')]]],
+      ['Outlet Malls', 'Shop', 'Majestic Mountains', [['Outlet mall offers', poster('pto-outlet')]]],
+      ['Visa Guidance', 'Certificate', 'Blue Lagoon', [['Visa Guidance', poster('pto-visa-poster')]]],
+      ['International Driving License', 'Car', 'Sandy Dunes', [['International Driving License', poster('pto-idl-poster')]]],
+      ['City Guide (Riyadh & Jeddah)', 'MapPin', 'Majestic Mountains', [['Riyadh City Guide', SAMPLE_PDF_1], ['Jeddah City Guide', SAMPLE_PDF_2]]]
+    ];
+    order = 10;
+    for (const [title, icon, color, files] of explore) {
+      await addOffer({
+        Title: title, Collection: 'Explore Personal Offers', Icon: icon, IconColor: color,
+        ImageUrl: link(img('pto-tile-' + order, 500, 300)), DisplayOrder: order
+      }, files);
+      order += 10;
+    }
+
+    // Partnered hotels: "View Gallery" -> attached photos (popup).
+    const hotels = [
+      ['Riyadh Partnered Hotels', [['W Riyadh - KAFD', 'SAR 450'], ['Atheel KAFD', 'SAR 350'], ['Sofitel Riyadh Hotel & Convention Centre', 'SAR 425'],
+        ['Mövenpick Hotel and Residences Riyadh', 'SAR 350'], ['Executives Hotel - KAFD', 'SAR 280'], ['Crowne Plaza Riyadh RDC Hotel & Convention', 'SAR 300']]],
+      ['Jeddah Partnered Hotels', [['Asila Jeddah', 'SAR 450'], ['Shangri-La Jeddah', 'SAR 350'], ['Crowne Plaza Jeddah Al Salam', 'SAR 300'],
+        ['Hilton Jeddah', 'SAR 280'], ['Sheraton Jeddah', 'SAR 325']]]
+    ];
+    for (const [collection, rows] of hotels) {
+      order = 10;
+      for (const [title, value] of rows) {
+        const seed = 'hotel-' + title.toLowerCase().replace(/[^a-z]+/g, '-');
+        await addOffer({
+          Title: title, Collection: collection, ImageUrl: link(img(seed, 500, 320)),
+          ValueLabel: 'Starting From', Value: value, ValueNote: 'per participant', LinkText: 'View Gallery', DisplayOrder: order
+        }, [['Meeting room', img(seed + '-1', 1200, 800)], ['Ballroom', img(seed + '-2', 1200, 800)], ['Catering setup', img(seed + '-3', 1200, 800)]]);
+        order += 10;
+      }
+    }
+  }
+
   // TH_TravelServices rows whose nav tab / card should open one of these pages.
-  const SERVICE_PAGE_SLUGS = { 'personal travel offers': 'personal-travel-offers', 'personal travel': 'personal-travel-offers', 'sap concur': 'sap-concur', 'meeting & events': 'meetings-events', 'meetings & events': 'meetings-events' };
+  const SERVICE_PAGE_SLUGS = { 'personal travel offers': 'personal-travel-offers', 'personal travel': 'personal-travel-offers', 'sap concur': 'sap-concur', 'meeting & events': 'meetings-events', 'meetings & events': 'meetings-events', 'catering services': 'catering-services', 'catering service': 'catering-services' };
 
   // Sets TH_TravelServices.PageSlug on matching rows that don't have one yet.
   async function linkServicePages() {
@@ -1878,6 +2241,7 @@
       ClosingBannerTitle: 'Travel with Purpose',
       ClosingBannerDescription: 'Connecting people. Supporting communities. A more sustainable tomorrow.',
       ClosingBadges: ['Our People', 'Our Planet', 'Our Future'].join('\n'),
+      ClosingBannerImageUrl: link(img('closing-banner-5', 1600, 400)),
       NeedHelpTitle: 'Need Help?',
       NeedHelpSupportLabel: 'ASK HR',
       NeedHelpDescription: 'Follow the steps below to raise your request or get support.',
@@ -1980,7 +2344,7 @@
     // -------------------------------------------------------------------
     // Annual Flight Ticket Benefits sections
     // -------------------------------------------------------------------
-    const ruleColors = ['#b89c66', '#04253c', '#107c41', '#a4262c'];
+    const ruleColors = ['Gold', 'Navy Blue', 'Blooming Nature', 'Majestic Mountains'];
     const rulesSectionId = await addPolicySection(benefitsId, { layout: 'NumberedSteps', order: 1 });
     let ruleOrder = 1;
     for (const [num, title, icon, desc, subPoints] of [
@@ -2111,6 +2475,7 @@
     ['TH_TravelTeam', seedTeam],
     ['TH_GlobalNavigation', seedGlobalNav],
     ['TH_PolicyPages + TH_PolicySections + TH_PolicyCards + TH_PolicyTables + TH_PolicyTableRows + TH_PolicyTabs', seedPolicyPages],
+    ['TH_Offers', seedOffers],
     ['TH_FooterColumns + TH_FooterLinks', seedFooter]
   ];
 
@@ -2120,7 +2485,7 @@
     'TH_QuickPulseQuestions', 'TH_HeroBanners', 'TH_TravelServices',
     'TH_BusinessTravelSteps', 'TH_BusinessTravelInfoCards', 'TH_TravelNews',
     'TH_TravelEvents', 'TH_TravelTips', 'TH_TravelerTestimonials', 'TH_DepartmentTravelSpend',
-    'TH_GreenTravel', 'TH_TravelTeam', 'TH_GlobalNavigation'
+    'TH_GreenTravel', 'TH_TravelTeam', 'TH_GlobalNavigation', 'TH_Offers'
   ];
 
   /* ----------------------------- RUN ---------------------------------- */
@@ -2147,6 +2512,20 @@
         } catch (e) {
           issues.push(`reseed ${slug}: ${e.message}`);
           warn(`  ! reseed ${slug}: ${e.message}`);
+        }
+      }
+      // Pages whose sections read TH_Offers need its items - seeded once, when the list is empty.
+      if (CONFIG.RESEED_SLUGS.some((slug) => slug === 'personal-travel-offers' || slug === 'meetings-events')) {
+        try {
+          if ((await getTitles('TH_Offers')).length === 0) {
+            await seedOffers();
+            log('+  TH_Offers seeded');
+          } else {
+            log('=  TH_Offers already has items - kept as they are');
+          }
+        } catch (e) {
+          issues.push(`TH_Offers: ${e.message}`);
+          warn(`  ! TH_Offers: ${e.message} (run travelhub-provision.js first)`);
         }
       }
       try {

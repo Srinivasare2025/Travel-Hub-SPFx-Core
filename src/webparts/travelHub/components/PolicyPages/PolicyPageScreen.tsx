@@ -5,6 +5,7 @@ import { useNavigation } from '../../../../common/context/NavigationContext';
 import { useAsyncData } from '../../../../common/hooks';
 import { Badge, Button, LoadingState, ErrorState, EmptyState } from '../../../../common/components';
 import { SectionFlow, HelpSteps, PageLink, BUSINESS_TRAVEL_SLUG } from './PolicyCardSections';
+import type { IPolicyPageContent } from '../../../../models';
 import styles from './PolicyPageScreen.module.scss';
 
 export interface IPolicyPageScreenProps {
@@ -30,6 +31,68 @@ function closingBadgeIcon(label: string): string {
   return 'CheckMark';
 }
 
+/** Optional brand logo above the hero eyebrow (TH_PolicyPages.HeroLogoUrl), e.g. a catering partner's logo. */
+const HeroLogo: React.FC<{ hero: IPolicyPageContent['hero'] }> = ({ hero }) =>
+  hero.logoUrl === undefined ? null : <img className={styles.heroLogo} src={hero.logoUrl} alt={hero.eyebrow ?? ''} />;
+
+/** Optional icon + text badges under the hero description (TH_PolicyPages.HeroHighlights). */
+const HeroHighlights: React.FC<{ hero: IPolicyPageContent['hero'] }> = ({ hero }) =>
+  hero.highlights.length === 0 ? null : (
+    <ul className={styles.heroHighlights}>
+      {hero.highlights.map((item, index) => (
+        <li key={index} className={styles.heroHighlight}>
+          {item.icon !== undefined && <Icon iconName={item.icon} aria-hidden="true" />}
+          <span>{item.text}</span>
+        </li>
+      ))}
+    </ul>
+  );
+
+/**
+ * The page banner - one style for every page (the SAP Concur look): eyebrow,
+ * title, subtitle, description, badges and buttons on a light band, the
+ * photo fading in on the right, the script tagline over the photo.
+ * TH_PolicyPages.HeroStyle no longer switches to the old dark photo banner,
+ * so pages created by hand (whose HeroStyle defaults to "Dark") match the
+ * rest. Exported for other screens' banners (e.g. Green Travel).
+ */
+export const PageHero: React.FC<{ hero: IPolicyPageContent['hero'] }> = ({ hero }) => (
+  <div className={styles.heroLight}>
+    {hero.imageUrl !== undefined && <div className={styles.heroLightImage} style={{ backgroundImage: `url(${hero.imageUrl})` }} aria-hidden="true" />}
+    <div className={styles.heroLightContent}>
+      {hero.icon !== undefined && (
+        <span className={styles.heroLightIcon} aria-hidden="true">
+          <Icon iconName={hero.icon} />
+        </span>
+      )}
+      <div className={styles.heroLightText}>
+        <HeroLogo hero={hero} />
+        {hero.eyebrow !== undefined && <p className={styles.heroEyebrow}>{hero.eyebrow}</p>}
+        <h1 className={styles.heroLightTitle}>{hero.title}</h1>
+        {hero.subtitle !== undefined && <p className={styles.heroLightSubtitle}>{hero.subtitle}</p>}
+        {hero.description !== undefined && <p className={styles.heroLightDescription}>{hero.description}</p>}
+        <HeroHighlights hero={hero} />
+        {hero.links.length > 0 && (
+          <div className={styles.heroLinks}>
+            {hero.links.map((link, index) => (
+              <PageLink
+                key={index}
+                targetSlug={link.targetSlug}
+                url={link.url}
+                openInNewTab={link.openInNewTab}
+                className={index === 0 ? styles.heroButtonPrimary : styles.heroButtonSecondary}
+              >
+                {link.text} <Icon iconName={link.openInNewTab ? 'OpenInNewWindow' : 'ArrowRight'} aria-hidden="true" />
+              </PageLink>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+    {hero.tagline !== undefined && <div className={styles.heroLightTagline}>{hero.tagline}</div>}
+  </div>
+);
+
 /**
  * One adaptive template for every Travel Policy page (landing page included)
  * - `PolicyService.getPage()` returns the page's fixed fields (hero, CTA,
@@ -42,9 +105,10 @@ function closingBadgeIcon(label: string): string {
  * card's `TargetSlug`), not a real second page.
  */
 export const PolicyPageScreen: React.FC<IPolicyPageScreenProps> = ({ slug }) => {
-  const { policy } = useServices();
+  const { policy, configuration } = useServices();
   const { navigate } = useNavigation();
   const { status, data, retry } = useAsyncData(() => policy.getPage(slug), [slug]);
+  const assistant = configuration.policyAssistant;
 
   if (status === 'loading') {
     return <LoadingState variant="hero" label="Loading Travel Policy" />;
@@ -65,6 +129,9 @@ export const PolicyPageScreen: React.FC<IPolicyPageScreenProps> = ({ slug }) => 
       />
     );
   }
+
+  const assistantUrl = data.assistantLinkUrl ?? assistant.url;
+  const closingImage = data.closingBanner?.imageUrl ?? configuration.pages.closingBannerImageUrl;
 
   return (
     <div className={styles.screen}>
@@ -96,78 +163,7 @@ export const PolicyPageScreen: React.FC<IPolicyPageScreenProps> = ({ slug }) => 
         <span aria-current="page">{data.title}</span>
       </nav>
 
-      {data.hero.style === 'light' ? (
-        // HeroStyle = Light (the mockups): icon disc + text on a light band,
-        // the photo fading in on the right.
-        <div className={styles.heroLight}>
-          {data.hero.imageUrl !== undefined && (
-            <div className={styles.heroLightImage} style={{ backgroundImage: `url(${data.hero.imageUrl})` }} aria-hidden="true" />
-          )}
-          <div className={styles.heroLightContent}>
-            {data.hero.icon !== undefined && (
-              <span className={styles.heroLightIcon} aria-hidden="true">
-                <Icon iconName={data.hero.icon} />
-              </span>
-            )}
-            <div className={styles.heroLightText}>
-              {data.hero.eyebrow !== undefined && <p className={styles.heroEyebrow}>{data.hero.eyebrow}</p>}
-              <h1 className={styles.heroLightTitle}>{data.hero.title}</h1>
-              {data.hero.subtitle !== undefined && <p className={styles.heroLightSubtitle}>{data.hero.subtitle}</p>}
-              {data.hero.description !== undefined && <p className={styles.heroLightDescription}>{data.hero.description}</p>}
-              {data.hero.links.length > 0 && (
-                <div className={styles.heroLinks}>
-                  {data.hero.links.map((link, index) => (
-                    <PageLink
-                      key={index}
-                      targetSlug={link.targetSlug}
-                      url={link.url}
-                      openInNewTab={link.openInNewTab}
-                      className={index === 0 ? styles.heroButtonPrimary : styles.heroButtonSecondary}
-                    >
-                      {link.text} <Icon iconName={link.openInNewTab ? 'OpenInNewWindow' : 'ArrowRight'} aria-hidden="true" />
-                    </PageLink>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-          {data.hero.tagline !== undefined && <div className={styles.heroLightTagline}>{data.hero.tagline}</div>}
-        </div>
-      ) : (
-        <div
-          className={styles.hero}
-          style={data.hero.imageUrl !== undefined ? { backgroundImage: `url(${data.hero.imageUrl})` } : undefined}
-        >
-          <div className={styles.heroScrim} aria-hidden="true" />
-          <div className={styles.heroContent}>
-            {data.hero.icon !== undefined && (
-              <span className={styles.heroIcon} aria-hidden="true">
-                <Icon iconName={data.hero.icon} />
-              </span>
-            )}
-            {data.hero.eyebrow !== undefined && <p className={styles.heroEyebrowDark}>{data.hero.eyebrow}</p>}
-            <h1 className={styles.heroTitle}>{data.hero.title}</h1>
-            {data.hero.subtitle !== undefined && <p className={styles.heroSubtitle}>{data.hero.subtitle}</p>}
-            {data.hero.description !== undefined && <p className={styles.heroDescription}>{data.hero.description}</p>}
-            {data.hero.links.length > 0 && (
-              <div className={styles.heroLinks}>
-                {data.hero.links.map((link, index) => (
-                  <PageLink
-                    key={index}
-                    targetSlug={link.targetSlug}
-                    url={link.url}
-                    openInNewTab={link.openInNewTab}
-                    className={index === 0 ? styles.heroButtonPrimary : styles.heroButtonOnDark}
-                  >
-                    {link.text} <Icon iconName={link.openInNewTab ? 'OpenInNewWindow' : 'ArrowRight'} aria-hidden="true" />
-                  </PageLink>
-                ))}
-              </div>
-            )}
-          </div>
-          {data.hero.tagline !== undefined && <div className={styles.heroTagline}>{data.hero.tagline}</div>}
-        </div>
-      )}
+      <PageHero hero={data.hero} />
 
       {data.infoBannerText !== undefined && (
         <div className={styles.infoBanner}>
@@ -226,63 +222,40 @@ export const PolicyPageScreen: React.FC<IPolicyPageScreenProps> = ({ slug }) => 
           set switches to icon+title/description with an "Ask a Question"
           button and the suggestions in their own row below (the 6 "Explore
           Policy Information" sub-pages). */}
-      {data.suggestedQuestions.length > 0 && (
+      {/* Ask Our Policy Assistant: launches the organisation's policy agent
+          (e.g. a Copilot Studio agent) in a new tab - the link is the page's
+          AssistantLinkUrl, else the site-wide policyAssistant.url
+          (TH_SiteConfiguration). There is no in-page chat/search box. Shown
+          when the page has suggested questions or an agent link. */}
+      {(data.suggestedQuestions.length > 0 || data.assistantLinkUrl !== undefined) && (
         <div className={styles.assistant}>
           <span className={styles.assistantIcon} aria-hidden="true">
             <Icon iconName="Robot" />
           </span>
           <div className={styles.assistantBody}>
-            {data.assistantLinkUrl !== undefined ? (
-              <>
-                <div className={styles.assistantTopRow}>
-                  <div>
-                    <div className={styles.assistantHeading}>
-                      <h2 className={styles.sectionTitle}>Ask Policy Assistant</h2>
-                      <Badge text="AI Powered" tone="gold" />
-                    </div>
-                    <p className={styles.assistantDescription}>Get quick answers to your travel policy questions.</p>
-                  </div>
-                  <Button variant="primary" href={data.assistantLinkUrl} openInNewTab iconAfter="ChevronRight">
-                    {data.assistantLinkText ?? 'Ask a Question'}
-                  </Button>
+            <div className={styles.assistantTopRow}>
+              <div>
+                <div className={styles.assistantHeading}>
+                  <h2 className={styles.sectionTitle}>{assistant.title}</h2>
+                  <Badge text="AI Powered" tone="gold" />
                 </div>
-                <div className={styles.assistantSuggestions}>
-                  {data.suggestedQuestions.map((question) => (
-                    <span key={question} className={`${styles.assistantChip} ${styles.assistantChipIconed}`}>
-                      <Icon iconName="Search" aria-hidden="true" />
-                      {question}
-                    </span>
-                  ))}
-                </div>
-              </>
-            ) : (
-              // Travel Policy landing page: title / description / input on
-              // the left, "Try asking" + the questions (2 per line) on the
-              // right, stretched to the same height as the left side.
-              <div className={styles.assistantSplit}>
-                <div className={styles.assistantMain}>
-                  <div className={styles.assistantHeading}>
-                    <h2 className={styles.sectionTitle}>Ask Our Policy Assistant</h2>
-                    <Badge text="AI Powered" tone="gold" />
-                  </div>
-                  <p className={styles.assistantDescription}>Get instant answers from RSG&rsquo;s Travel Policy.</p>
-                  <div className={styles.assistantInputRow}>
-                    <input className={styles.assistantInput} type="text" placeholder="Ask a question about the Travel Policy…" disabled />
-                    <span className={styles.assistantSend} aria-hidden="true">
-                      <Icon iconName="Send" />
-                    </span>
-                  </div>
-                </div>
-                <div className={styles.assistantTry}>
-                  <span className={styles.assistantSuggestionsLabel}>Try asking:</span>
-                  <div className={styles.assistantTryGrid}>
-                    {data.suggestedQuestions.map((question) => (
-                      <span key={question} className={`${styles.assistantChip} ${styles.assistantTryChip}`}>
-                        {question}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+                <p className={styles.assistantDescription}>{assistant.description}</p>
+              </div>
+              {assistantUrl !== undefined && (
+                <Button variant="primary" href={assistantUrl} openInNewTab iconAfter="OpenInNewWindow">
+                  {data.assistantLinkText ?? assistant.buttonText}
+                </Button>
+              )}
+            </div>
+            {data.suggestedQuestions.length > 0 && (
+              <div className={styles.assistantSuggestions}>
+                <span className={styles.assistantSuggestionsLabel}>Try asking:</span>
+                {data.suggestedQuestions.map((question) => (
+                  <span key={question} className={`${styles.assistantChip} ${styles.assistantChipIconed}`}>
+                    <Icon iconName="Search" aria-hidden="true" />
+                    {question}
+                  </span>
+                ))}
               </div>
             )}
           </div>
@@ -315,7 +288,13 @@ export const PolicyPageScreen: React.FC<IPolicyPageScreenProps> = ({ slug }) => 
       )}
 
       {data.closingBanner !== undefined && (
-        <div className={styles.closingBanner}>
+        // With a photo (TH_PolicyPages.ClosingBannerImageUrl, else the site-wide
+        // pages.closingBannerImageUrl) the text sits over the image on a navy
+        // scrim; without one it keeps the original green band.
+        <div
+          className={`${styles.closingBanner} ${closingImage !== undefined ? styles.closingBannerImage : ''}`}
+          style={closingImage !== undefined ? { backgroundImage: `url(${closingImage})` } : undefined}
+        >
           <Icon iconName="Flower" className={styles.closingIcon} aria-hidden="true" />
           <div>
             <h2 className={styles.closingTitle}>{data.closingBanner.title}</h2>

@@ -13,12 +13,12 @@
 
 .icon {
   font-size: 28px;
-  color: var(--full-text-muted, #7b8794);
+  color: var(--full-text-muted, #6f7271);
 }
 
 .message {
   @include th-body;
-  color: var(--full-text-muted, #7b8794);
+  color: var(--full-text-muted, #6f7271);
   margin: 0;
 }
 
