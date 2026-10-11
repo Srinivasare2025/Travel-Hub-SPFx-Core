@@ -29,11 +29,15 @@ function isActive(item: IGlobalNavItem, view: ThView, items: IGlobalNavItem[]): 
     case 'home':
       return view.kind === 'hub';
     case 'policy':
+      if (view.kind === 'offer') {
+        // An offer opened from a page belongs to that page's tab.
+        return view.fromSlug !== undefined && view.fromSlug !== 'business-travel' && owningPolicyTab(items, view.fromSlug) === item;
+      }
       return view.kind === 'policyPage' && owningPolicyTab(items, view.slug) === item;
     case 'service':
       return view.kind === 'servicePage' && Number(item.url) === view.serviceId;
     case 'businessTravel':
-      return view.kind === 'businessTravel';
+      return view.kind === 'businessTravel' || (view.kind === 'offer' && view.fromSlug === 'business-travel');
     default:
       return false;
   }

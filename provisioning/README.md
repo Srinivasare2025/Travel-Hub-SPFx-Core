@@ -106,3 +106,21 @@ If you see `FATAL`, nothing after it ran — fix the cause and re-run.
 `travelhub-template.xml` (to be authored) applied with PnP PowerShell or
 CLI for Microsoft 365. See [../docs/DEPLOYMENT.md](../docs/DEPLOYMENT.md) §6.
 Use this once you have more than one environment to keep schemas identical.
+
+## Adding only selected pages
+
+`travelhub-add-pages.js` adds the prepared sample content for only the pages
+listed in its `CONFIG.PAGES` (Personal Travel Offers, Meetings & Events, SAP
+Concur + 4 sub-pages, Catering Services + Mövenpick/Marriott menus, Family
+Relocation, Employee Relocation, Business Travel). A page that already has
+sections is skipped unless `REPLACE_EXISTING: true`; an existing page row with
+no sections (an empty shell) is filled; a page that fails part-way is removed
+again so a re-run starts clean; `TH_Offers` is filled only when empty; nothing else
+is touched. Run `travelhub-provision.js` first.
+
+The file is **generated** from `travelhub-sample-data.js` (same page
+content, no copy to keep in sync by hand). After editing sample content,
+regenerate it:
+
+    node provisioning/tools/build-add-pages.js
+

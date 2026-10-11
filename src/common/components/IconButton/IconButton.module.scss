@@ -5,9 +5,9 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  border: 1px solid var(--full-border, #c8d7e6);
+  border: 1px solid var(--full-border, #d5dfe3);
   background: var(--full-surface, #fff);
-  box-shadow: var(--full-shadow-chrome, 0 5px 14px rgba(8, 28, 50, 0.045));
+  box-shadow: var(--full-shadow-chrome, 0 5px 14px rgba(4, 37, 60, 0.045));
   color: var(--full-heading, #04253c);
   cursor: pointer;
   transition: background-color var(--full-transition-fast, 120ms ease),
@@ -15,9 +15,9 @@
   @include th-focusable;
 
   &:hover:not(:disabled) {
-    border-color: rgba(195, 161, 94, 0.5);
-    background: var(--full-accent-wash, rgba(195, 161, 94, 0.08));
-    color: var(--full-accent-text, #816630);
+    border-color: rgba(184, 156, 103, 0.5);
+    background: var(--full-accent-wash, rgba(184, 156, 103, 0.08));
+    color: var(--full-accent-text, #7b6945);
   }
 
   &:disabled {
@@ -46,6 +46,6 @@
   color: var(--full-secondary, #04253c);
 
   &:hover:not(:disabled) {
-    color: var(--full-accent-text, #816630);
+    color: var(--full-accent-text, #7b6945);
   }
 }

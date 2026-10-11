@@ -12,26 +12,26 @@
 }
 
 .gold {
-  background: rgba(195, 161, 94, 0.12);
-  color: var(--full-accent-text, #816630);
-  border: 1px solid rgba(195, 161, 94, 0.32);
+  background: rgba(184, 156, 103, 0.12);
+  color: var(--full-accent-text, #7b6945);
+  border: 1px solid rgba(184, 156, 103, 0.32);
 }
 
 /* Themed tokens, not a fixed navy tint - a literal rgba(navy) tint would
    nearly vanish on the dark canvas theme's own navy-toned cards. */
 .navy {
-  background: var(--full-surface-alt, #faf8f4);
+  background: var(--full-surface-alt, #faf8f6);
   color: var(--full-heading, #04253c);
-  border: 1px solid var(--full-border, #e8e5e0);
+  border: 1px solid var(--full-border, #e2dcd5);
 }
 
 .muted {
-  background: var(--full-surface-alt, #faf8f4);
-  color: var(--full-text-muted, #4a5568);
-  border: 1px solid var(--full-border, #e8e5e0);
+  background: var(--full-surface-alt, #faf8f6);
+  color: var(--full-text-muted, #46535c);
+  border: 1px solid var(--full-border, #e2dcd5);
 }
 
 .alert {
-  background: var(--full-danger, #a4262c);
+  background: var(--full-danger, #852e2c);
   color: #fff;
 }

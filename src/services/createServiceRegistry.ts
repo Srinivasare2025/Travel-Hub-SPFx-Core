@@ -18,6 +18,7 @@ import { TravelTeamService } from './TravelTeamService';
 import { FooterService } from './FooterService';
 import { PolicyService } from './PolicyService';
 import { BusinessTravelService } from './BusinessTravelService';
+import { OffersService } from './OffersService';
 
 /**
  * Composition root for the service layer. Called once from
@@ -31,6 +32,7 @@ export async function createServiceRegistry(context: WebPartContext): Promise<IS
 
   const configuration = await new ConfigurationService(spo, cache, logger).getConfiguration();
   const travelServices = new TravelServicesService(spo, cache, logger);
+  const offers = new OffersService(spo, cache, logger);
 
   return {
     configuration,
@@ -46,7 +48,8 @@ export async function createServiceRegistry(context: WebPartContext): Promise<IS
     greenTravel: new GreenTravelService(spo, cache, logger),
     team: new TravelTeamService(spo, cache, logger),
     footer: new FooterService(spo, cache, logger),
-    policy: new PolicyService(spo, cache, logger),
-    businessTravel: new BusinessTravelService(spo, cache, logger)
+    policy: new PolicyService(spo, cache, logger, offers),
+    businessTravel: new BusinessTravelService(spo, cache, logger),
+    offers
   };
 }

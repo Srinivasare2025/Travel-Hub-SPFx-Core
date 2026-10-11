@@ -65,6 +65,27 @@ body:has([data-th-zone]) .CanvasZone:not([data-th-zone]) {
   display: none !important;
 }
 
+/* Full width while the splash is showing. chromeOverride.ts neutralises the
+   canvas zone/section padding and max-width only once React has mounted, so
+   the pre-React splash used to render inside SharePoint's narrow, padded
+   content column and then jump to full width. The same resets apply here as
+   soon as the splash is in the page (scoped to it with :has, so a page
+   without Travel Hub is untouched). */
+#spPageChromeAppDiv:has(.th-splash),
+#spPageCanvasContent:has(.th-splash),
+.CanvasZone:has(.th-splash),
+.CanvasSection:has(.th-splash),
+.CanvasZoneSectionContainer:has(.th-splash),
+.ControlZone:has(.th-splash) {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  max-width: none !important;
+  width: 100% !important;
+}
+
 /* The command bar's wrapper keeps a reserved top margin even once the bar is
    hidden. Obfuscated SharePoint class (same capture as fa-portal's
    globalChrome.ts) - may need re-capturing after a SharePoint update if a gap

@@ -46,8 +46,8 @@
   height: 36px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: rgba(195, 161, 94, 0.16);
-  color: var(--full-accent-text, #816630);
+  background: rgba(184, 156, 103, 0.16);
+  color: var(--full-accent-text, #7b6945);
   font-size: 1rem;
 }
 
@@ -87,14 +87,14 @@
   @include th-focusable;
 
   &:hover .pulsePreviewOptionIcon {
-    border-color: var(--full-primary, #b89c66);
+    border-color: var(--full-primary, #b89c67);
   }
 }
 
 .pulsePreviewOptionSelected {
   .pulsePreviewOptionIcon {
-    background: var(--full-primary, #b89c66);
-    border-color: var(--full-primary, #b89c66);
+    background: var(--full-primary, #b89c67);
+    border-color: var(--full-primary, #b89c67);
     color: var(--full-primary-contrast, #04253c);
   }
 
@@ -112,9 +112,9 @@
   height: 36px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: var(--full-surface-alt, #faf8f4);
-  border: 1px solid var(--full-border, #e8e5e0);
-  color: var(--full-accent-text, #816630);
+  background: var(--full-surface-alt, #faf8f6);
+  border: 1px solid var(--full-border, #e2dcd5);
+  color: var(--full-accent-text, #7b6945);
   font-size: 1.05rem;
   transition: background-color var(--full-transition-fast, 120ms ease),
     border-color var(--full-transition-fast, 120ms ease),
@@ -123,7 +123,7 @@
 
 .pulsePreviewOptionLabel {
   @include th-meta;
-  color: var(--full-text-muted, #4a5568);
+  color: var(--full-text-muted, #46535c);
   text-align: center;
   line-height: 1.2;
 }
@@ -134,13 +134,13 @@
   gap: var(--full-space-2, 8px);
   padding: var(--full-space-3, 12px) var(--full-space-4, 16px);
   border-radius: var(--full-radius-md, 8px);
-  background: var(--full-surface-alt, #faf8f4);
+  background: var(--full-surface-alt, #faf8f6);
   color: var(--full-heading, #04253c);
   font-weight: var(--full-fw-medium, 500);
 
   svg,
   i {
-    color: var(--full-success, #107c41);
+    color: var(--full-success, #00946e);
     flex-shrink: 0;
   }
 
@@ -161,7 +161,7 @@
   width: 100%;
   resize: vertical;
   padding: var(--full-space-2, 8px) var(--full-space-3, 12px);
-  border: 1px solid var(--full-border, #e8e5e0);
+  border: 1px solid var(--full-border, #e2dcd5);
   border-radius: var(--full-radius-md, 8px);
   background: var(--full-surface, #fff);
   color: var(--full-text, #04253c);
@@ -175,7 +175,7 @@
 
 .pulseError {
   margin: 0;
-  color: var(--full-danger, #a4262c);
+  color: var(--full-danger, #852e2c);
   font-size: var(--full-fs-meta, 0.8125rem);
 }
 
@@ -188,9 +188,9 @@
   margin-top: auto;
   padding-top: var(--full-space-3, 12px);
   border: none;
-  border-top: 1px solid var(--full-border, #e8e5e0);
+  border-top: 1px solid var(--full-border, #e2dcd5);
   background: none;
-  color: var(--full-accent-text, #816630);
+  color: var(--full-accent-text, #7b6945);
   font-family: var(--full-font-family, "Segoe UI", sans-serif);
   font-size: var(--full-fs-link, 0.875rem);
   font-weight: var(--full-fw-semibold, 600);
@@ -219,14 +219,14 @@
   display: block;
   height: 8px;
   border-radius: 999px;
-  background: var(--full-border, #e8e5e0);
+  background: var(--full-border, #e2dcd5);
   overflow: hidden;
 
   > span {
     display: block;
     height: 100%;
     border-radius: 999px;
-    background: var(--full-primary, #b89c66);
+    background: var(--full-primary, #b89c67);
   }
 }
 
@@ -251,7 +251,7 @@
   padding: 0;
   border: none;
   background: none;
-  color: var(--full-text-muted, #4a5568);
+  color: var(--full-text-muted, #46535c);
   font-family: var(--full-font-family, "Segoe UI", sans-serif);
   font-size: var(--full-fs-link, 0.875rem);
   font-weight: var(--full-fw-semibold, 600);
@@ -271,7 +271,7 @@
 
 .screenDescription {
   @include th-body;
-  color: var(--full-text-muted, #4a5568);
+  color: var(--full-text-muted, #46535c);
   margin: 0 0 var(--full-space-5, 24px);
 }
 
@@ -329,7 +329,7 @@
 .feedbackDepartment {
   @include th-meta;
   padding-top: var(--full-space-2, 8px);
-  border-top: 1px solid var(--full-border, #e8e5e0);
+  border-top: 1px solid var(--full-border, #e2dcd5);
 }
 
 .feedbackSubmitRow {
@@ -358,7 +358,7 @@
 .formTextarea {
   @include th-body;
   padding: var(--full-space-2, 8px) var(--full-space-3, 12px);
-  border: 1px solid var(--full-border, #e8e5e0);
+  border: 1px solid var(--full-border, #e2dcd5);
   border-radius: var(--full-radius-md, 8px);
   background: var(--full-surface, #fff);
   color: var(--full-text, #04253c);
@@ -391,7 +391,7 @@
   padding: 4px;
   border: none;
   background: none;
-  color: var(--full-accent-text, #816630);
+  color: var(--full-accent-text, #7b6945);
   font-size: 1.5rem;
   cursor: pointer;
   @include th-focusable;
@@ -442,7 +442,7 @@
 .stars {
   display: inline-flex;
   gap: 2px;
-  color: var(--full-accent-text, #816630);
+  color: var(--full-accent-text, #7b6945);
   font-size: 0.8rem;
 }
 

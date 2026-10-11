@@ -1,5 +1,5 @@
 /* eslint-disable no-script-url -- this suite deliberately tests that javascript: URLs are rejected. */
-import { sanitizeUrl, isSafeUrl, toMailtoHref, toTelHref } from '../urlValidation';
+import { sanitizeUrl, isSafeUrl, toMailtoHref, toTelHref, isExternalUrl } from '../urlValidation';
 
 describe('sanitizeUrl', () => {
   it('accepts https, http, mailto and tel', () => {
@@ -51,5 +51,15 @@ describe('toMailtoHref / toTelHref', () => {
   it('builds tel only for phone-like input', () => {
     expect(toTelHref('+44 20 7946 0000')).toBe('tel:+442079460000');
     expect(toTelHref('ext 12')).toBeUndefined();
+  });
+});
+
+describe('isExternalUrl', () => {
+  it('is true only for absolute http(s) URLs on another host', () => {
+    expect(isExternalUrl('https://www.visitredsea.com/offers', 'tenant.sharepoint.com')).toBe(true);
+    expect(isExternalUrl('https://tenant.sharepoint.com/sites/x', 'tenant.sharepoint.com')).toBe(false);
+    expect(isExternalUrl('/sites/x/page.aspx', 'tenant.sharepoint.com')).toBe(false);
+    expect(isExternalUrl('mailto:a@b.com', 'tenant.sharepoint.com')).toBe(false);
+    expect(isExternalUrl(undefined)).toBe(false);
   });
 });

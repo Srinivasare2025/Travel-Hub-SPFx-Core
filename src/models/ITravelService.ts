@@ -11,6 +11,8 @@ export interface ITravelService {
   icon: string;
   /** Validated CSS colour (hex or token name) for the icon chip background. */
   iconBackgroundColor: string;
+  /** Readable icon colour on `iconBackgroundColor` (navy on light brand colours, white on dark). */
+  iconForegroundColor: string;
   /** Validated destination; `undefined` when invalid (action link hidden). */
   linkUrl: string | undefined;
   linkType: 'internal' | 'external';

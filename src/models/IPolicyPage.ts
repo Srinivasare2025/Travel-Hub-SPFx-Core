@@ -1,3 +1,5 @@
+import type { IMediaItem } from '../common/utils/mediaItems';
+
 export type PolicyCardKind = 'category' | 'info' | 'highlight' | 'rule' | 'helpStep' | 'linkItem';
 
 /** One repeatable content block on a policy page (from TH_PolicyCards). */
@@ -11,7 +13,15 @@ export interface IPolicyCard {
   icon: string;
   /** True when the card's `Icon` column was actually filled in (`icon` falls back to 'Info' otherwise). */
   iconExplicit: boolean;
+  /**
+   * CSS colour from TH_PolicyCards.IconColor - a brand colour name ("Blue
+   * Lagoon"), hex or `--full-*` token, resolved by `resolveColor`.
+   */
   iconColor: string | undefined;
+  /** Readable text colour on a fill of `iconColor` (navy on light brand colours, white on dark). */
+  iconColorOn: string | undefined;
+  /** AA text/icon shade of `iconColor` for use on light backgrounds. */
+  iconColorInk: string | undefined;
   /** Newline-delimited sub-bullets, e.g. Rule cards' "Seasonal periods include" list. */
   subPoints: string[];
   /** Internal navigation (another TH_PolicyPages row), preferred over `linkUrl` when both are set. */
@@ -33,6 +43,17 @@ export interface IPolicyCard {
   valueLabel: string | undefined;
   /** Small caption below `value`, e.g. "per person" / "Shipping Assistance". */
   valueNote: string | undefined;
+  /**
+   * Files the card opens in an in-app popup instead of navigating
+   * (TH_PolicyCards.PopupContent) - e.g. a City Guide's Riyadh and Jeddah
+   * PDFs (shown as tabs) or a setup gallery's photos (prev/next). Takes
+   * priority over `targetSlug`/`linkUrl`; empty = the card links as before.
+   */
+  popupItems: IMediaItem[];
+  /** A TH_Offers card that opens the in-app offer details screen (OfferDetailScreen). */
+  offerId: number | undefined;
+  /** Partner/brand logo shown under the photo (TH_Offers cards, e.g. hotel logos). */
+  logoUrl: string | undefined;
   displayOrder: number;
 }
 
@@ -90,7 +111,11 @@ export type PolicySectionLayout =
   | 'imageCards'
   | 'feature'
   | 'faq'
-  | 'search';
+  | 'search'
+  /** Partner price panels: photo left, "icon / menu / SAR 120 per person" rows right, note below (Catering "Featured Menu Options"). */
+  | 'priceList'
+  /** Photo strip; each photo opens the whole set in a popup with prev/next (Catering "Setup Gallery"). */
+  | 'gallery';
 
 /**
  * How cards in a `cardsGrid` (highlight) section lay out their icon:
@@ -113,7 +138,9 @@ export type PolicyCardStyle =
   /** imageCards: compact tile - photo/icon, title and arrow (category tiles, "Key Policy Highlights"). */
   | 'imageTile'
   /** imageCards: big photo with the text over it (destination / meeting-room banners). */
-  | 'imageBanner';
+  | 'imageBanner'
+  /** imageCards: menu card - photo with a Badge ribbon and a price tag (Value), then the menu items (Catering menus). */
+  | 'imageMenu';
 
 /** Share of the row a section takes; consecutive non-`full` sections sit side by side. */
 export type PolicySectionWidth = 'full' | 'half' | 'oneThird' | 'twoThirds';
@@ -121,7 +148,22 @@ export type PolicySectionWidth = 'full' | 'half' | 'oneThird' | 'twoThirds';
 /** The container a section renders in. `plain` = no container (legacy). */
 export type PolicySectionStyle = 'plain' | 'card' | 'tinted';
 
-export type PolicyTheme = 'gold' | 'blue' | 'green' | 'amber' | 'red' | 'purple' | 'teal';
+/**
+ * Section accent colour - one RSG brand colour per key (PolicyPageScreen.module.scss
+ * `[data-th-theme]`). The older TH_PolicySections.Theme choices map onto these:
+ * Blue -> crystal-waters, Teal -> blue-lagoon, Green -> blooming-nature,
+ * Amber -> sandy-dunes, Red -> thriving-corals, Purple -> majestic-mountains.
+ */
+export type PolicyTheme =
+  | 'gold'
+  | 'navy'
+  | 'crystal-waters'
+  | 'blue-lagoon'
+  | 'blooming-nature'
+  | 'majestic-mountains'
+  | 'thriving-corals'
+  | 'sandy-dunes'
+  | 'volcanic-ash';
 
 /**
  * One ordered content block on a policy page (from TH_PolicySections). This
@@ -162,6 +204,12 @@ export interface IPolicySection {
   linkText: string | undefined;
   linkUrl: string | undefined;
   targetSlug: string | undefined;
+  /**
+   * TH_PolicySections.OfferCollection - when set, the section also shows the
+   * active TH_Offers items of that Collection (after its own cards), so
+   * editors maintain offers/hotels in one list instead of TH_PolicyCards.
+   */
+  offerCollection: string | undefined;
   displayOrder: number;
 }
 
@@ -189,11 +237,19 @@ export interface IPolicyHeroLink {
   openInNewTab: boolean;
 }
 
+/** One hero badge (TH_PolicyPages.HeroHighlights line `Icon|Text`). */
+export interface IPolicyHeroHighlight {
+  icon: string | undefined;
+  text: string;
+}
+
 export interface IPolicyClosingBanner {
   title: string;
   description: string;
   /** Short decorative labels, e.g. "Our People" / "Our Planet" / "Our Future". */
   badges: string[];
+  /** Background photo (TH_PolicyPages.ClosingBannerImageUrl); the text sits on top of it. */
+  imageUrl: string | undefined;
 }
 
 /**
@@ -241,6 +297,10 @@ export interface IPolicyPageContent {
     style: 'dark' | 'light';
     /** Up to two hero buttons, e.g. "Access SAP Concur" / "New to SAP Concur? Start Here". */
     links: IPolicyHeroLink[];
+    /** Optional brand logo above the title, e.g. a catering partner's logo. */
+    logoUrl: string | undefined;
+    /** Small icon + text badges under the description, e.g. "Diamond" / "Quality Catering Solutions". */
+    highlights: IPolicyHeroHighlight[];
   };
   infoBannerText: string | undefined;
   noteBannerText: string | undefined;

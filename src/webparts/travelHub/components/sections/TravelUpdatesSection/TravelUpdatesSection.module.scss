@@ -59,7 +59,7 @@
 
 .featuredText {
   @include th-body;
-  color: var(--full-text-muted, #7b8794);
+  color: var(--full-text-muted, #6f7271);
   margin: 0;
   @include th-line-clamp(2);
 }
@@ -68,7 +68,7 @@
   display: flex;
   gap: var(--full-space-3, 12px);
   padding-top: var(--full-space-4, 16px);
-  border-top: 1px solid var(--full-border, #e8e5e0);
+  border-top: 1px solid var(--full-border, #e2dcd5);
 }
 
 .thumb {
@@ -96,7 +96,7 @@
    (invalid-URL) fallback keeps its muted colour. */
 a.newsRowTitle:hover,
 a.newsRowTitle:focus-visible {
-  color: var(--full-accent-text, #816630);
+  color: var(--full-accent-text, #7b6945);
 }
 
 .newsRowText {
@@ -121,7 +121,7 @@ a.newsRowTitle:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  color: var(--full-accent-text, #816630);
+  color: var(--full-accent-text, #7b6945);
 }
 
 /* --- Events --------------------------------------------------------- */
@@ -142,7 +142,7 @@ a.newsRowTitle:focus-visible {
 
   & + & {
     padding-top: var(--full-space-4, 16px);
-    border-top: 1px solid var(--full-border, #e8e5e0);
+    border-top: 1px solid var(--full-border, #e2dcd5);
   }
 }
 
@@ -155,8 +155,8 @@ a.newsRowTitle:focus-visible {
   flex-shrink: 0;
   padding: var(--full-space-2, 8px) 0;
   border-radius: var(--full-radius-md, 8px);
-  background: var(--full-surface-alt, #faf8f4);
-  border: 1px solid var(--full-border, #e8e5e0);
+  background: var(--full-surface-alt, #faf8f6);
+  border: 1px solid var(--full-border, #e2dcd5);
 }
 
 .dateDay {
@@ -169,7 +169,7 @@ a.newsRowTitle:focus-visible {
 .dateMonth {
   font-size: var(--full-fs-meta, 0.8125rem);
   font-weight: var(--full-fw-semibold, 600);
-  color: var(--full-accent-text, #816630);
+  color: var(--full-accent-text, #7b6945);
   letter-spacing: 0.04em;
 }
 
@@ -207,7 +207,7 @@ a.newsRowTitle:focus-visible {
 }
 
 .hijri {
-  color: var(--full-hijri, #b89c66);
+  color: var(--full-hijri, #b89c67);
 }
 
 .eventThumb {
@@ -232,8 +232,8 @@ a.newsRowTitle:focus-visible {
   height: 32px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: rgba(195, 161, 94, 0.16);
-  color: var(--full-accent-text, #816630);
+  background: rgba(184, 156, 103, 0.16);
+  color: var(--full-accent-text, #7b6945);
   font-size: 0.85rem;
 }
 
@@ -254,7 +254,7 @@ a.newsRowTitle:focus-visible {
    fallback (no linkUrl) keeps its normal body colour. */
 a.tipText:hover,
 a.tipText:focus-visible {
-  color: var(--full-accent-text, #816630);
+  color: var(--full-accent-text, #7b6945);
 }
 
 .tipDesc {

@@ -5,7 +5,7 @@
 
 // Accessible visible focus ring, consistent across all interactive elements.
 @mixin th-focus-ring {
-  outline: 2px solid var(--full-focus-ring, #816630);
+  outline: 2px solid var(--full-focus-ring, #7b6945);
   outline-offset: 2px;
   border-radius: var(--full-radius-sm, 4px);
 }
@@ -37,9 +37,9 @@
 // surface-1 · radius-lg (14px) · 1px line-soft hairline · shadow-card.
 @mixin th-card-surface {
   background: var(--full-surface, #fff);
-  border: 1px solid var(--full-border, #c8d7e6);
+  border: 1px solid var(--full-border, #d5dfe3);
   border-radius: var(--full-radius-lg, 14px);
-  box-shadow: var(--full-shadow-card, 0 4px 12px rgba(8, 28, 50, 0.08));
+  box-shadow: var(--full-shadow-card, 0 4px 12px rgba(4, 37, 60, 0.08));
 }
 
 // Clamp text to N lines with an ellipsis.

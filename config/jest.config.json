@@ -2,7 +2,8 @@
   "extends": "@microsoft/spfx-web-build-rig/profiles/default/config/jest.config.json",
 
   "moduleNameMapper": {
-    "^@microsoft/sp-core-library$": "<rootDir>/lib-commonjs/common/testing/spCoreLibraryMock.js"
+    "^@microsoft/sp-core-library$": "<rootDir>/lib-commonjs/common/testing/spCoreLibraryMock.js",
+    "\\.module\\.scss$":"<rootDir>/lib-commonjs/common/testing/styleModuleMock.js"
   },
 
   "collectCoverageFrom": [

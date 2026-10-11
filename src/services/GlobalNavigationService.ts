@@ -81,7 +81,8 @@ export class GlobalNavigationService implements IGlobalNavigationService {
             continue;
           }
           if (service.pageSlug !== undefined) {
-            // A list-driven page (TH_TravelServices.PageSlug) - opens like a Travel Policy page.
+            // A list-driven page (TH_TravelServices.PageSlug, or else the TH_PolicyPages row
+            // matching the service title - see resolveServicePageSlug) - opens like a Travel Policy page.
             items.push({ id: nextId--, title: service.title, url: service.pageSlug, kind: 'policy', openInNewTab: false });
             continue;
           }

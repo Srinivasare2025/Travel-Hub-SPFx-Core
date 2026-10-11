@@ -142,6 +142,11 @@ from `TH_BusinessTravelSteps` / `TH_BusinessTravelInfoCards`
 | `team.viewAllText` | string | `View All Team Members` |
 | `footer.showQrCode` | boolean | `false` |
 | `footer.qrCodeUrl` | string (safe URL) | `` |
+| `policyAssistant.url` | string (URL) | *(blank)* — the policy agent (e.g. Copilot Studio) opened in a new tab by "Ask Our Policy Assistant" on policy pages; blank = no button. A page's `AssistantLinkUrl` wins. |
+| `policyAssistant.buttonText` | string | `Ask Policy Assistant` |
+| `policyAssistant.title` | string | `Ask Our Policy Assistant` |
+| `policyAssistant.description` | string | `Get instant answers to your travel policy questions.` |
+| `pages.closingBannerImageUrl` | string (URL) | *(blank)* — closing-band background photo for every page without its own `ClosingBannerImageUrl` |
 | `footer.legalText` | string | `© {year} {brand}. All rights reserved.` |
 | `footer.lastUpdatedText` | string | `` (optional manual "Last Updated" line) |
 

@@ -25,7 +25,7 @@
   border-radius: 25px;
   color: #fff;
   font-size: 0.8rem;
-  box-shadow: var(--full-shadow-card, 0 4px 16px rgba(15, 44, 74, 0.08));
+  box-shadow: var(--full-shadow-card, 0 4px 16px rgba(4, 37, 60, 0.08));
 }
 
 .title {
@@ -35,7 +35,7 @@
 
 .description {
   @include th-body;
-  color: var(--full-text-muted, #7b8794);
+  color: var(--full-text-muted, #6f7271);
   margin: 0;
   flex: 1;
   @include th-line-clamp(3);

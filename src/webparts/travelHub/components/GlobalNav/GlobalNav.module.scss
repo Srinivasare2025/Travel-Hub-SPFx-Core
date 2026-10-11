@@ -7,9 +7,9 @@
   position: relative;
   z-index: 6;
   width: 100%;
-  background: var(--full-canvas-raised, #ebf6fa);
-  border-bottom: 1px solid var(--full-accent-line, rgba(195, 161, 94, 0.32));
-  box-shadow: 0 7px 24px rgba(8, 28, 50, 0.045);
+  background: var(--full-canvas-raised, #f2fafd);
+  border-bottom: 1px solid var(--full-accent-line, rgba(184, 156, 103, 0.32));
+  box-shadow: 0 7px 24px rgba(4, 37, 60, 0.045);
 }
 
 // Two rows below 1500px: [brand ........ actions] then the tabs on their own
@@ -41,9 +41,10 @@
   margin-inline-start: auto;
 }
 
-/* Matches TravelHub.module.scss `.fullBleed .page` - same edge-to-edge choice. */
+/* Matches TravelHub.module.scss `.fullBleed .page`: the bar's background runs
+   edge to edge; its content lines up with the page content cap. */
 .fullBleedBar {
-  max-width: none;
+  max-width: var(--full-content-max-wide, 1600px);
 }
 
 // --- Brand ------------------------------------------------------------------
@@ -65,25 +66,24 @@
   font-size: 1.125rem;
   font-weight: var(--full-fw-bold, 700);
   letter-spacing: 0.04em;
-  color: var(--full-heading, #081c32);
+  color: var(--full-heading, #04253c);
 }
 
 .brandDivider {
   width: 1px;
   height: 22px;
-  background: var(--full-accent-line, rgba(195, 161, 94, 0.32));
+  background: var(--full-accent-line, rgba(184, 156, 103, 0.32));
 }
 
-/* The HR Hub eyebrow: display face, italic, spaced small caps. */
+/* "Travel Hub" next to the logo: RSG accent face (Paralucent), spaced caps. */
 .brandName {
-  font-family: var(--full-font-family-display, "Cormorant Garamond", Georgia, serif);
-  font-size: 15px;
-  font-style: italic;
-  font-weight: 600;
+  font-family: var(--full-font-family-accent, "Paralucent", "Noto Sans", sans-serif);
+  font-size: 14px;
+  font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   white-space: nowrap;
-  color: var(--full-text-muted, #3c5573);
+  color: var(--full-text-muted, #46535c);
 }
 
 // --- Tabs -------------------------------------------------------------------
@@ -94,8 +94,8 @@
   min-width: 0;
   overflow-x: auto;
   scrollbar-width: thin;
-  scrollbar-color: var(--full-border-strong, #aabed2) transparent;
-  border-top: 1px solid var(--full-border, #c8d7e6);
+  scrollbar-color: var(--full-border-strong, #aebcc2) transparent;
+  border-top: 1px solid var(--full-border, #d5dfe3);
 
   &::-webkit-scrollbar {
     height: 6px;
@@ -103,7 +103,7 @@
 
   &::-webkit-scrollbar-thumb {
     border-radius: 9999px;
-    background: var(--full-border-strong, #aabed2);
+    background: var(--full-border-strong, #aebcc2);
   }
 
   @media (min-width: 1500px) {
@@ -134,7 +134,7 @@
   background: none;
   font-size: 13px;
   font-weight: var(--full-fw-semibold, 600);
-  color: var(--full-text-muted, #3c5573);
+  color: var(--full-text-muted, #46535c);
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
@@ -144,8 +144,8 @@
 
   &:hover,
   &:focus-visible {
-    background: var(--full-accent-wash, rgba(195, 161, 94, 0.08));
-    color: var(--full-text, #081c32);
+    background: var(--full-accent-wash, rgba(184, 156, 103, 0.08));
+    color: var(--full-text, #04253c);
     text-decoration: none;
   }
 
@@ -156,13 +156,13 @@
 
 /* Active tab: HR Hub sidebar "on" state - gold wash + AA gold text. */
 .navLinkActive {
-  background: rgba(195, 161, 94, 0.14);
-  color: var(--full-accent-text, #816630);
+  background: rgba(184, 156, 103, 0.14);
+  color: var(--full-accent-text, #7b6945);
 }
 
 .navLinkIcon {
   font-size: 0.6875rem;
-  color: var(--full-text-muted, #3c5573);
+  color: var(--full-text-muted, #46535c);
 }
 
 @media (max-width: 640px) {

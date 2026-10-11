@@ -149,6 +149,12 @@
       `<Field Type='Choice' ${attrs(n, "Format='Dropdown'")}>` +
       `<CHOICES>${choices.map((c) => `<CHOICE>${escXml(c)}</CHOICE>`).join('')}</CHOICES>` +
       `${def != null ? `<Default>${escXml(def)}</Default>` : ''}</Field>`,
+    // Choice that also accepts a typed value (FillInChoice).
+    choiceFillIn: (n, choices) =>
+      `<Field Type='Choice' ${attrs(n, "Format='Dropdown' FillInChoice='TRUE'")}>` +
+      `<CHOICES>${choices.map((c) => `<CHOICE>${escXml(c)}</CHOICE>`).join('')}</CHOICES></Field>`,
+    // SharePoint "Image" column - editors upload the picture straight into the item form.
+    image: (n) => `<Field Type='Thumbnail' ${attrs(n)} />`,
     lookup: (n, targetListId) =>
       `<Field Type='Lookup' ${attrs(n)} List='{${String(targetListId).replace(/[{}]/g, '')}}' ShowField='Title' />`
   };
@@ -158,10 +164,20 @@
   // missing fields, it never updates an existing field's choices).
   const POLICY_SECTION_LAYOUTS = [
     'Paragraph', 'CardsGrid', 'Table', 'Tabs', 'NumberedSteps', 'ProcessSteps', 'Callout', 'ImageBlock', 'LinksList',
-    'Split', 'Checklist', 'Banner', 'ImageCards', 'Feature', 'Faq', 'Search'
+    'Split', 'Checklist', 'Banner', 'ImageCards', 'Feature', 'Faq', 'Search', 'PriceList', 'Gallery'
   ];
   // TH_PolicySections.CardStyle choices (same "append only" rule, step 4b).
-  const POLICY_CARD_STYLES = ['Default', 'IconHeader', 'IconMedia', 'Stacked', 'ImageTop', 'ImageLeft', 'ImageTile', 'ImageBanner'];
+  // TH_PolicySections.Theme choices. The first 7 are the original names (kept
+  // so existing rows stay valid - they map to the nearest RSG colour in
+  // PolicyService.mapTheme); the rest are the RSG brand colour names.
+  const POLICY_THEMES = [
+    'Gold', 'Blue', 'Green', 'Amber', 'Red', 'Purple', 'Teal',
+    'Navy', 'Crystal Waters', 'Blue Lagoon', 'Blooming Nature', 'Majestic Mountains', 'Thriving Corals', 'Sandy Dunes', 'Volcanic Ash'
+  ];
+  // TH_Offers.Collection - suggested values; editors may type a new one
+  // (fill-in) and point a section's OfferCollection at it.
+  const OFFER_COLLECTIONS = ['Featured Personal Offers', 'Explore Personal Offers', 'Riyadh Partnered Hotels', 'Jeddah Partnered Hotels'];
+  const POLICY_CARD_STYLES = ['Default', 'IconHeader', 'IconMedia', 'Stacked', 'ImageTop', 'ImageLeft', 'ImageTile', 'ImageBanner', 'ImageMenu'];
 
   // AddToAllContentTypes(4) | AddFieldInternalNameHint(8) | AddFieldToDefaultView(16)
   const ADD_FIELD_OPTIONS = 28;
@@ -479,6 +495,11 @@
         { name: 'HeroLink2Text', xml: F.text('HeroLink2Text') },
         { name: 'HeroLink2Url', xml: F.url('HeroLink2Url') },
         { name: 'HeroLink2TargetSlug', xml: F.text('HeroLink2TargetSlug') },
+        // Optional brand logo above the hero title (e.g. a catering partner's
+        // logo) and small icon + text badges under the description, one per
+        // line as `Icon|Text`, e.g. `Diamond|Quality Catering Solutions`.
+        { name: 'HeroLogoUrl', xml: F.url('HeroLogoUrl') },
+        { name: 'HeroHighlights', xml: F.note('HeroHighlights', 4) },
         { name: 'HeroIcon', xml: F.text('HeroIcon') },
         { name: 'HeroTitle', xml: F.text('HeroTitle') },
         { name: 'HeroSubtitle', xml: F.text('HeroSubtitle') },
@@ -496,6 +517,9 @@
         { name: 'ClosingBannerTitle', xml: F.text('ClosingBannerTitle') },
         { name: 'ClosingBannerDescription', xml: F.note('ClosingBannerDescription', 2) },
         { name: 'ClosingBadges', xml: F.note('ClosingBadges', 3) },
+        // Background photo of the closing band (text sits on top); blank = the
+        // site-wide pages.closingBannerImageUrl, else the plain band.
+        { name: 'ClosingBannerImageUrl', xml: F.url('ClosingBannerImageUrl') },
         { name: 'NeedHelpTitle', xml: F.text('NeedHelpTitle') },
         { name: 'NeedHelpSupportLabel', xml: F.text('NeedHelpSupportLabel') },
         { name: 'NeedHelpDescription', xml: F.note('NeedHelpDescription', 2) },
@@ -546,14 +570,17 @@
         // The section's container: Plain (legacy), Card (white card), Tinted (Theme-coloured panel).
         { name: 'SectionStyle', xml: F.choice('SectionStyle', ['Plain', 'Card', 'Tinted'], 'Plain') },
         // Accent colour for a Tinted panel, number badge, header icon, Banner.
-        { name: 'Theme', xml: F.choice('Theme', ['Gold', 'Blue', 'Green', 'Amber', 'Red', 'Purple', 'Teal'], null) },
+        { name: 'Theme', xml: F.choice('Theme', POLICY_THEMES, null) },
         // Share of the row: consecutive Half / OneThird / TwoThirds sections sit side by side.
         { name: 'Width', xml: F.choice('Width', ['Full', 'Half', 'OneThird', 'TwoThirds'], 'Full') },
         // Optional header link at the right of the title ("View All Offers");
         // for Layout = Search, LinkUrl is the search address ({query} = typed words).
         { name: 'LinkText', xml: F.text('LinkText') },
         { name: 'LinkUrl', xml: F.url('LinkUrl') },
-        { name: 'TargetSlug', xml: F.text('TargetSlug') }
+        { name: 'TargetSlug', xml: F.text('TargetSlug') },
+        // Show the TH_Offers items of this Collection as the section's cards
+        // (after any TH_PolicyCards), e.g. "Featured Personal Offers".
+        { name: 'OfferCollection', xml: F.text('OfferCollection') }
         // TabId is a lookup -> TH_PolicyTabs (a section INSIDE a tab), added via LOOKUPS below.
       ]
     },
@@ -606,7 +633,12 @@
         // Highlighted figure + captions: "Starting From" / "SAR 5,999" / "per person".
         { name: 'Value', xml: F.text('Value') },
         { name: 'ValueLabel', xml: F.text('ValueLabel') },
-        { name: 'ValueNote', xml: F.text('ValueNote') }
+        { name: 'ValueNote', xml: F.text('ValueNote') },
+        // Files the card opens in an in-app popup instead of navigating -
+        // one per line: `Label | URL` (optionally `| image` / `| pdf` when the
+        // URL has no file extension). Several PDFs = tabs (City Guide:
+        // Riyadh / Jeddah); several images = a gallery with prev/next.
+        { name: 'PopupContent', xml: F.note('PopupContent', 6) }
       ]
     },
     {
@@ -634,6 +666,59 @@
         // TableId is a lookup -> TH_PolicyTables, added via LOOKUPS below.
         { name: 'CellValues', xml: F.note('CellValues', 4) },
         { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) }
+      ]
+    },
+    {
+      // List-maintained offer / partner cards (OffersService.ts). A page
+      // section shows a Collection by setting TH_PolicySections.OfferCollection.
+      // Title = offer / hotel / tile name. ATTACH FILES to an item (images,
+      // PDFs) to make them its popup content - e.g. City Guide PDFs, a hotel
+      // gallery. See docs/POLICY-CONTENT-GUIDE.md §16.
+      title: 'TH_Offers',
+      description: 'Personal travel offers, offer categories and partnered hotels shown as cards on Travel Hub pages.',
+      fields: [
+        { name: 'Collection', xml: F.choiceFillIn('Collection', OFFER_COLLECTIONS) },
+        { name: 'Subtitle', xml: F.text('Subtitle') },
+        // Pill on the photo, e.g. "Special Offer".
+        { name: 'Badge', xml: F.text('Badge') },
+        // Short text on the card / under the title on the details screen.
+        { name: 'Summary', xml: F.note('Summary', 3) },
+        // Details screen content - one paragraph per line ("- " = bullet).
+        { name: 'Details', xml: F.note('Details', 8) },
+        // "What's included" - one item per line.
+        { name: 'Inclusions', xml: F.note('Inclusions', 6) },
+        { name: 'Terms', xml: F.note('Terms', 6) },
+        // Card photo and partner logo: upload in the form (Image columns) or paste a link (Url columns).
+        { name: 'CardImage', xml: F.image('CardImage') },
+        { name: 'ImageUrl', xml: F.url('ImageUrl') },
+        { name: 'Logo', xml: F.image('Logo') },
+        { name: 'LogoUrl', xml: F.url('LogoUrl') },
+        { name: 'Icon', xml: F.text('Icon') },
+        // A brand colour name ("Blue Lagoon", "Gold"…) or #hex.
+        { name: 'IconColor', xml: F.text('IconColor') },
+        // "Starting From" / "SAR 5,999" / "per person".
+        { name: 'ValueLabel', xml: F.text('ValueLabel') },
+        { name: 'Value', xml: F.text('Value') },
+        { name: 'ValueNote', xml: F.text('ValueNote') },
+        { name: 'Partner', xml: F.text('Partner') },
+        { name: 'Location', xml: F.text('Location') },
+        // Shown on the details screen; the card is hidden outside these dates.
+        { name: 'ValidFrom', xml: F.date('ValidFrom') },
+        { name: 'ValidTo', xml: F.date('ValidTo') },
+        // Auto: attachments -> popup, Details/Inclusions -> details screen, else LinkUrl.
+        { name: 'ClickAction', xml: F.choice('ClickAction', ['Auto', 'Details Page', 'Popup', 'Link', 'None'], 'Auto') },
+        // Card button text, e.g. "View Details" / "View Gallery".
+        { name: 'LinkText', xml: F.text('LinkText') },
+        // Offer source / booking link - an external site opens in a new window.
+        { name: 'LinkUrl', xml: F.url('LinkUrl') },
+        // Details screen main button text (default "View Offer").
+        { name: 'CtaText', xml: F.text('CtaText') },
+        { name: 'ContactEmail', xml: F.text('ContactEmail') },
+        { name: 'ContactPhone', xml: F.text('ContactPhone') },
+        // Extra popup files by link, one per line `Label | URL` (attachments are easier).
+        { name: 'PopupContent', xml: F.note('PopupContent', 6) },
+        { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
+        { name: 'IsActive', xml: F.bool('IsActive', true) }
       ]
     }
   ];
@@ -720,6 +805,15 @@
     ['team.viewAllUrl', '#', 'string'],
     ['footer.showQrCode', 'false', 'boolean'],
     ['footer.qrCodeUrl', '#', 'string'],
+    // "Ask Our Policy Assistant" (policy pages) opens this agent link in a new
+    // tab, e.g. a Copilot Studio agent. Blank = no button. A page's own
+    // AssistantLinkUrl (TH_PolicyPages) wins over it.
+    ['policyAssistant.url', '', 'string'],
+    ['policyAssistant.buttonText', 'Ask Policy Assistant', 'string'],
+    ['policyAssistant.title', 'Ask Our Policy Assistant', 'string'],
+    ['policyAssistant.description', 'Get instant answers to your travel policy questions.', 'string'],
+    // Closing band photo for every page without its own ClosingBannerImageUrl.
+    ['pages.closingBannerImageUrl', '', 'string'],
     ['footer.legalText', '(c) {year} {brand}. All rights reserved.', 'string'],
     ['footer.lastUpdatedText', '', 'string'],
     ['dates.locale', 'en-GB', 'string'],
@@ -888,7 +982,8 @@
     log('\n-- Step 4b: update choice options ---------------');
     for (const ch of [
       { list: 'TH_PolicySections', field: 'Layout', choices: POLICY_SECTION_LAYOUTS },
-      { list: 'TH_PolicySections', field: 'CardStyle', choices: POLICY_CARD_STYLES }
+      { list: 'TH_PolicySections', field: 'CardStyle', choices: POLICY_CARD_STYLES },
+      { list: 'TH_PolicySections', field: 'Theme', choices: POLICY_THEMES }
     ]) {
       try {
         const url = `/_api/web/lists/getbytitle('${esc(ch.list)}')/fields/getbyinternalnameortitle('${esc(ch.field)}')`;

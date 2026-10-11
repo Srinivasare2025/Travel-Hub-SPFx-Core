@@ -13,3 +13,4 @@ export * from './Badge';
 export * from './Carousel';
 export * from './Modal';
 export * from './ImageLightbox';
+export * from './MediaViewer';

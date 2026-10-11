@@ -22,13 +22,13 @@
     padding: 0;
     border: none;
     background: none;
-    color: var(--full-text-muted, #4a5568);
+    color: var(--full-text-muted, #46535c);
     font: inherit;
     cursor: pointer;
     @include th-focusable;
 
     &:hover {
-      color: var(--full-accent-text, #816630);
+      color: var(--full-accent-text, #7b6945);
       text-decoration: underline;
     }
   }
@@ -74,7 +74,7 @@
 
 .description {
   @include th-body;
-  color: var(--full-text-muted, #4a5568);
+  color: var(--full-text-muted, #46535c);
   margin: 0;
 }
 
@@ -84,12 +84,12 @@
   gap: var(--full-space-2, 8px);
   padding: var(--full-space-4, 16px);
   border-radius: var(--full-radius-md, 8px);
-  background: var(--full-surface-alt, #faf8f4);
-  border: 1px solid var(--full-border, #e8e5e0);
+  background: var(--full-surface-alt, #faf8f6);
+  border: 1px solid var(--full-border, #e2dcd5);
 
   svg,
   i {
-    color: var(--full-accent-text, #816630);
+    color: var(--full-accent-text, #7b6945);
     flex-shrink: 0;
     margin-top: 2px;
   }

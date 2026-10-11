@@ -22,7 +22,7 @@
   padding: 0;
   border: none;
   background: none;
-  color: var(--full-text-muted, #4a5568);
+  color: var(--full-text-muted, #46535c);
   font-family: var(--full-font-family, "Segoe UI", sans-serif);
   font-size: var(--full-fs-link, 0.875rem);
   font-weight: var(--full-fw-semibold, 600);
@@ -164,15 +164,15 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: var(--full-surface-alt, #faf8f4);
-  color: var(--full-accent-text, #816630);
+  background: var(--full-surface-alt, #faf8f6);
+  color: var(--full-accent-text, #7b6945);
   transition: background-color var(--full-transition-fast, 120ms ease),
     color var(--full-transition-fast, 120ms ease);
   @include th-focusable;
 
   &:hover,
   &:focus-visible {
-    background: var(--full-primary, #b89c66);
+    background: var(--full-primary, #b89c67);
     color: var(--full-primary-contrast, #04253c);
   }
 }

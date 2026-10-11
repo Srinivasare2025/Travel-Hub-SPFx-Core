@@ -452,9 +452,40 @@ Keeps `filter`/`orderBy` under the list view threshold.
 | `TH_PolicyCards` | Subtitle, Badge | Single line — line under the title; pill on the photo |
 | `TH_PolicyCards` | Value, ValueLabel, ValueNote | Single line — highlighted figure with captions ("Starting From / SAR 5,999 / per person") |
 | `TH_PolicyCards` | OpenInNewTab | Yes/No — open `LinkUrl` in a new tab |
+| `TH_PolicyCards` | PopupContent | Multiple lines (plain) — files opened in an in-app popup instead of navigating, one per line `Label \| URL [\| image\|pdf]` |
+| `TH_PolicyPages` | HeroLogoUrl | Hyperlink — brand logo above the hero title |
+| `TH_PolicyPages` | HeroHighlights | Multiple lines (plain) — hero badges, one per line `Icon\|Text` |
+| `TH_PolicySections` | Layout / CardStyle choices | New choices `PriceList`, `Gallery` (Layout) and `ImageMenu` (CardStyle), added by step 4b |
+| `TH_PolicySections` | OfferCollection | Single line — show the `TH_Offers` items of this Collection as the section's cards |
+| `TH_PolicySections` | Theme choices | RSG names added (Navy, Crystal Waters, Blue Lagoon, Blooming Nature, Majestic Mountains, Thriving Corals, Sandy Dunes, Volcanic Ash); old choices stay valid |
+
+### `TH_Offers` (new list)
+
+List-maintained offer / partnered-hotel cards (`OffersService.ts`), attachments enabled.
+
+| Column | Type — purpose |
+| --- | --- |
+| Title | Offer / tile / hotel name |
+| Collection | Choice with fill-in — the group a section shows (`TH_PolicySections.OfferCollection`) |
+| Subtitle, Badge, Partner, Location | Single line |
+| Summary, Details, Inclusions, Terms | Multiple lines (plain) — details screen content, one line per paragraph / item |
+| CardImage, Logo | Image (Thumbnail) — uploaded in the form; fall back to ImageUrl / LogoUrl |
+| ImageUrl, LogoUrl, LinkUrl | Hyperlink |
+| Icon, IconColor | Single line — Fluent icon; RSG colour name or #hex |
+| ValueLabel, Value, ValueNote | Single line — "Starting From / SAR 5,999 / per person" |
+| ValidFrom, ValidTo | Date — shown on the details screen; the card is hidden outside the range |
+| ClickAction | Choice `Auto` / `Details Page` / `Popup` / `Link` / `None` |
+| LinkText, CtaText, ContactEmail, ContactPhone | Single line |
+| PopupContent | Multiple lines (plain) — extra popup files by link |
+| Attachments | Images / PDFs opened in the popup and on the details screen (ordered by file name) |
+| DisplayOrder, IsActive | Number, Yes/No |
 | `TH_TravelServices` | PageSlug | Single line — a `TH_PolicyPages` Slug; the service's nav tab and card open that page |
 
 Every page is read with a fallback: a site where these columns don't exist
 yet still loads (the options are simply off). Full editor guidance:
 `POLICY-CONTENT-GUIDE.md`.
 
+
+| List | Column | Type — purpose |
+| --- | --- | --- |
+| `TH_PolicyPages` | ClosingBannerImageUrl | Hyperlink — background photo of the closing band (text on top); blank = `pages.closingBannerImageUrl` setting, else the plain band |
