@@ -3,6 +3,7 @@ import { ITravelSpend, ITravelSpendAccess, ITravelHubConfiguration } from '../mo
 import type { SharePointService } from './base/SharePointService';
 import { Logger } from './base/Logger';
 import { sanitizeUrl } from '../common/utils/urlValidation';
+import { toPowerBiEmbedUrl } from '../common/utils/powerBi';
 import { toNumber, toStringOr } from '../common/utils/collection';
 
 const LIST = 'TH_DepartmentTravelSpend';
@@ -34,6 +35,12 @@ const SELECT = [
 ];
 
 export interface ITravelSpendService {
+  /**
+   * A dashboard URL in its frame-able form. Power BI app links can't be shown
+   * in an iframe ("refused to connect"); this returns the secure-embed URL
+   * that signs the viewer in silently (common/utils/powerBi.ts).
+   */
+  toEmbedUrl(url: string | undefined): string | undefined;
   /** Whether the current user may see spend figures at all. Call before `getSpend()`. */
   getAccess(config: ITravelHubConfiguration): Promise<ITravelSpendAccess>;
   /** Only call when `getAccess()` returned `hasAccess: true`. */
@@ -57,6 +64,10 @@ export class TravelSpendService implements ITravelSpendService {
     logger: Logger
   ) {
     this.log = logger.child('TravelSpendService');
+  }
+
+  public toEmbedUrl(url: string | undefined): string | undefined {
+    return toPowerBiEmbedUrl(url, this.spo.tenantId);
   }
 
   public async getAccess(config: ITravelHubConfiguration): Promise<ITravelSpendAccess> {
@@ -93,6 +104,7 @@ export class TravelSpendService implements ITravelSpendService {
         hotelSpend: toNumber(item.HotelSpend, 0),
         groundTransportSpend: toNumber(item.GroundTransportSpend, 0),
         bookingSpend: toNumber(item.BookingSpend, 0),
+        // The link as configured (opens in a new tab). Frames use toEmbedUrl().
         dashboardUrl: sanitizeUrl(item.DashboardUrl?.Url) ?? sanitizeUrl(config.spend.dashboardUrl),
         source: config.spend.source
       };

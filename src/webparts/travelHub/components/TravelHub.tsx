@@ -14,7 +14,7 @@ import { SectionBoundary } from './SectionBoundary';
 import { GlobalNav } from './GlobalNav';
 import { HeroBanner } from './sections/HeroBanner';
 import { TravelServicesCarousel } from './sections/TravelServicesCarousel';
-import { TravelUpdatesSection } from './sections/TravelUpdatesSection';
+import { TravelUpdatesSection, NewsAllScreen, NewsDetailScreen, EventsAllScreen, EventDetailScreen } from './sections/TravelUpdatesSection';
 import {
   TravelerEngagementSection,
   QuickPulseResultsScreen,
@@ -28,6 +28,7 @@ import { ServicePageScreen } from './ServicePages';
 import { BusinessTravelPageScreen } from './BusinessTravelPage';
 import { OfferDetailScreen } from './OfferDetail';
 import { TravelHubFooter } from './TravelHubFooter';
+import { AdminGate } from './Admin/AdminGate';
 import { applyFullBleedChrome, SHELL_MARKER_ATTR } from './chromeOverride';
 import { scrollToTopAndFocus } from './scrollToTop';
 import styles from './TravelHub.module.scss';
@@ -87,6 +88,22 @@ function readViewFromLocation(): ThView {
     if (raw === 'spend-detail') {
       return { kind: 'spendDetail' };
     }
+    if (raw === 'news') {
+      return { kind: 'newsAll' };
+    }
+    if (raw === 'events') {
+      return { kind: 'eventsAll' };
+    }
+    if (raw === 'admin') {
+      return { kind: 'admin' };
+    }
+    if (raw.startsWith('news/') || raw.startsWith('event/')) {
+      const isNews = raw.startsWith('news/');
+      const id = Number(raw.slice(isNews ? 'news/'.length : 'event/'.length));
+      if (isFinite(id) && id > 0) {
+        return isNews ? { kind: 'newsDetail', id } : { kind: 'eventDetail', id };
+      }
+    }
     return { kind: 'hub' };
   } catch {
     return { kind: 'hub' };
@@ -115,6 +132,16 @@ function viewToParam(view: ThView): string | undefined {
       return 'spend-detail';
     case 'offer':
       return view.fromSlug !== undefined ? `offer/${view.fromSlug}/${String(view.id)}` : `offer/${String(view.id)}`;
+    case 'newsAll':
+      return 'news';
+    case 'newsDetail':
+      return `news/${String(view.id)}`;
+    case 'eventsAll':
+      return 'events';
+    case 'eventDetail':
+      return `event/${String(view.id)}`;
+    case 'admin':
+      return 'admin';
     case 'hub':
     default:
       return undefined;
@@ -237,7 +264,7 @@ export default class TravelHub extends React.Component<ITravelHubProps, ITravelH
             <div ref={this.screenRef} tabIndex={-1} className={styles.screen} aria-label="Page content">
 
             {view.kind === 'hub' && (
-              <div className={styles.page}>
+              <div className={`${styles.page} ${styles.hubPage}`}>
                 {sections.hero.isVisible && (
                   <SectionBoundary name="HeroBanner">
                     <HeroBanner />
@@ -358,6 +385,46 @@ export default class TravelHub extends React.Component<ITravelHubProps, ITravelH
               <div className={styles.page}>
                 <SectionBoundary name="TravelSpendDetailScreen">
                   <TravelSpendDetailScreen />
+                </SectionBoundary>
+              </div>
+            )}
+
+            {view.kind === 'newsAll' && (
+              <div className={styles.page}>
+                <SectionBoundary name="NewsAllScreen">
+                  <NewsAllScreen />
+                </SectionBoundary>
+              </div>
+            )}
+
+            {view.kind === 'newsDetail' && (
+              <div className={styles.page}>
+                <SectionBoundary name="NewsDetailScreen">
+                  <NewsDetailScreen id={view.id} />
+                </SectionBoundary>
+              </div>
+            )}
+
+            {view.kind === 'eventsAll' && (
+              <div className={styles.page}>
+                <SectionBoundary name="EventsAllScreen">
+                  <EventsAllScreen />
+                </SectionBoundary>
+              </div>
+            )}
+
+            {view.kind === 'eventDetail' && (
+              <div className={styles.page}>
+                <SectionBoundary name="EventDetailScreen">
+                  <EventDetailScreen id={view.id} />
+                </SectionBoundary>
+              </div>
+            )}
+
+            {view.kind === 'admin' && (
+              <div className={styles.page}>
+                <SectionBoundary name="AdminScreen">
+                  <AdminGate />
                 </SectionBoundary>
               </div>
             )}

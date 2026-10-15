@@ -115,7 +115,9 @@ export type PolicySectionLayout =
   /** Partner price panels: photo left, "icon / menu / SAR 120 per person" rows right, note below (Catering "Featured Menu Options"). */
   | 'priceList'
   /** Photo strip; each photo opens the whole set in a popup with prev/next (Catering "Setup Gallery"). */
-  | 'gallery';
+  | 'gallery'
+  /** Big icon + label buttons that scroll to another section of the page (Catering "Coffee Breaks" / "Lunch - Finger Food"). */
+  | 'jumpLinks';
 
 /**
  * How cards in a `cardsGrid` (highlight) section lay out their icon:

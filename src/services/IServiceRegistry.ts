@@ -14,6 +14,7 @@ import { IFooterService } from './FooterService';
 import { IPolicyService } from './PolicyService';
 import { IBusinessTravelService } from './BusinessTravelService';
 import { IOffersService } from './OffersService';
+import { IAdminService } from './AdminService';
 
 /**
  * The set of services + resolved configuration handed to the React tree via
@@ -40,4 +41,6 @@ export interface IServiceRegistry {
   policy: IPolicyService;
   businessTravel: IBusinessTravelService;
   offers: IOffersService;
+  /** Content Admin screen data access (components/Admin). */
+  admin: IAdminService;
 }

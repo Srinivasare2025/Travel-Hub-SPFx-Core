@@ -56,6 +56,23 @@
   }
 }
 
+/* Home page only (reported: too much space between the top bar and the hero,
+   and between home sections/cards). Other screens keep .page as is. The
+   --th-home-* variables are read by the home sections' own grids, with
+   their old values as fallback everywhere else. */
+.hubPage {
+  --th-home-card-gap: var(--full-space-4, 16px);
+  --th-home-title-gap: var(--full-space-4, 16px);
+  gap: var(--full-space-5, 24px);
+  padding-top: var(--full-space-3, 12px);
+
+  @include th-desktop-up {
+    gap: 28px;
+    padding-top: var(--full-space-4, 16px);
+    padding-bottom: var(--full-space-6, 32px);
+  }
+}
+
 .teams .page {
   padding-inline: var(--full-space-3, 12px);
 }

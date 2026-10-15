@@ -7,13 +7,14 @@
 
 .sectionTitle {
   @include th-section-title;
-  margin-bottom: var(--full-space-5, 24px);
+  /* --th-home-*: set only by the home page wrapper (TravelHub.module.scss .hubPage). */
+  margin-bottom: var(--th-home-title-gap, var(--full-space-5, 24px));
 }
 
 .grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--full-space-4, 16px);
+  gap: var(--th-home-card-gap, var(--full-space-4, 16px));
 
   @include th-desktop-up {
     grid-template-columns: repeat(3, 1fr);

@@ -10,6 +10,8 @@ export interface IHeroCarouselProps {
   slides: IHeroBanner[];
   autoPlay: boolean;
   intervalSeconds: number;
+  /** The showing slide's own media size - HeroBanner's 'auto' frame takes that shape. */
+  onActiveMediaSize?: (width: number, height: number) => void;
 }
 
 interface IHeroSlideProps {
@@ -21,18 +23,22 @@ interface IHeroSlideProps {
   onVideoEnded?: () => void;
   /** Video slides only: suspend/resume the carousel's own autoplay timer while this video plays. */
   setSuspended?: (suspended: boolean) => void;
+  /** Reports the image/video's own pixel size while this slide is the one showing. */
+  onActiveMediaSize?: (width: number, height: number) => void;
 }
 
 function HeroVideo({
   slide,
   isActive,
   onVideoEnded,
-  setSuspended
+  setSuspended,
+  onMediaSize
 }: {
   slide: IHeroBanner;
   isActive: boolean;
   onVideoEnded?: () => void;
   setSuspended?: (suspended: boolean) => void;
+  onMediaSize?: (width: number, height: number) => void;
 }): React.ReactElement {
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = React.useState(true);
@@ -79,6 +85,11 @@ function HeroVideo({
         playsInline
         aria-label={slide.accessibilityText}
         onEnded={handleEnded}
+        onLoadedMetadata={
+          onMediaSize === undefined
+            ? undefined
+            : (e) => onMediaSize(e.currentTarget.videoWidth, e.currentTarget.videoHeight)
+        }
       />
       <div className={styles.videoControls}>
         <IconButton
@@ -104,28 +115,42 @@ function HeroVideo({
   );
 }
 
-function HeroSlide({ slide, eager, isActive = true, onVideoEnded, setSuspended }: IHeroSlideProps): React.ReactElement {
-  // Only slides with overlaid text need the scrim for contrast - an
-  // image/video-only slide shows at full original brightness/quality.
-  const hasOverlayText = slide.title.length > 0 || slide.description.length > 0;
+function HeroSlide({ slide, eager, isActive = true, onVideoEnded, setSuspended, onActiveMediaSize }: IHeroSlideProps): React.ReactElement {
+  // Every slide measures its own media; the frame follows whichever slide is
+  // showing, so each picture/video fits the hero exactly - no crop, no bars.
+  const [mediaSize, setMediaSize] = React.useState<{ w: number; h: number } | undefined>(undefined);
+  const onMediaSize = React.useCallback((w: number, h: number): void => setMediaSize({ w, h }), []);
+  React.useEffect(() => {
+    if (isActive && mediaSize !== undefined) {
+      onActiveMediaSize?.(mediaSize.w, mediaSize.h);
+    }
+  }, [isActive, mediaSize, onActiveMediaSize]);
 
+  // No darkening scrim over the media (reported: it made the photos look
+  // dull) - the title/description carry their own text-shadow instead.
   return (
     <div className={styles.slide}>
       <div className={styles.slideMedia}>
         {slide.mediaType === 'video' && slide.videoUrl !== undefined ? (
-          <HeroVideo slide={slide} isActive={isActive} onVideoEnded={onVideoEnded} setSuspended={setSuspended} />
+          <HeroVideo
+            slide={slide}
+            isActive={isActive}
+            onVideoEnded={onVideoEnded}
+            setSuspended={setSuspended}
+            onMediaSize={onActiveMediaSize === undefined ? undefined : onMediaSize}
+          />
         ) : (
           <ImageWithFallback
             src={slide.imageUrl}
             mobileSrc={slide.mobileImageUrl}
             alt={slide.accessibilityText}
-            aspectRatio="21 / 9"
+            aspectRatio={undefined}
             eager={eager}
             className={styles.image}
-            fit="fill"
+            fit="cover"
+            onNaturalSize={onActiveMediaSize === undefined ? undefined : onMediaSize}
           />
         )}
-        {hasOverlayText && <div className={styles.scrim} aria-hidden="true" />}
       </div>
 
       {(slide.title.length > 0 || slide.description.length > 0) && (
@@ -139,9 +164,9 @@ function HeroSlide({ slide, eager, isActive = true, onVideoEnded, setSuspended }
 }
 
 /** The rotating hero media only. Quick links are rendered separately by HeroBanner. */
-export const HeroCarousel: React.FC<IHeroCarouselProps> = ({ slides, autoPlay, intervalSeconds }) => {
+export const HeroCarousel: React.FC<IHeroCarouselProps> = ({ slides, autoPlay, intervalSeconds, onActiveMediaSize }) => {
   if (slides.length === 1) {
-    return <HeroSlide slide={slides[0]} eager />;
+    return <HeroSlide slide={slides[0]} eager onActiveMediaSize={onActiveMediaSize} />;
   }
 
   return (
@@ -156,6 +181,7 @@ export const HeroCarousel: React.FC<IHeroCarouselProps> = ({ slides, autoPlay, i
       showArrows
       showDots
       controlsPosition="overlay"
+      flush
       renderItem={(slide, index, { isActive, next, setSuspended }: ICarouselRenderHelpers) => (
         <HeroSlide
           slide={slide}
@@ -163,6 +189,7 @@ export const HeroCarousel: React.FC<IHeroCarouselProps> = ({ slides, autoPlay, i
           isActive={isActive}
           onVideoEnded={next}
           setSuspended={setSuspended}
+          onActiveMediaSize={onActiveMediaSize}
         />
       )}
     />

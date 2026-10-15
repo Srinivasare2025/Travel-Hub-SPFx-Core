@@ -19,6 +19,7 @@ import { FooterService } from './FooterService';
 import { PolicyService } from './PolicyService';
 import { BusinessTravelService } from './BusinessTravelService';
 import { OffersService } from './OffersService';
+import { AdminService } from './AdminService';
 
 /**
  * Composition root for the service layer. Called once from
@@ -50,6 +51,7 @@ export async function createServiceRegistry(context: WebPartContext): Promise<IS
     footer: new FooterService(spo, cache, logger),
     policy: new PolicyService(spo, cache, logger, offers),
     businessTravel: new BusinessTravelService(spo, cache, logger),
-    offers
+    offers,
+    admin: new AdminService(spo, cache, logger)
   };
 }

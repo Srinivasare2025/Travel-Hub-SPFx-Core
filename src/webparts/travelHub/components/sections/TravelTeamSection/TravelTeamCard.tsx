@@ -24,6 +24,8 @@ export const TravelTeamCard: React.FC<{ member: ITravelTeamMember }> = ({ member
           aspectRatio="3 / 4"
           className={styles.avatar}
           fallbackIcon="Contact"
+          // Requested: show the whole portrait in the frame (no crop).
+          fit="fill"
         />
         <div className={styles.body}>
           <h3 className={styles.name}>{member.name}</h3>

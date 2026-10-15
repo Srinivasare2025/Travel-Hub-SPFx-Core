@@ -8,6 +8,7 @@ import * as strings from 'TravelHubWebPartStrings';
 // header, page title, breadcrumb/hub nav, comments, footer, other sections)
 // as soon as SharePoint evaluates this bundle. It has no imports of its own.
 import { setHostChromeEnabled } from './hostChrome';
+import { rememberHostingPage } from './hostChromeCss';
 import { renderSplash, renderLoadError } from './splash';
 import type { IServiceRegistry } from '../../services/IServiceRegistry';
 
@@ -51,6 +52,10 @@ export default class TravelHubWebPart extends BaseClientSideWebPart<ITravelHubWe
   public render(): void {
     setHostChromeEnabled(this.displayMode !== DisplayMode.Edit);
     this.tagHostZone();
+    if (this.displayMode !== DisplayMode.Edit) {
+      // Lets the page-load extension pre-hide chrome on THIS page only.
+      rememberHostingPage();
+    }
 
     if (this._app !== undefined && this._registry !== undefined) {
       this._app.mountApp(this.domElement, {
@@ -61,6 +66,8 @@ export default class TravelHubWebPart extends BaseClientSideWebPart<ITravelHubWe
           email: this.context.pageContext.user.email ?? ''
         }
       });
+      // Lets the page-load extension (extensions/travelHubLoader) lift its cover.
+      window.dispatchEvent(new CustomEvent('travelhub:ready'));
       return;
     }
 
@@ -109,6 +116,11 @@ export default class TravelHubWebPart extends BaseClientSideWebPart<ITravelHubWe
     if (this._app !== undefined) {
       this._app.unmountApp(this.domElement);
     }
+    // SharePoint swaps pages in-site without a reload: without this the
+    // chrome-hiding stylesheet stayed in <head> and kept the suite bar, nav
+    // and footer hidden on the NEXT page (Site Contents, lists, other pages).
+    // A following Travel Hub page re-adds it on its own render.
+    setHostChromeEnabled(false);
   }
 
   protected get dataVersion(): Version {

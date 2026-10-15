@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Icon } from '@fluentui/react/lib/Icon';
 import { useServices } from '../../../../../common/context/ServiceContext';
+import { useNavigation } from '../../../../../common/context/NavigationContext';
 import { useAsyncData } from '../../../../../common/hooks';
 import {
   Card,
@@ -19,6 +20,7 @@ import styles from './TravelUpdatesSection.module.scss';
 /** Travel News & Articles: a featured lead item + a list of further items. */
 export const TravelNewsCard: React.FC = () => {
   const { news, configuration } = useServices();
+  const { navigate } = useNavigation();
   const { status, data, retry } = useAsyncData(() => news.getNews(configuration), [configuration]);
 
   const df = configuration.dates;
@@ -27,7 +29,9 @@ export const TravelNewsCard: React.FC = () => {
 
   return (
     <Card as="article" padding="lg" className={styles.column}>
-      <SectionHeader title={title} headingLevel={3} viewAll={{ ...viewAll, openInNewTab: true }} />
+      {/* View All opens the in-app "All News & Articles" screen (was: the
+          configured URL in a new tab, which by default was this same page). */}
+      <SectionHeader title={title} headingLevel={3} viewAll={{ text: viewAll.text, onClick: () => navigate({ kind: 'newsAll' }) }} />
 
       {status === 'loading' && <LoadingState variant="list" count={3} label={`Loading ${title}`} />}
       {status === 'empty' && <EmptyState message="No articles have been published yet." iconName="News" />}
@@ -56,6 +60,32 @@ function OnPremHint(): React.ReactElement {
   );
 }
 
+/**
+ * Where a news item goes: an External / legacy link opens its own page in a
+ * new tab; internal content opens the in-app article screen.
+ */
+export const NewsLink: React.FC<{ item: ITravelNews; className?: string; ariaLabel?: string; showArrow?: boolean; children: React.ReactNode }> = ({
+  item,
+  className,
+  ariaLabel,
+  showArrow = false,
+  children
+}) => {
+  const { navigate } = useNavigation();
+  if (item.opensExternally) {
+    return (
+      <ExternalLink href={item.targetUrl} openInNewTab className={className} ariaLabel={ariaLabel} showArrow={showArrow}>
+        {children}
+      </ExternalLink>
+    );
+  }
+  return (
+    <ExternalLink href={undefined} onClick={() => navigate({ kind: 'newsDetail', id: item.id })} className={className} ariaLabel={ariaLabel} showArrow={showArrow}>
+      {children}
+    </ExternalLink>
+  );
+};
+
 function FeaturedNews({ item, dateLabel }: { item: ITravelNews; dateLabel: string }): React.ReactElement {
   return (
     <article className={styles.featured}>
@@ -69,14 +99,9 @@ function FeaturedNews({ item, dateLabel }: { item: ITravelNews; dateLabel: strin
         </div>
         <h4 className={styles.featuredTitle}>{item.title}</h4>
         <p className={styles.featuredText}>{item.description}</p>
-        <ExternalLink
-          href={item.targetUrl}
-          openInNewTab={item.openInNewTab}
-          showArrow
-          ariaLabel={`View details: ${item.title}`}
-        >
-          View details
-        </ExternalLink>
+        <NewsLink item={item} showArrow ariaLabel={`View details: ${item.title}`}>
+          {item.opensExternally ? 'Read article' : 'View details'}
+        </NewsLink>
         {item.linkType === 'onPremReference' && <OnPremHint />}
       </div>
     </article>
@@ -88,14 +113,9 @@ function NewsRow({ item, dateLabel }: { item: ITravelNews; dateLabel: string }):
     <article className={styles.newsRow}>
       <ImageWithFallback src={item.imageUrl} alt="" aspectRatio="1 / 1" className={styles.thumb} />
       <div className={styles.newsRowBody}>
-        <ExternalLink
-          href={item.targetUrl}
-          openInNewTab={item.openInNewTab}
-          className={styles.newsRowTitle}
-          ariaLabel={item.title}
-        >
+        <NewsLink item={item} className={styles.newsRowTitle} ariaLabel={item.title}>
           {item.title}
-        </ExternalLink>
+        </NewsLink>
         <p className={styles.newsRowText}>{item.description}</p>
         <div className={styles.metaRow}>
           <time dateTime={toIsoDate(item.publishDate)} className={styles.date}>

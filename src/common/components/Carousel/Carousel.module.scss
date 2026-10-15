@@ -35,6 +35,10 @@
   }
 }
 
+.slideFlush {
+  padding-inline: 0;
+}
+
 .srStatus {
   @include th-visually-hidden;
 }

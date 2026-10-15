@@ -51,6 +51,8 @@ export const TravelSpendDetailScreen: React.FC = () => {
   }
 
   const dashboardUrl = data.spend.dashboardUrl ?? (configuration.spend.dashboardUrl !== '#' ? configuration.spend.dashboardUrl : undefined);
+  // Power BI app links refuse to be framed - show the secure-embed form (powerBi.ts).
+  const embedUrl = spend.toEmbedUrl(dashboardUrl);
 
   return (
     <div className={styles.screen}>
@@ -79,7 +81,7 @@ export const TravelSpendDetailScreen: React.FC = () => {
 
       {dashboardUrl !== undefined ? (
         <div className={styles.embedWrap}>
-          <iframe className={styles.embed} src={dashboardUrl} title="Department Travel Spend report" loading="lazy" />
+          <iframe className={styles.embed} src={embedUrl} title="Department Travel Spend report" loading="lazy" allowFullScreen />
         </div>
       ) : (
         <EmptyState message="No Power BI report is configured for this dashboard yet." iconName="BarChartVertical" />

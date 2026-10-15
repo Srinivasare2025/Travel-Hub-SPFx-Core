@@ -6,7 +6,8 @@ export interface ISectionHeaderProps {
   title: string;
   /** Heading level for correct document outline (h2 for sections, h3 for cards). */
   headingLevel?: 2 | 3 | 4;
-  viewAll?: { text: string; url: string; openInNewTab?: boolean };
+  /** A URL link, or an in-app screen when `onClick` is given (the URL is then ignored). */
+  viewAll?: { text: string; url?: string; openInNewTab?: boolean; onClick?: () => void };
   /** Optional slot on the right (e.g. carousel controls) — replaces viewAll when both given. */
   actions?: React.ReactNode;
   id?: string;
@@ -35,7 +36,8 @@ export const SectionHeader: React.FC<ISectionHeaderProps> = ({
       ) : (
         viewAll !== undefined && (
           <ExternalLink
-            href={viewAll.url}
+            href={viewAll.onClick !== undefined ? undefined : viewAll.url}
+            onClick={viewAll.onClick}
             openInNewTab={viewAll.openInNewTab}
             showArrow
             className={styles.viewAll}

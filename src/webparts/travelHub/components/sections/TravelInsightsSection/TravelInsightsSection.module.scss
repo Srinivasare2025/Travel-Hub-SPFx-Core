@@ -7,17 +7,24 @@
 
 .sectionTitle {
   @include th-section-title;
-  margin-bottom: var(--full-space-5, 24px);
+  /* --th-home-*: set only by the home page wrapper (TravelHub.module.scss .hubPage). */
+  margin-bottom: var(--th-home-title-gap, var(--full-space-5, 24px));
 }
 
+/* Both cards always the same height (stretch): the taller one sets the row
+   and the Green Travel photo fills whatever height that is. */
 .grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--full-space-5, 24px);
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--th-home-card-gap, var(--full-space-5, 24px));
+  align-items: stretch;
 
   @include th-desktop-up {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  > * {
+    min-width: 0;
   }
 }
 
@@ -138,78 +145,145 @@
   border: none;
 }
 
-/* --- Green Travel ----------------------------------------------------------- */
-.greenCard {
-  height: 100%;
+.spendEmbedHint {
+  @include th-meta;
+  margin: var(--full-space-2, 8px) 0 0;
+
+  a {
+    color: var(--full-accent-text, #7b6945);
+    font-weight: var(--full-fw-semibold, 600);
+  }
 }
 
-/* Content left, image right (mock). */
-.greenLayout {
-  display: flex;
-  flex-direction: column;
+/* --- Green Travel ----------------------------------------------------------- */
+/* Photo card: the image fills the whole card; the text sits on a navy
+   gradient over its lower part. Stretches to the Spend card's height, so the
+   row never shows blank space. */
+.greenCard {
+  position: relative;
   height: 100%;
+  min-height: 22rem;
+  overflow: hidden;
+  color: #fff;
+}
 
-  @include th-tablet-up {
-    flex-direction: row;
-  }
+.greenLayout {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 22rem;
+  background: var(--full-secondary, #04253c);
 }
 
 .greenImageWrap {
-  position: relative;
-  flex-shrink: 0;
-  overflow: hidden;
+  position: absolute;
+  inset: 0;
 
-  @include th-tablet-up {
-    width: 42%;
-  }
-
-  /* `ImageWithFallback`'s own frame sizes itself from `aspect-ratio` (right
-     for a standalone image slot), which made it shrink-wrap shorter than
-     this flex row's stretched height whenever the body's title/description/
-     bullets were tall - leaving a gap at the bottom of the image and letting
-     the row look like content spilled past the image's real edge. Forcing
-     the frame to the wrap's full height here (scoped to Green Travel only)
-     makes the photo reliably fill the right-hand side with no gap. */
   > div {
     height: 100%;
   }
 }
 
-/* CSS-only gradient overlay, from the top-left corner - the source image is
-   never modified (A28). */
+/* CSS-only overlay - the source image is never modified (A28). */
 .greenImageOverlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(4, 37, 60, 0.35) 0%, rgba(4, 37, 60, 0) 45%);
+  background: linear-gradient(
+    0deg,
+    rgba(4, 37, 60, 0.92) 0%,
+    rgba(4, 37, 60, 0.7) 38%,
+    rgba(4, 37, 60, 0.12) 72%,
+    rgba(4, 37, 60, 0) 100%
+  );
 }
 
 .greenBody {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: var(--full-space-2, 8px);
-  flex: 1;
-  min-width: 0;
-  padding: var(--full-space-5, 24px);
+  padding: var(--full-space-6, 32px) var(--full-space-5, 24px) var(--full-space-5, 24px);
+}
+
+.greenEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--full-radius-pill, 9999px);
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(6px);
+  font-size: 0.75rem;
+  font-weight: var(--full-fw-semibold, 600);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .greenTitle {
   @include th-card-title;
-  margin: 0;
+
+  & {
+    margin: 0;
+    font-size: clamp(1.25rem, 2vw, 1.625rem);
+    color: #fff;
+  }
 }
 
 .greenSubtitle {
   @include th-body;
-  font-weight: var(--full-fw-semibold, 600);
-  color: var(--full-heading, #04253c);
-  margin: 0;
+
+  & {
+    margin: 0;
+    font-weight: var(--full-fw-semibold, 600);
+    color: rgba(255, 255, 255, 0.95);
+  }
 }
 
 .greenDescription {
   @include th-body;
-  color: var(--full-text-muted, #46535c);
-  margin: 0;
+  @include th-line-clamp(3);
+
+  & {
+    margin: 0;
+    max-width: 56ch;
+    color: rgba(255, 255, 255, 0.88);
+  }
+}
+
+.greenChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--full-space-2, 8px);
+  margin: var(--full-space-1, 4px) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.greenChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: var(--full-radius-pill, 9999px);
+  font-size: var(--full-fs-meta, 0.8125rem);
+  color: #fff;
+
+  i {
+    color: #9fd5a7;
+  }
 }
 
 .greenLink {
   margin-top: var(--full-space-2, 8px);
+  color: #fff !important;
+}
+
+/* No photo configured: a calm brand-green panel instead of an empty frame. */
+.greenCardNoImage .greenLayout {
+  background: linear-gradient(135deg, #0f5132 0%, #04253c 100%);
 }

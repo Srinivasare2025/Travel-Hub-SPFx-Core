@@ -255,7 +255,8 @@ const LAYOUT_MAP: Record<string, PolicySectionLayout> = {
   faq: 'faq',
   search: 'search',
   pricelist: 'priceList',
-  gallery: 'gallery'
+  gallery: 'gallery',
+  jumplinks: 'jumpLinks'
 };
 
 /** `field eq id1 or field eq id2 …`; `undefined` when `ids` is empty (skip the request). */

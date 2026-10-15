@@ -9,6 +9,14 @@
           "manifest": "./src/webparts/travelHub/TravelHubWebPart.manifest.json"
         }
       ]
+    },
+    "travel-hub-loader-application-customizer": {
+      "components": [
+        {
+          "entrypoint": "./lib/extensions/travelHubLoader/TravelHubLoaderApplicationCustomizer.js",
+          "manifest": "./src/extensions/travelHubLoader/TravelHubLoaderApplicationCustomizer.manifest.json"
+        }
+      ]
     }
   },
   "externals": {},

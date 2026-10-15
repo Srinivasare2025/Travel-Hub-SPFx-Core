@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Icon } from '@fluentui/react/lib/Icon';
 import { useServices } from '../../../../../common/context/ServiceContext';
+import { useNavigation } from '../../../../../common/context/NavigationContext';
 import { useAsyncData } from '../../../../../common/hooks';
 import {
   Card,
@@ -19,6 +20,7 @@ import styles from './TravelUpdatesSection.module.scss';
 /** Upcoming Events: date-block rows with title, category, time, location, image. */
 export const UpcomingEventsCard: React.FC = () => {
   const { events, configuration } = useServices();
+  const { navigate } = useNavigation();
   const { status, data, retry } = useAsyncData(
     () => events.getUpcomingEvents(configuration),
     [configuration]
@@ -29,7 +31,8 @@ export const UpcomingEventsCard: React.FC = () => {
 
   return (
     <Card as="article" padding="lg" className={styles.column}>
-      <SectionHeader title="Upcoming Events" headingLevel={3} viewAll={{ ...viewAll, openInNewTab: true }} />
+      {/* View All opens the in-app "All Events" screen. */}
+      <SectionHeader title="Upcoming Events" headingLevel={3} viewAll={{ text: viewAll.text, onClick: () => navigate({ kind: 'eventsAll' }) }} />
 
       {status === 'loading' && <LoadingState variant="rows" count={4} label="Loading upcoming events" />}
       {status === 'empty' && <EmptyState message="There are no upcoming events right now." iconName="Calendar" />}
@@ -46,13 +49,14 @@ export const UpcomingEventsCard: React.FC = () => {
   );
 };
 
-function EventRow({
+export function EventRow({
   event,
   df
 }: {
   event: ITravelEvent;
   df: { locale: string; showHijri: boolean; hijriLocale: string };
 }): React.ReactElement {
+  const { navigate } = useNavigation();
   const block = formatDateBlock(event.eventDate, df);
   const hijri = formatHijriDate(event.eventDate, df);
   const timeText = [event.startTime, event.endTime].filter((t) => t !== undefined).join(' – ');
@@ -70,13 +74,11 @@ function EventRow({
           <time dateTime={toIsoDate(event.eventDate)} className={styles.srOnly}>
             {block.day} {block.month}
           </time>
-          {event.registrationUrl !== undefined ? (
-            <ExternalLink href={event.registrationUrl} openInNewTab ariaLabel={`${event.title} — register`}>
-              {event.title}
-            </ExternalLink>
-          ) : (
-            event.title
-          )}
+          {/* The title opens the event's detail screen (date, time, venue,
+              full details and the registration button). */}
+          <ExternalLink href={undefined} onClick={() => navigate({ kind: 'eventDetail', id: event.id })} ariaLabel={`${event.title} — details`}>
+            {event.title}
+          </ExternalLink>
         </h4>
         {event.description.length > 0 && <p className={styles.eventText}>{event.description}</p>}
         <div className={styles.eventMeta}>

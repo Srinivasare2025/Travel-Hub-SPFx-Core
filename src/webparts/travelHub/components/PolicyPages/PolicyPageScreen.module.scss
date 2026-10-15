@@ -1885,8 +1885,12 @@
 
 .heroLightImage {
   position: absolute;
-  inset: 0 0 0 38%;
-  background: center / cover no-repeat;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  /* One fixed panel on every page (see HeroPhoto in PolicyPageScreen.tsx). */
+  width: 62%;
+  background: center 30% / cover no-repeat;
   -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 35%);
   mask-image: linear-gradient(90deg, transparent 0%, #000 35%);
 }
@@ -2112,13 +2116,24 @@
   }
 }
 
+/* The photo frame owns its size; the photo is positioned inside it. Before,
+   the <img> sat in the normal flow, so a large or tall source image could
+   push its frame taller than the neighbouring cards' ("image + icon + title
+   heights not consistent" on Personal Travel Offers / Catering tiles). Now
+   every card in a section gets the same frame whatever the photo's size or
+   shape, and titles line up. `overflow` stays visible for the icon disc
+   that overlaps the frame's bottom edge. */
 .imageCardMedia {
   position: relative;
   display: block;
+  flex: none;
+  min-height: 0;
   aspect-ratio: 16 / 10;
   background: var(--full-surface-alt, #e7f6fc);
 
   > img {
+    position: absolute;
+    inset: 0;
     display: block;
     width: 100%;
     height: 100%;
@@ -2923,6 +2938,8 @@ button.featureInfo {
 .stackedStepImage {
   display: block;
   width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
   margin-top: auto;
   border-radius: var(--full-radius-md, 8px);
 }
@@ -3311,4 +3328,153 @@ button.featureInfo {
       transform: none;
     }
   }
+}
+
+
+/* ==========================================================================
+   Layout consistency pass (Oct 2026 business feedback)
+   ========================================================================== */
+
+/* Long unbroken text (email addresses, URLs) wraps inside its card instead of
+   running past the edge (Business Travel "Family Relocation":
+   "Offline: onboarding@RedSeaGlobal.com"). richText.tsx also adds natural
+   break points after "@" and before dots. */
+.imageCard,
+.stackedStep,
+.splitPart,
+.featureInfo,
+.highlightCard,
+.pricePanel {
+  overflow-wrap: anywhere;
+}
+
+.highlightSubPointIconed > span {
+  min-width: 0;
+}
+
+/* Side-by-side sections share one height (Meetings & Events: "Meeting Rooms
+   at KAFD Offices" banner next to "Key Facilities"). The row already
+   stretches its cells; now a banner grid / feature panel / menu grid inside a
+   cell also stretches to the cell's height, so the shorter one no longer
+   leaves empty space under it. */
+.sectionRowCell > .section {
+  min-height: 0;
+}
+
+.sectionRowCell > .section > .imageCardsBanner,
+.sectionRowCell > .section > .imageCardsMenu,
+.sectionRowCell > .section > .feature {
+  flex: 1;
+}
+
+.sectionRowCell > .section > .imageCardsBanner {
+  grid-auto-rows: 1fr;
+}
+
+/* A stacked cell: a JumpLinks bar on top of the section below it - the
+   section takes the remaining height so the column matches its neighbour. */
+.sectionRowCellStacked {
+  gap: var(--full-space-3, 12px);
+
+  > section {
+    flex: none;
+  }
+
+  > section:last-child {
+    flex: 1;
+  }
+}
+
+/* Every stacked step in one look when a section mixes described and
+   title-only steps (Business Travel "Offline Travel Process"): number and
+   icon on one row, then title and text, all starting on the same left edge. */
+.stackedStepsUniform {
+  > .stackedStep {
+    align-items: flex-start;
+    text-align: start;
+  }
+
+  .stackedStepTop {
+    justify-content: flex-start;
+    align-items: center;
+    gap: var(--full-space-2, 8px);
+    min-height: 0;
+  }
+
+  .stackedStepNumber {
+    position: static;
+    flex: none;
+  }
+
+  .stackedStepIcon {
+    width: 44px;
+    height: 44px;
+    font-size: 1.25rem;
+  }
+}
+
+/* --- JumpLinks: big icon + label buttons that scroll to a section --------- */
+.sectionJumpLinks {
+  gap: 0;
+}
+
+.jumpLinks {
+  display: grid;
+  grid-template-columns: repeat(var(--th-cols, 2), minmax(0, 1fr));
+  gap: var(--full-space-3, 12px);
+
+  @media (max-width: 479px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.jumpLink {
+  @include th-link-reset;
+  @include th-focusable;
+
+  & {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--full-space-3, 12px);
+    min-height: 64px;
+    padding: var(--full-space-3, 12px) var(--full-space-4, 16px);
+    border: 1px solid color-mix(in srgb, var(--th-card-accent, #852e2c) 35%, var(--full-border, #d5dfe3));
+    border-radius: var(--full-radius-md, 10px);
+    background: var(--full-surface, #fff);
+    color: var(--th-card-accent-ink, var(--th-card-accent, #852e2c));
+    font: inherit;
+    font-size: 1rem;
+    font-weight: var(--full-fw-semibold, 600);
+    cursor: pointer;
+    box-shadow: var(--full-shadow-card, 0 2px 10px rgba(4, 37, 60, 0.06));
+    transition: background-color var(--full-transition-fast, 120ms ease), color var(--full-transition-fast, 120ms ease),
+      box-shadow var(--full-transition-fast, 120ms ease);
+  }
+
+  &:hover {
+    box-shadow: var(--full-shadow-card-hover, 0 8px 24px rgba(4, 37, 60, 0.14));
+  }
+}
+
+.jumpLinkActive {
+  border-color: var(--th-card-accent, #852e2c);
+  background: var(--th-card-accent, #852e2c);
+  color: var(--th-card-accent-on, #fff);
+}
+
+.jumpLinkIcon {
+  display: inline-flex;
+  font-size: 1.625rem;
+  line-height: 1;
+}
+
+.jumpLinkText {
+  min-width: 0;
+  text-align: start;
+}
+
+/* Anchored sections stop below the sticky top bar when jumped to. */
+.section[id] {
+  scroll-margin-top: 88px;
 }

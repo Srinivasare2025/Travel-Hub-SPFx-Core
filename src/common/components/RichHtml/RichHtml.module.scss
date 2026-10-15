@@ -1,0 +1,130 @@
+@import '../../styles/typography';
+
+/* Readable article typography for sanitised rich text. Global descendants are
+   scoped under the module class, so nothing leaks to the rest of the app. */
+.rich {
+  @include th-body;
+  color: var(--full-text, #04253c);
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+
+  p {
+    margin: 0 0 1em;
+  }
+
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin: 1.4em 0 0.5em;
+    font-family: var(--full-font-family-display, "Larken", Georgia, serif);
+    line-height: 1.25;
+    color: var(--full-heading, #04253c);
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  h3 {
+    font-size: 1.25rem;
+  }
+
+  h4,
+  h5,
+  h6 {
+    font-size: 1.0625rem;
+  }
+
+  ul,
+  ol {
+    margin: 0 0 1em;
+    padding-inline-start: 1.4em;
+  }
+
+  li + li {
+    margin-top: 0.3em;
+  }
+
+  a {
+    color: var(--full-accent-text, #7b6945);
+    font-weight: var(--full-fw-semibold, 600);
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 1.25em auto;
+    border-radius: var(--full-radius-md, 8px);
+  }
+
+  figure {
+    margin: 1.5em 0;
+
+    img {
+      margin: 0 auto;
+    }
+  }
+
+  figcaption {
+    margin-top: 0.5em;
+    font-size: var(--full-fs-meta, 0.8125rem);
+    color: var(--full-text-muted, #46535c);
+    text-align: center;
+  }
+
+  blockquote {
+    margin: 1.25em 0;
+    padding: 0.75em 1.25em;
+    border-inline-start: 4px solid var(--full-primary, #b89c67);
+    background: var(--full-surface-alt, #f2fafd);
+    border-radius: 0 var(--full-radius-md, 8px) var(--full-radius-md, 8px) 0;
+    font-style: italic;
+  }
+
+  table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    margin: 0 0 1em;
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    padding: 8px 12px;
+    border: 1px solid var(--full-border, #d5dfe3);
+    text-align: start;
+    vertical-align: top;
+  }
+
+  th {
+    background: var(--full-surface-alt, #f2fafd);
+    font-weight: var(--full-fw-semibold, 600);
+  }
+
+  hr {
+    margin: 1.5em 0;
+    border: 0;
+    border-top: 1px solid var(--full-border, #d5dfe3);
+  }
+
+  :global(.th-align-center) {
+    text-align: center;
+  }
+
+  :global(.th-align-right) {
+    text-align: right;
+  }
+
+  :global(.th-align-justify) {
+    text-align: justify;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+
+}

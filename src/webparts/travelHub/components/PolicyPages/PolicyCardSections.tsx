@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Icon } from '@fluentui/react/lib/Icon';
 import { useNavigation } from '../../../../common/context/NavigationContext';
-import { ImageWithFallback, MediaViewer } from '../../../../common/components';
+import { ImageWithFallback, MediaViewer, FitImg } from '../../../../common/components';
 import type { IMediaItem } from '../../../../common/utils/mediaItems';
 import { IPolicyCard, IPolicySection, IPolicyTable, IPolicyTab, PolicyCardStyle, PolicySectionWidth } from '../../../../models';
 import { parseHighlightSubPoints, extractTag, ParsedSubPoint, IParseOptions } from './parseHighlightSubPoints';
@@ -61,6 +61,13 @@ function renderSectionTitle(title: string): React.ReactNode {
     </>
   );
 }
+
+/**
+ * Default crop focus for wide photo banners: a little above centre, so the
+ * top of a photo (heads, skylines, logos) is not the part that gets cut. An
+ * editor's `#focus=` hint on the image URL wins (common/utils/imageHints.ts).
+ */
+const BANNER_FOCUS = 'center 30%';
 
 /** The reserved TargetSlug value that links a card to the dedicated Business Travel hub screen instead of a Policy page - see BUSINESS_TRAVEL_SLUG usage in PolicyPageScreen.tsx too. */
 export const BUSINESS_TRAVEL_SLUG = 'business-travel';
@@ -571,12 +578,20 @@ export const HelpSteps: React.FC<{ cards: IPolicyCard[]; oneRow?: boolean; stack
   if (stacked) {
     // CardStyle = Stacked: each step a column - number badge, icon circle,
     // title, text, optional image (SAP Concur "How It Works").
+    //
+    // One look per section: when only SOME steps have a description (e.g.
+    // "Offline Travel Process" - step 1 has the email, steps 2-4 are
+    // title-only), mixing boxed and compact steps made every step start its
+    // lines at a different position. Such a section now draws every step as
+    // the same box, with icon, title and text all on one left edge.
+    const compactCount = cards.filter(isCompactStep).length;
+    const mixed = compactCount > 0 && compactCount < cards.length;
     return (
-      <ol className={styles.stackedSteps}>
+      <ol className={`${styles.stackedSteps} ${mixed ? styles.stackedStepsUniform : ''}`}>
         {cards.map((card, index) => (
           <React.Fragment key={card.id}>
             <li
-              className={`${styles.stackedStep} ${isCompactStep(card) ? styles.stackedStepCompact : ''}`}
+              className={`${styles.stackedStep} ${!mixed && isCompactStep(card) ? styles.stackedStepCompact : ''}`}
               // eslint-disable-next-line @typescript-eslint/no-use-before-define -- shared helper defined with the image cards below.
               style={accentVar(card)}
             >
@@ -590,7 +605,7 @@ export const HelpSteps: React.FC<{ cards: IPolicyCard[]; oneRow?: boolean; stack
               {card.subtitle !== undefined && <div className={styles.stackedStepSubtitle}>{card.subtitle}</div>}
               {card.description.length > 0 && <div className={styles.helpStepDescription}>{renderRichText(card.description)}</div>}
               <SubPointsBlocks subPoints={card.subPoints} />
-              {card.imageUrl !== undefined && <img className={styles.stackedStepImage} src={card.imageUrl} alt="" loading="lazy" />}
+              {card.imageUrl !== undefined && <FitImg className={styles.stackedStepImage} src={card.imageUrl} />}
             </li>
             {index < cards.length - 1 && <Icon iconName="ChevronRight" className={styles.helpStepArrow} aria-hidden="true" />}
           </React.Fragment>
@@ -696,7 +711,7 @@ const SplitBlock: React.FC<{ cards: IPolicyCard[]; compact?: boolean }> = ({ car
         return (
           <div key={card.id} className={`${styles.splitPart} ${card.kind === 'linkItem' ? styles.splitPartTrailing : ''}`}>
             {card.imageUrl !== undefined ? (
-              <img className={styles.splitImage} src={card.imageUrl} alt={card.title} loading="lazy" />
+              <FitImg className={styles.splitImage} src={card.imageUrl} alt={card.title} fit="contain" backdrop={false} />
             ) : (
               card.iconExplicit && (
                 <span className={styles.splitIcon} style={card.iconColorInk !== undefined ? { color: card.iconColorInk } : undefined} aria-hidden="true">
@@ -1002,7 +1017,7 @@ const ImageCards: React.FC<{ cards: IPolicyCard[]; columns: number | undefined; 
           return (
             <CardLink key={card.id} card={card} className={`${cardClass} ${styles.imageCardMenu} ${wide ? styles.imageCardMenuWide : ''}`}>
               <span className={styles.imageCardMedia}>
-                {card.imageUrl !== undefined && <img src={card.imageUrl} alt="" loading="lazy" />}
+                {card.imageUrl !== undefined && <FitImg src={card.imageUrl} />}
                 {card.badge !== undefined && (
                   <span className={styles.menuRibbon} style={accentVar(card)}>
                     {card.badge}
@@ -1033,7 +1048,7 @@ const ImageCards: React.FC<{ cards: IPolicyCard[]; columns: number | undefined; 
         if (look === 'imageBanner') {
           return (
             <CardLink key={card.id} card={card} className={`${cardClass} ${styles.imageCardBanner}`}>
-              {card.imageUrl !== undefined && <img className={styles.imageCardBannerImg} src={card.imageUrl} alt="" loading="lazy" />}
+              {card.imageUrl !== undefined && <FitImg className={styles.imageCardBannerImg} src={card.imageUrl} position={BANNER_FOCUS} />}
               <span className={styles.imageCardBannerContent} style={accentVar(card)}>
                 {card.badge !== undefined && <span className={styles.imageCardEyebrow}>{card.badge}</span>}
                 <span className={styles.imageCardBannerTitle}>
@@ -1056,7 +1071,7 @@ const ImageCards: React.FC<{ cards: IPolicyCard[]; columns: number | undefined; 
             <CardLink key={card.id} card={card} className={`${cardClass} ${styles.imageCardLeft}`}>
               {card.imageUrl !== undefined ? (
                 <span className={styles.imageCardLeftMedia}>
-                  <img src={card.imageUrl} alt="" loading="lazy" />
+                  <FitImg src={card.imageUrl} />
                   {iconDisc}
                 </span>
               ) : (
@@ -1084,7 +1099,7 @@ const ImageCards: React.FC<{ cards: IPolicyCard[]; columns: number | undefined; 
             <CardLink key={card.id} card={card} className={`${cardClass} ${styles.imageCardTile}`}>
               {card.imageUrl !== undefined ? (
                 <span className={styles.imageCardMedia}>
-                  <img src={card.imageUrl} alt="" loading="lazy" />
+                  <FitImg src={card.imageUrl} />
                   {iconDisc !== null && <span className={styles.imageCardIconAnchor} style={accentVar(card)}>{iconDisc}</span>}
                 </span>
               ) : (
@@ -1115,7 +1130,7 @@ const ImageCards: React.FC<{ cards: IPolicyCard[]; columns: number | undefined; 
           >
             {card.imageUrl !== undefined ? (
               <span className={styles.imageCardMedia}>
-                <img src={card.imageUrl} alt="" loading="lazy" />
+                <FitImg src={card.imageUrl} />
                 {card.badge !== undefined && <span className={styles.imageCardBadge} style={accentVar(card)}>{card.badge}</span>}
                 {iconDisc !== null && <span className={styles.imageCardIconAnchor} style={accentVar(card)}>{iconDisc}</span>}
               </span>
@@ -1238,7 +1253,7 @@ const FeatureBlock: React.FC<{ section: IPolicySection }> = ({ section }) => {
           ))}
         </div>
       )}
-      {section.imageUrl !== undefined && <img className={styles.featureImage} src={section.imageUrl} alt="" loading="lazy" />}
+      {section.imageUrl !== undefined && <FitImg className={styles.featureImage} src={section.imageUrl} />}
     </div>
   );
 };
@@ -1389,7 +1404,7 @@ const PriceList: React.FC<{ cards: IPolicyCard[]; columns: number | undefined }>
             <span className={styles.pricePanelInner} style={accentVar(card)}>
               {card.imageUrl !== undefined && (
                 <span className={styles.pricePanelMedia}>
-                  <img src={card.imageUrl} alt={card.title} loading="lazy" />
+                  <FitImg src={card.imageUrl} alt={card.title} />
                 </span>
               )}
               <span className={styles.pricePanelBody}>
@@ -1450,8 +1465,83 @@ const GalleryBlock: React.FC<{ cards: IPolicyCard[]; columns: number | undefined
             className={styles.galleryItem}
             ariaLabel={`Open photo ${String(index + 1)} of ${String(photos.length)}${label.length > 0 ? `: ${label}` : ''}`}
           >
-            <img src={card.imageUrl} alt="" loading="lazy" />
+            <FitImg src={card.imageUrl as string} />
           </PopupTrigger>
+        );
+      })}
+    </div>
+  );
+};
+
+/** A section title as an in-page anchor id: "Coffee Break Menus" -> "th-sec-coffee-break-menus". */
+export function sectionAnchorId(title: string): string {
+  return `th-sec-${title
+    .toLowerCase()
+    .replace(/^\d+[.)]\s*/, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')}`;
+}
+
+/**
+ * `Layout: 'jumpLinks'` - a row of big icon + label buttons that scroll to
+ * another section of the same page (Catering "Coffee Breaks" / "Lunch -
+ * Finger Food"). Each card: Title (button text), Icon, IconColor, and
+ * TargetSlug = `#` + the TITLE of the section to jump to, e.g.
+ * `#Coffee Break Menus` (case and spaces don't matter). The first button is
+ * shown selected until another is clicked. A card whose TargetSlug is a page
+ * slug, or that has a LinkUrl, still works as an ordinary link.
+ */
+const JumpLinksBlock: React.FC<{ cards: IPolicyCard[] }> = ({ cards }) => {
+  const [activeId, setActiveId] = React.useState<number | undefined>(cards[0]?.id);
+  if (cards.length === 0) {
+    return null;
+  }
+  return (
+    <div className={styles.jumpLinks} style={{ '--th-cols': String(Math.min(cards.length, 4)) } as React.CSSProperties}>
+      {cards.map((card) => {
+        const active = card.id === activeId;
+        const className = `${styles.jumpLink} ${active ? styles.jumpLinkActive : ''}`;
+        const content = (
+          <>
+            {card.iconExplicit && (
+              <span className={styles.jumpLinkIcon} aria-hidden="true">
+                <Icon iconName={card.icon} />
+              </span>
+            )}
+            <span className={styles.jumpLinkText}>{card.title || card.linkText}</span>
+          </>
+        );
+        const anchor = card.targetSlug !== undefined && card.targetSlug.startsWith('#') ? card.targetSlug.slice(1) : undefined;
+        if (anchor !== undefined && anchor.trim().length > 0) {
+          let target = anchor;
+          try {
+            target = decodeURIComponent(anchor);
+          } catch {
+            /* keep as typed */
+          }
+          return (
+            <button
+              key={card.id}
+              type="button"
+              className={className}
+              style={accentVar(card)}
+              aria-pressed={active}
+              onClick={() => {
+                setActiveId(card.id);
+                const el = document.getElementById(sectionAnchorId(target));
+                if (el !== null) {
+                  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+              }}
+            >
+              {content}
+            </button>
+          );
+        }
+        return (
+          <CardLink key={card.id} card={card} className={className}>
+            {content}
+          </CardLink>
         );
       })}
     </div>
@@ -1465,7 +1555,22 @@ const WIDTH_SPAN: Record<PolicySectionWidth, number> = { full: 12, half: 6, oneT
  * share a row (e.g. Half + Half, TwoThirds + OneThird), stacked on smaller
  * screens. With every Width left at Full this is exactly the old stack.
  */
-export const SectionFlow: React.FC<{ sections: IPolicySection[] }> = ({ sections }) => {
+export const SectionFlow: React.FC<{ sections: IPolicySection[] }> = ({ sections: allSections }) => {
+  // A non-Full `JumpLinks` section takes no width of its own: it stacks on
+  // top of the NEXT section, in the same column (Catering: the "Coffee
+  // Breaks | Lunch - Finger Food" buttons above "Coffee Break Menus", that
+  // whole column as tall as "Lunch Menus - Finger Food" beside it).
+  const stackedAbove = new Map<number, IPolicySection>();
+  const sections: IPolicySection[] = [];
+  allSections.forEach((section, index) => {
+    const next = allSections[index + 1];
+    if (section.layout === 'jumpLinks' && section.width !== 'full' && next !== undefined && next.width !== 'full') {
+      stackedAbove.set(next.id, section);
+      return;
+    }
+    sections.push(section);
+  });
+
   const rows: IPolicySection[][] = [];
   let current: IPolicySection[] = [];
   let used = 0;
@@ -1504,12 +1609,17 @@ export const SectionFlow: React.FC<{ sections: IPolicySection[] }> = ({ sections
             className={styles.sectionRow}
             style={{ '--th-row-cols': row.map((s) => `${String(WIDTH_SPAN[s.width])}fr`).join(' ') } as React.CSSProperties}
           >
-            {row.map((section) => (
-              <div key={section.id} className={styles.sectionRowCell}>
-                {/* eslint-disable-next-line @typescript-eslint/no-use-before-define -- the block component is defined below. */}
-                <PolicySectionBlock section={section} />
-              </div>
-            ))}
+            {row.map((section) => {
+              const above = stackedAbove.get(section.id);
+              return (
+                <div key={section.id} className={`${styles.sectionRowCell} ${above !== undefined ? styles.sectionRowCellStacked : ''}`}>
+                  {/* eslint-disable-next-line @typescript-eslint/no-use-before-define -- the block component is defined below. */}
+                  {above !== undefined && <PolicySectionBlock section={above} />}
+                  {/* eslint-disable-next-line @typescript-eslint/no-use-before-define -- the block component is defined below. */}
+                  <PolicySectionBlock section={section} />
+                </div>
+              );
+            })}
           </div>
         )
       )}
@@ -1518,7 +1628,7 @@ export const SectionFlow: React.FC<{ sections: IPolicySection[] }> = ({ sections
 };
 
 /** Layouts that render their own header or none (the icon is not repeated before the title). */
-const SELF_HEADED_LAYOUTS: ReadonlySet<string> = new Set(['callout', 'imageBlock', 'banner', 'feature', 'search']);
+const SELF_HEADED_LAYOUTS: ReadonlySet<string> = new Set(['callout', 'imageBlock', 'banner', 'feature', 'search', 'jumpLinks']);
 
 /** Layouts that don't use `Body` themselves - for these, `Body` is a short note at the right of the section header. */
 const HEADER_NOTE_LAYOUTS: ReadonlySet<string> = new Set([
@@ -1589,8 +1699,14 @@ export const PolicySectionBlock: React.FC<{ section: IPolicySection }> = ({ sect
     </div>
   ) : null;
 
+  const anchorId = section.title !== undefined ? sectionAnchorId(section.title) : undefined;
+
   return (
-    <section className={sectionContainerClass(section, styles.section)} {...themeAttr}>
+    <section
+      id={anchorId}
+      className={`${sectionContainerClass(section, styles.section)} ${section.layout === 'jumpLinks' ? styles.sectionJumpLinks : ''}`}
+      {...themeAttr}
+    >
       {showHeader &&
         (plainHeader ? (
           iconTitle ?? titleBlock
@@ -1700,6 +1816,8 @@ function renderLayout(section: IPolicySection): React.ReactElement | undefined {
       return <PriceList cards={section.cards} columns={section.columns} />;
     case 'gallery':
       return <GalleryBlock cards={section.cards} columns={section.columns} title={section.title} />;
+    case 'jumpLinks':
+      return <JumpLinksBlock cards={section.cards} />;
     default:
       return undefined;
   }

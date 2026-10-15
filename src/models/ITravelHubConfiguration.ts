@@ -54,6 +54,13 @@ export interface ITravelHubConfiguration {
     quickLinks: IHeroQuickLink[];
     /** `stack` = a narrow left column; `inline` = two cards side by side. */
     quickLinksLayout: 'stack' | 'inline';
+    /**
+     * Shape of the hero frame. "auto" (default) = the frame takes the shape
+     * of the first slide's own image/video, so the whole picture shows with
+     * no crop and no blank bands. Or a fixed CSS ratio such as "21 / 9" for
+     * a shorter, wider banner (tablet/desktop; phones then use 4 / 3).
+     */
+    aspectRatio: string;
   };
 
   services: IResponsiveCounts & { defaultLinkText: string; autoPlay: boolean; intervalSeconds: number };
@@ -113,6 +120,15 @@ export interface ITravelHubConfiguration {
     buttonText: string;
     title: string;
     description: string;
+  };
+
+  /**
+   * In-app Content Admin screen (AdminScreen.tsx). Only members of this
+   * SharePoint group see the "Admin" tab. The lists' own permissions remain
+   * the real security boundary - the tab is a convenience, not a lock.
+   */
+  admin: {
+    group: string;
   };
 
   /** Defaults for every TH_PolicyPages page. */
