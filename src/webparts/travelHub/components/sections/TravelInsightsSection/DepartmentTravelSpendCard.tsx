@@ -60,6 +60,8 @@ export const DepartmentTravelSpendCard: React.FC = () => {
   }
 
   const dashboardUrl = data.spend?.dashboardUrl ?? (configuration.spend.dashboardUrl !== '#' ? configuration.spend.dashboardUrl : undefined);
+  // Framed form of the same report (Power BI secure embed + silent sign-in).
+  const embedUrl = spend.toEmbedUrl(dashboardUrl);
   const locale = configuration.dates.locale;
 
   return (
@@ -102,19 +104,25 @@ export const DepartmentTravelSpendCard: React.FC = () => {
             <SpendTile label="Booking Fees" amount={data.spend.bookingSpend} currency={data.spend.currency} locale={locale} />
           </div>
 
-          {dashboardUrl !== undefined && (
+          {dashboardUrl !== undefined && embedUrl !== undefined && (
             <>
-              {/* The configured Power BI report/dashboard link, embedded
-                  right in the card (a compact preview) rather than only
-                  linking out to it. */}
+              {/* The configured Power BI report/dashboard, embedded right in
+                  the card (a compact preview) rather than only linking out. */}
               <div className={styles.spendEmbedWrap}>
                 <iframe
                   className={styles.spendEmbed}
-                  src={dashboardUrl}
+                  src={embedUrl}
                   title="Department Travel Spend report preview"
                   loading="lazy"
+                  allowFullScreen
                 />
               </div>
+              <p className={styles.spendEmbedHint}>
+                Report not showing?{' '}
+                <a href={dashboardUrl} target="_blank" rel="noopener noreferrer">
+                  Open it in a new tab
+                </a>
+              </p>
               <div className={styles.spendAction}>
                 <Button variant="secondary" onClick={() => navigate({ kind: 'spendDetail' })} iconAfter="ChevronRight">
                   View Detailed

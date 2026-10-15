@@ -3,7 +3,7 @@ import { Icon } from '@fluentui/react/lib/Icon';
 import { useServices } from '../../../../common/context/ServiceContext';
 import { useNavigation } from '../../../../common/context/NavigationContext';
 import { useAsyncData } from '../../../../common/hooks';
-import { Badge, Button, LoadingState, ErrorState, EmptyState } from '../../../../common/components';
+import { Badge, Button, LoadingState, ErrorState, EmptyState, backgroundFor } from '../../../../common/components';
 import { SectionFlow, HelpSteps, PageLink, BUSINESS_TRAVEL_SLUG } from './PolicyCardSections';
 import type { IPolicyPageContent } from '../../../../models';
 import styles from './PolicyPageScreen.module.scss';
@@ -49,6 +49,27 @@ const HeroHighlights: React.FC<{ hero: IPolicyPageContent['hero'] }> = ({ hero }
   );
 
 /**
+ * The banner photo panel: always the same 62% of the banner on every page.
+ *
+ * It briefly sized itself to each photo's shape (38%-62%), which made every
+ * page's banner look different - a wide photo (Business Travel) kept the full
+ * panel while a less-wide one shrank to a narrow strip with a large empty
+ * band. Back to one panel for all pages; the crop sits slightly above centre
+ * (keeps heads/tops in view) and an editor can steer it per photo with
+ * `#focus=top` on the image URL (common/utils/imageHints.ts).
+ */
+const HeroPhoto: React.FC<{ src: string }> = ({ src }) => {
+  const bg = backgroundFor(src, 'center 30%');
+  return (
+    <div
+      className={styles.heroLightImage}
+      style={{ backgroundImage: `url("${bg.url}")`, backgroundPosition: bg.position, backgroundSize: bg.size }}
+      aria-hidden="true"
+    />
+  );
+};
+
+/**
  * The page banner - one style for every page (the SAP Concur look): eyebrow,
  * title, subtitle, description, badges and buttons on a light band, the
  * photo fading in on the right, the script tagline over the photo.
@@ -58,7 +79,7 @@ const HeroHighlights: React.FC<{ hero: IPolicyPageContent['hero'] }> = ({ hero }
  */
 export const PageHero: React.FC<{ hero: IPolicyPageContent['hero'] }> = ({ hero }) => (
   <div className={styles.heroLight}>
-    {hero.imageUrl !== undefined && <div className={styles.heroLightImage} style={{ backgroundImage: `url(${hero.imageUrl})` }} aria-hidden="true" />}
+    {hero.imageUrl !== undefined && <HeroPhoto src={hero.imageUrl} />}
     <div className={styles.heroLightContent}>
       {hero.icon !== undefined && (
         <span className={styles.heroLightIcon} aria-hidden="true">
@@ -293,7 +314,14 @@ export const PolicyPageScreen: React.FC<IPolicyPageScreenProps> = ({ slug }) => 
         // scrim; without one it keeps the original green band.
         <div
           className={`${styles.closingBanner} ${closingImage !== undefined ? styles.closingBannerImage : ''}`}
-          style={closingImage !== undefined ? { backgroundImage: `url(${closingImage})` } : undefined}
+          style={
+            closingImage !== undefined
+              ? (() => {
+                  const bg = backgroundFor(closingImage, 'center 40%');
+                  return { backgroundImage: `url("${bg.url}")`, backgroundPosition: bg.position };
+                })()
+              : undefined
+          }
         >
           <Icon iconName="Flower" className={styles.closingIcon} aria-hidden="true" />
           <div>

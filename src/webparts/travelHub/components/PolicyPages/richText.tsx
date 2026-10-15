@@ -15,6 +15,25 @@ import * as React from 'react';
 const TOKEN_RE =
   /(\*\*[^*]+\*\*)|([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})|(https?:\/\/[^\s<>"')]+)|(\+\d[\d\s-]{6,}\d)/g;
 
+/**
+ * An email address with optional line-break points (<wbr>) before the "@" and
+ * each "." - a long address in a narrow card ("Offline: onboarding@RedSeaGlobal.com")
+ * wraps at a natural place instead of running past the card's edge.
+ */
+export function breakableEmail(email: string): React.ReactNode {
+  const parts = email.split(/(?=[@.])/);
+  return (
+    <>
+      {parts.map((part, i) => (
+        <React.Fragment key={i}>
+          {i > 0 && <wbr />}
+          {part}
+        </React.Fragment>
+      ))}
+    </>
+  );
+}
+
 export function renderRichText(text: string): React.ReactNode {
   if (text.length === 0) {
     return text;
@@ -34,7 +53,7 @@ export function renderRichText(text: string): React.ReactNode {
     } else if (email !== undefined) {
       nodes.push(
         <a key={key++} href={`mailto:${email}`}>
-          {email}
+          {breakableEmail(email)}
         </a>
       );
     } else if (url !== undefined) {

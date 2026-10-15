@@ -40,6 +40,13 @@
       //window.location.origin,
     CREATE_LIBRARIES: true,
     SEED_CONFIG: true,
+    // Content Admin screen (Travel Hub "Admin" tab): creates this SharePoint
+    // group if it is missing and gives it Contribute (add/edit/delete items)
+    // on the site, so its members can save from the Admin screen. Add the
+    // members yourself afterwards. Set to false to manage the group by hand.
+    // Must match TH_SiteConfiguration admin.group.
+    ADMIN_GROUP: 'TravelHub Content Admins',
+    CREATE_ADMIN_GROUP: true,
     DRY_RUN: false,
     THROTTLE_MS: 120
   };
@@ -133,6 +140,11 @@
       `<Field Type='Text' ${attrs(n, `MaxLength='255'${o.indexed ? " Indexed='TRUE'" : ''}${o.required ? " Required='TRUE'" : ''}`)} />`,
     note: (n, lines = 6) =>
       `<Field Type='Note' ${attrs(n, `NumLines='${lines}' RichText='FALSE' AppendOnly='FALSE'`)} />`,
+    // Enhanced rich text: headings, lists, links, tables and pictures placed
+    // anywhere in the text (news articles, event details). Rendered through
+    // an allow-list sanitiser (src/common/utils/sanitizeHtml.ts).
+    rich: (n, lines = 12) =>
+      `<Field Type='Note' ${attrs(n, `NumLines='${lines}' RichText='TRUE' RichTextMode='FullHtml' IsolateStyles='TRUE' UnlimitedLengthInDocumentLibrary='FALSE' AppendOnly='FALSE'`)} />`,
     number: (n, o = {}) => {
       const min = o.min != null ? ` Min='${o.min}'` : '';
       const max = o.max != null ? ` Max='${o.max}'` : '';
@@ -164,7 +176,9 @@
   // missing fields, it never updates an existing field's choices).
   const POLICY_SECTION_LAYOUTS = [
     'Paragraph', 'CardsGrid', 'Table', 'Tabs', 'NumberedSteps', 'ProcessSteps', 'Callout', 'ImageBlock', 'LinksList',
-    'Split', 'Checklist', 'Banner', 'ImageCards', 'Feature', 'Faq', 'Search', 'PriceList', 'Gallery'
+    'Split', 'Checklist', 'Banner', 'ImageCards', 'Feature', 'Faq', 'Search', 'PriceList', 'Gallery',
+    // Big icon + label buttons that scroll to another section (Catering "Coffee Breaks").
+    'JumpLinks'
   ];
   // TH_PolicySections.CardStyle choices (same "append only" rule, step 4b).
   // TH_PolicySections.Theme choices. The first 7 are the original names (kept
@@ -246,7 +260,10 @@
         { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
         { name: 'IsActive', xml: F.bool('IsActive', true) },
         { name: 'StartDate', xml: F.date('StartDate', true) },
-        { name: 'EndDate', xml: F.date('EndDate', true) }
+        { name: 'EndDate', xml: F.date('EndDate', true) },
+        // Optional: a TH_PolicyPages Slug (e.g. 'sap-concur') - the service's
+        // nav tab and card open that list-driven page.
+        { name: 'PageSlug', xml: F.text('PageSlug') }
       ]
     },
     {
@@ -288,6 +305,8 @@
       description: 'Travel News & Articles.',
       fields: [
         { name: 'Description', xml: F.note('Description', 4) },
+        // The full article shown on the in-app article screen (rich text).
+        { name: 'ArticleBody', xml: F.rich('ArticleBody') },
         { name: 'ImageUrl', xml: F.url('ImageUrl') },
         { name: 'PublishDate', xml: F.date('PublishDate', false) },
         { name: 'LinkType', xml: F.choice('LinkType', ['Internal', 'External', 'OnPremReference'], 'Internal') },
@@ -311,6 +330,8 @@
         { name: 'Category', xml: F.text('Category') },
         { name: 'ImageUrl', xml: F.url('ImageUrl') },
         { name: 'RegistrationUrl', xml: F.url('RegistrationUrl') },
+        // Full event details shown on the in-app event screen (rich text).
+        { name: 'EventDetails', xml: F.rich('EventDetails') },
         { name: 'DisplayOrder', xml: F.number('DisplayOrder', { default: 0 }) },
         { name: 'IsActive', xml: F.bool('IsActive', true) }
       ]
@@ -798,6 +819,12 @@
     ['quickPulse.confirmationMessage', 'Thanks - your feedback has been recorded.', 'string'],
     ['quickPulse.pulseAdminGroup', 'TravelHub Pulse Admins', 'string'],
     ['spend.viewerGroup', 'TravelHub Spend Viewers', 'string'],
+    // Members of this SharePoint group see the "Admin" tab (Content Admin screen).
+    ['admin.group', 'TravelHub Content Admins', 'string'],
+    // Home hero frame shape. "auto" = the shape of the first slide's own
+    // image/video (whole picture, no crop, no blank bands); or a fixed ratio
+    // such as "21 / 9" for a shorter, wider banner.
+    ['hero.aspectRatio', 'auto', 'string'],
     ['spend.source', 'sharepoint', 'string'],
     ['spend.dashboardUrl', '#', 'string'],
     ['team.landingPageCount', '4', 'number'],
@@ -1034,6 +1061,37 @@
       } catch (e) {
         issues.push(`seed step: ${e.message}`);
         warn(`  ! seed step: ${e.message}`);
+      }
+    }
+
+    /* 6. Content Admin group */
+    if (CONFIG.CREATE_ADMIN_GROUP && CONFIG.ADMIN_GROUP) {
+      log('\n-- Step 6: Content Admin group ------------------');
+      try {
+        const name = CONFIG.ADMIN_GROUP;
+        const found = await spGetJson(`/_api/web/sitegroups?$select=Id,Title&$filter=Title eq '${esc(name)}'`);
+        let groupId = found.results.length > 0 ? found.results[0].Id : undefined;
+        if (groupId === undefined) {
+          await spWrite('/_api/web/sitegroups', {
+            __metadata: { type: 'SP.Group' },
+            Title: name,
+            Description: 'Travel Hub content editors - see the Admin tab in Travel Hub.'
+          });
+          const again = await spGetJson(`/_api/web/sitegroups?$select=Id&$filter=Title eq '${esc(name)}'`);
+          groupId = again.results.length > 0 ? again.results[0].Id : undefined;
+          log(`+  group "${name}" created`);
+        } else {
+          log(`=  group "${name}" already exists`);
+        }
+        if (groupId !== undefined) {
+          // 1073741827 = Contribute (add, edit and delete list items). Lists
+          // with broken inheritance (spend, pulse responses) are not affected.
+          await spWrite(`/_api/web/roleassignments/addroleassignment(principalid=${groupId},roledefid=1073741827)`);
+          log(`=  "${name}" has Contribute on the site - now add its members (Site settings > People and groups).`);
+        }
+      } catch (e) {
+        issues.push(`admin group: ${e.message}`);
+        warn(`  ! admin group: ${e.message}`);
       }
     }
 

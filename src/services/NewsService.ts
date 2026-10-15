@@ -9,6 +9,8 @@ import { parseSpDate } from '../common/utils/dateFormatting';
 
 const LIST = 'TH_TravelNews';
 const TTL_SECONDS = 120;
+/** Hard cap for the "All News & Articles" screen. */
+const ALL_LIMIT = 500;
 
 interface IRawNewsItem {
   Id: number;
@@ -22,6 +24,7 @@ interface IRawNewsItem {
   IsFeatured: boolean | null;
   OpenInNewTab: boolean | null;
   DisplayOrder: number | null;
+  ArticleBody?: string | null;
 }
 
 const SELECT = [
@@ -53,6 +56,10 @@ function toLinkType(raw: string | null): LinkType {
 export interface INewsService {
   /** Latest news, capped at `updates.newsCount`. First result is the featured item. */
   getNews(config: ITravelHubConfiguration): Promise<ITravelNews[]>;
+  /** Every active article, newest first (the "All News & Articles" screen). */
+  getAllNews(config: ITravelHubConfiguration): Promise<ITravelNews[]>;
+  /** One article with its full rich-text body, or `undefined` when missing/inactive. */
+  getNewsItem(id: number, config: ITravelHubConfiguration): Promise<ITravelNews | undefined>;
 }
 
 export class NewsService implements INewsService {
@@ -79,28 +86,64 @@ export class NewsService implements INewsService {
         top: Math.max(count + 5, 15)
       });
 
-      const mapped: ITravelNews[] = [];
-      for (const item of raw) {
-        const news = this.mapNews(item, allowOnPrem);
-        if (news !== undefined) {
-          mapped.push(news);
-        }
-      }
-
-      // Order: featured first, then displayOrder, then newest.
-      mapped.sort((a, b) => {
-        if (a.isFeatured !== b.isFeatured) {
-          return a.isFeatured ? -1 : 1;
-        }
-        if (a.displayOrder !== b.displayOrder) {
-          return a.displayOrder - b.displayOrder;
-        }
-        return b.publishDate.getTime() - a.publishDate.getTime();
-      });
-
+      const mapped = this.sortForHub(this.mapAll(raw, allowOnPrem));
       const trimmed = mapped.slice(0, count);
       // The lead card is always the first item regardless of the stored IsFeatured flags.
       return trimmed.map((item, index) => ({ ...item, isFeatured: index === 0 }));
+    });
+  }
+
+  public async getAllNews(config: ITravelHubConfiguration): Promise<ITravelNews[]> {
+    const allowOnPrem = config.featureFlags.newsOnPremLinks !== false;
+    return this.cache.getOrAdd(`news:all:${String(allowOnPrem)}`, TTL_SECONDS, async () => {
+      const raw = await this.spo.getListItems<IRawNewsItem>({
+        list: LIST,
+        select: SELECT,
+        filter: 'IsActive eq 1',
+        orderBy: { field: 'PublishDate', ascending: false },
+        top: ALL_LIMIT
+      });
+      // Featured first, then newest - the same lead story as the hub card.
+      return this.sortForHub(this.mapAll(raw, allowOnPrem));
+    });
+  }
+
+  public async getNewsItem(id: number, config: ITravelHubConfiguration): Promise<ITravelNews | undefined> {
+    const allowOnPrem = config.featureFlags.newsOnPremLinks !== false;
+    const filter = `Id eq ${String(Math.floor(id))} and IsActive eq 1`;
+    let raw: IRawNewsItem[];
+    try {
+      raw = await this.spo.getListItems<IRawNewsItem>({ list: LIST, select: [...SELECT, 'ArticleBody'], filter, top: 1 });
+    } catch {
+      // ArticleBody not provisioned yet (re-run travelhub-provision.js) - show the item without it.
+      this.log.warn(`${LIST}.ArticleBody could not be read; showing the Description only.`);
+      raw = await this.spo.getListItems<IRawNewsItem>({ list: LIST, select: SELECT, filter, top: 1 });
+    }
+    const item = raw[0];
+    return item === undefined ? undefined : this.mapNews(item, allowOnPrem);
+  }
+
+  private mapAll(raw: IRawNewsItem[], allowOnPrem: boolean): ITravelNews[] {
+    const mapped: ITravelNews[] = [];
+    for (const item of raw) {
+      const news = this.mapNews(item, allowOnPrem);
+      if (news !== undefined) {
+        mapped.push(news);
+      }
+    }
+    return mapped;
+  }
+
+  /** Order: featured first, then displayOrder, then newest. */
+  private sortForHub(items: ITravelNews[]): ITravelNews[] {
+    return items.sort((a, b) => {
+      if (a.isFeatured !== b.isFeatured) {
+        return a.isFeatured ? -1 : 1;
+      }
+      if (a.displayOrder !== b.displayOrder) {
+        return a.displayOrder - b.displayOrder;
+      }
+      return b.publishDate.getTime() - a.publishDate.getTime();
     });
   }
 
@@ -128,7 +171,11 @@ export class NewsService implements INewsService {
       category: toOptionalString(item.Category),
       openInNewTab: toBool(item.OpenInNewTab, linkType !== 'internal'),
       displayOrder: toNumber(item.DisplayOrder, 0),
-      isFeatured: toBool(item.IsFeatured, false)
+      isFeatured: toBool(item.IsFeatured, false),
+      body: toOptionalString(item.ArticleBody ?? null),
+      // Internal content opens the in-app article; an External / legacy
+      // (OnPremReference) link opens its own page in a new tab.
+      opensExternally: linkType !== 'internal' && targetUrl !== undefined
     };
   }
 }

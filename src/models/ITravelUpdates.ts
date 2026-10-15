@@ -15,6 +15,14 @@ export interface ITravelNews {
   displayOrder: number;
   /** Derived: the first item by (isFeatured desc, displayOrder, publishDate desc). */
   isFeatured: boolean;
+  /**
+   * Full article (TH_TravelNews.ArticleBody - an enhanced rich-text column:
+   * headings, images anywhere in the text, tables, links). Only loaded by the
+   * detail screen (`getNewsItem`); `undefined` on the card lists.
+   */
+  body: string | undefined;
+  /** True when the item opens its `targetUrl` (another site/page) instead of the in-app article screen. */
+  opensExternally: boolean;
 }
 
 /** Upcoming Events item (from TH_TravelEvents). */
@@ -31,6 +39,8 @@ export interface ITravelEvent {
   imageUrl: string | undefined;
   registrationUrl: string | undefined;
   displayOrder: number;
+  /** Rich event details (TH_TravelEvents.EventDetails); detail screen only. */
+  details: string | undefined;
 }
 
 /** Travel Tips & Insights item (from TH_TravelTips). */

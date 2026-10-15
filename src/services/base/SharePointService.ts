@@ -17,11 +17,20 @@ import { Logger } from './Logger';
  */
 export class SharePointService {
   public readonly sp: SPFI;
+  /** Microsoft Entra tenant id (Power BI secure-embed sign-in, powerBi.ts). */
+  public readonly tenantId: string | undefined;
+  /** Absolute URL of the current web, e.g. https://contoso.sharepoint.com/sites/travel. */
+  public readonly webAbsoluteUrl: string;
+  /** Server-relative URL of the current web, e.g. /sites/travel. */
+  public readonly webServerRelativeUrl: string;
   private readonly log: Logger;
   private groupNamesPromise: Promise<Set<string>> | undefined;
 
   public constructor(context: WebPartContext, logger: Logger) {
     this.sp = spfi().using(SPFx(context));
+    this.tenantId = context.pageContext.aadInfo?.tenantId?.toString();
+    this.webAbsoluteUrl = context.pageContext.web.absoluteUrl;
+    this.webServerRelativeUrl = context.pageContext.web.serverRelativeUrl;
     this.log = logger.child('SharePointService');
   }
 

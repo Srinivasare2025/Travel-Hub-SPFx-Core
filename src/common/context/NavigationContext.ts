@@ -24,7 +24,17 @@ export type ThView =
   | { kind: 'greenTravel' }
   | { kind: 'spendDetail' }
   /** A TH_Offers details screen; `fromSlug` = the page it was opened from (breadcrumb, nav tab). */
-  | { kind: 'offer'; id: number; fromSlug: string | undefined };
+  | { kind: 'offer'; id: number; fromSlug: string | undefined }
+  /** "All News & Articles" (Travel News card's View All). */
+  | { kind: 'newsAll' }
+  /** One internal TH_TravelNews article. */
+  | { kind: 'newsDetail'; id: number }
+  /** "All Events" (Upcoming Events card's View All). */
+  | { kind: 'eventsAll' }
+  /** One TH_TravelEvents event. */
+  | { kind: 'eventDetail'; id: number }
+  /** Content Admin screen (admin group members only - AdminScreen.tsx). */
+  | { kind: 'admin' };
 
 export type ThViewKind = ThView['kind'];
 

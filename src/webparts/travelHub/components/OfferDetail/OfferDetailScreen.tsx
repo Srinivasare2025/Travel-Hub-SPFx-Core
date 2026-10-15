@@ -3,7 +3,7 @@ import { Icon } from '@fluentui/react/lib/Icon';
 import { useServices } from '../../../../common/context/ServiceContext';
 import { useNavigation, ThView } from '../../../../common/context/NavigationContext';
 import { useAsyncData } from '../../../../common/hooks';
-import { Button, EmptyState, ErrorState, LoadingState, MediaViewer } from '../../../../common/components';
+import { Button, EmptyState, ErrorState, LoadingState, MediaViewer, FitImg } from '../../../../common/components';
 import { toTelHref } from '../../../../common/utils/urlValidation';
 import type { IMediaItem } from '../../../../common/utils/mediaItems';
 import type { IOffer } from '../../../../models';
@@ -128,7 +128,7 @@ export const OfferDetailScreen: React.FC<IOfferDetailScreenProps> = ({ offerId, 
               onClick={() => setViewer({ items: gallery, index: 0, title: offer.title })}
               aria-label={`Open photos of ${offer.title}`}
             >
-              <img src={offer.imageUrl} alt="" />
+              <FitImg src={offer.imageUrl} eager />
               {offer.badge !== undefined && <span className={styles.badge}>{offer.badge}</span>}
             </button>
           ) : (

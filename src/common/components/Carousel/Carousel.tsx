@@ -29,6 +29,8 @@ export interface ICarouselProps<T> {
   showDots?: boolean;
   /** 'below' (default) puts controls under the track; 'overlay' pins them over the bottom of the track (full-bleed heroes). */
   controlsPosition?: 'below' | 'overlay';
+  /** No spacing between slides - for one-slide-per-page full-bleed heroes, where it showed as a strip at each edge. */
+  flush?: boolean;
 }
 
 /**
@@ -48,7 +50,8 @@ export function Carousel<T>(props: ICarouselProps<T>): React.ReactElement {
     loop = true,
     showArrows = true,
     showDots = true,
-    controlsPosition = 'below'
+    controlsPosition = 'below',
+    flush = false
   } = props;
 
   const visibleCount = Math.max(1, useResponsiveValue(visibleCards));
@@ -92,7 +95,7 @@ export function Carousel<T>(props: ICarouselProps<T>): React.ReactElement {
           style={{ transform: `translateX(-${page * 100}%)` }}
         >
           {items.map((item, index) => (
-            <li className={styles.slide} key={getKey(item, index)} style={{ flexBasis: `calc(100% / ${visibleCount})` }}>
+            <li className={`${styles.slide} ${flush ? styles.slideFlush : ''}`} key={getKey(item, index)} style={{ flexBasis: `calc(100% / ${visibleCount})` }}>
               {renderItem(item, index, { isActive: index === page, next, setSuspended })}
             </li>
           ))}

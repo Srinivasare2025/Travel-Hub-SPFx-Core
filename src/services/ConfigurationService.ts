@@ -175,6 +175,20 @@ export class ConfigurationService implements IConfigurationService {
         intervalSeconds: num('hero.intervalSeconds', 6, 3, 20),
         supportingMessage: str('hero.supportingMessage', 'Travel Care — Your Partner in Every Journey'),
         quickLinksLayout: enumVal('hero.quickLinks.layout', ['stack', 'inline'] as const, 'inline'),
+        aspectRatio: (() => {
+          const v = str('hero.aspectRatio', 'auto');
+          // "auto" = the frame takes the shape of the first slide's picture.
+          if (v.trim().toLowerCase() === 'auto') {
+            return 'auto';
+          }
+          // "16/9", "16 / 9", "16:9" all accepted; anything else falls back.
+          const m = /^\s*(\d+(?:\.\d+)?)\s*[/:]\s*(\d+(?:\.\d+)?)\s*$/.exec(v);
+          if (m === null) {
+            this.log.warn(`Config "hero.aspectRatio" ("${v}") is not "auto" or a ratio like 16 / 9; using auto.`);
+            return 'auto';
+          }
+          return `${m[1]} / ${m[2]}`;
+        })(),
         quickLinks: [
           {
             key: 'helpDesk' as const,
@@ -276,6 +290,9 @@ export class ConfigurationService implements IConfigurationService {
         buttonText: str('policyAssistant.buttonText', 'Ask Policy Assistant'),
         title: str('policyAssistant.title', 'Ask Our Policy Assistant'),
         description: str('policyAssistant.description', 'Get instant answers to your travel policy questions.')
+      },
+      admin: {
+        group: str('admin.group', 'TravelHub Content Admins')
       },
       pages: {
         closingBannerImageUrl: url('pages.closingBannerImageUrl', '') || undefined

@@ -155,6 +155,22 @@
     return id;
   }
 
+  // Whether a column exists (new optional columns are only written when
+  // travelhub-provision.js has already added them on this site).
+  const fieldCache = {};
+  async function fieldExists(list, name) {
+    const key = list + '|' + name;
+    if (!(key in fieldCache)) {
+      try {
+        const d = await spGetJson(`/_api/web/lists/getbytitle('${esc(list)}')/fields?$select=InternalName&$filter=InternalName eq '${esc(name)}'`);
+        fieldCache[key] = d.results.length > 0;
+      } catch (e) {
+        fieldCache[key] = false;
+      }
+    }
+    return fieldCache[key];
+  }
+
   async function getTitles(list) {
     const d = await spGetJson(`/_api/web/lists/getbytitle('${esc(list)}')/items?$select=Title&$top=1000`);
     return d.results.map((r) => r.Title);
@@ -323,7 +339,16 @@
         LinkType: 'Internal',
         TargetUrl: link('#'),
         offsetDays: -3,
-        order: 1
+        order: 1,
+        body: [
+          '<p>This summer brings new places to explore close to home - from the Red Sea coast to the cool highlands of the south-west.</p>',
+          '<h2>What is new this season</h2>',
+          '<ul><li><strong>Red Sea resorts</strong> - new beach and island properties now bookable.</li><li><strong>AlUla</strong> - extended evening experiences and festivals.</li><li><strong>Abha &amp; Al Soudah</strong> - mountain escapes with mild summer weather.</li></ul>',
+          `<figure><img src="${img('news-1-inline', 1200, 600)}" alt="Coastline at sunset" /><figcaption>Sunset over the Red Sea coast</figcaption></figure>`,
+          '<h3>Booking tips for peak season</h3>',
+          '<p>Book flights and hotels at least <strong>four weeks</strong> ahead, compare package offers on the Personal Travel Offers page, and contact Personal Travel Care for family bookings.</p>',
+          '<blockquote>Tip: weekday departures are usually cheaper than weekend ones.</blockquote>'
+        ].join('')
       },
       {
         Title: 'Updated advance-booking guidelines for business travel',
@@ -332,7 +357,12 @@
         LinkType: 'Internal',
         TargetUrl: link('#'),
         offsetDays: -12,
-        order: 2
+        order: 2,
+        body: [
+          '<p>To keep fares low and availability high, business trips must now be booked in advance:</p>',
+          '<table><thead><tr><th>Destination</th><th>Book at least</th></tr></thead><tbody><tr><td>Within KSA / GCC</td><td>5 business days ahead</td></tr><tr><td>Rest of world</td><td>10 business days ahead</td></tr><tr><td>Conferences &amp; events</td><td>30 business days ahead</td></tr></tbody></table>',
+          '<p>Late bookings need a business justification in SAP Concur. See the Travel Policy for details.</p>'
+        ].join('')
       },
       {
         Title: 'Global travel trends to watch this year',
@@ -355,10 +385,13 @@
         order: 4
       }
     ];
+    const hasBody = await fieldExists('TH_TravelNews', 'ArticleBody');
     for (const r of rows) {
       await addItem('TH_TravelNews', {
         Title: r.Title,
         Description: r.Description,
+        // Full article for the in-app article screen (needs the ArticleBody column).
+        ArticleBody: hasBody && r.body ? r.body : null,
         ImageUrl: link(img('news-' + r.order, 1200, 675)),
         PublishDate: addDays(r.offsetDays),
         LinkType: r.LinkType,
@@ -380,17 +413,21 @@
       ['SAP Concur awareness session', 'Hands-on walkthrough of requests, bookings and mobile approvals.', 'Training', 33, '10:00', '12:00', 'Training Lab'],
       ['Travel photography contest - submissions close', 'Last day to submit your best trip photo for the staff contest.', 'Employee Engagement', 45, null, null, 'All locations']
     ];
+    const hasDetails = await fieldExists('TH_TravelEvents', 'EventDetails');
+    const details = (desc, loc) =>
+      `<p>${desc}</p><h3>Agenda</h3><ul><li>Welcome and introduction</li><li>Main session and live demo</li><li>Questions and answers</li></ul><p><strong>Where:</strong> ${loc}. Please register in advance - places are limited.</p>`;
     let order = 1;
     for (const [title, desc, cat, days, start, end, loc] of rows) {
       await addItem('TH_TravelEvents', {
         Title: title,
         Description: desc,
+        EventDetails: hasDetails ? details(desc, loc) : null,
         Category: cat,
         EventDate: addDays(days),
         StartTime: start,
         EndTime: end,
         Location: loc,
-        ImageUrl: link(img('evt-' + order, 400, 400)),
+        ImageUrl: link(img('evt-' + order, 1200, 675)),
         RegistrationUrl: link('#'),
         DisplayOrder: order++,
         IsActive: true
@@ -1945,6 +1982,15 @@
       }, CATERING_BOOKING_CTA, CATERING_HELP));
 
       const coffeeItems = ['Mini Cold Sandwiches', 'Savory Shooters', 'Mini Croissants', 'Pastries', 'Hot Bites', 'Selection of Nuts', 'Sliced Fruits', 'Fresh Juices & Detox Water'];
+      // 2.2 (mock p.2) "Coffee Breaks" / "Lunch - Finger Food" buttons above
+      // Coffee Break Menus. JumpLinks + Width Half stacks on top of the next
+      // Half section, so this column matches the Finger Food column's height.
+      // Each button's TargetSlug is "#" + the title of the section it scrolls to.
+      const jump = await addPolicySection(pageId, { layout: 'JumpLinks', order: 0, width: 'Half' });
+      await addPolicyCards('SectionIdId', jump, [
+        { kind: 'LinkItem', title: 'Coffee Breaks', icon: 'Coffee', iconColor: CATERING_MAROON, targetSlug: '#Coffee Break Menus' },
+        { kind: 'LinkItem', title: 'Lunch – Finger Food', icon: 'EatDrink', iconColor: CATERING_MAROON, targetSlug: '#Lunch Menus – Finger Food' }
+      ]);
       // 2.2 Coffee Break + Finger Food side by side (50/50), stacked on smaller screens.
       const coffee = await addPolicySection(pageId, {
         layout: 'ImageCards', order: 1, title: 'Coffee Break Menus', icon: 'Coffee', cardStyle: 'ImageMenu', columns: 2, width: 'Half', sectionStyle: 'Card'

@@ -175,3 +175,13 @@
     gap: var(--full-space-3, 12px);
   }
 }
+
+
+/* Admin tab (Content Admin group only): set apart from the content tabs. */
+.navLinkAdmin {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px dashed rgba(184, 156, 103, 0.7) !important;
+  border-radius: var(--full-radius-pill, 9999px);
+}

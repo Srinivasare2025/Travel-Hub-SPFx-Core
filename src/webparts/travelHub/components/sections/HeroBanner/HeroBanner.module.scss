@@ -1,8 +1,17 @@
 @import '../../../../../common/styles/mixins';
 @import '../../../../../common/styles/typography';
 
-$hero-min-mobile: 30rem;
-$hero-min-desktop: clamp(26rem, 38vw, 36rem);
+/* Hero sizing (reported: "images/video look stretched; on mobile the image
+   stretches down"). The old frame had a fixed min-height and drew media with
+   `object-fit: fill`, so any photo or video whose shape differed from the
+   frame was squashed or pulled. Now every slide is an aspect-ratio frame
+   (configurable: hero.aspectRatio - default 'auto' = the showing slide's own
+   shape, see .stageAuto; or a fixed ratio such as 16 / 9) and media uses `cover`: never distorted;
+   at worst a thin edge is cropped, and an editor can pin the important part
+   with a `#focus=top` hint on the image URL (common/utils/imageHints.ts).
+   Phones use a 4 / 3 frame with the quick links BELOW the media instead of
+   on top of it, so the picture is not squeezed to make room for them. */
+$hero-max-height: max(24rem, 78vh);
 
 .root {
   width: 100%;
@@ -13,13 +22,8 @@ $hero-min-desktop: clamp(26rem, 38vw, 36rem);
   position: relative;
   border-radius: var(--full-radius-lg, 16px);
   overflow: hidden;
-  min-height: $hero-min-mobile;
   background: var(--full-secondary, #04253c);
   box-shadow: var(--full-shadow-card-hover, 0 8px 28px rgba(4, 37, 60, 0.14));
-
-  @include th-tablet-up {
-    min-height: $hero-min-desktop;
-  }
 }
 
 /* --- Slide ------------------------------------------------------------- */
@@ -29,11 +33,27 @@ $hero-min-desktop: clamp(26rem, 38vw, 36rem);
   display: flex;
   align-items: flex-start;
   width: 100%;
-  height: 100%;
-  min-height: $hero-min-mobile;
+  aspect-ratio: 4 / 3;
 
   @include th-tablet-up {
-    min-height: $hero-min-desktop;
+    aspect-ratio: var(--th-hero-ratio, 16 / 9);
+    max-height: $hero-max-height;
+  }
+}
+
+/* hero.aspectRatio = 'auto' (default): the frame takes the SHOWING slide's
+   own shape at every width (HeroCarousel.tsx measures each slide), with no
+   height cap - so every picture/video fills the hero edge to edge: nothing
+   cropped left/right or top/bottom, and no blank bands. When the next slide
+   has a different shape the frame eases to it instead of jumping. */
+.stageAuto .slide,
+.stageAuto .fallbackSlide {
+  aspect-ratio: var(--th-hero-ratio, 16 / 9);
+  max-height: none;
+  transition: aspect-ratio 450ms ease;
+
+  @include th-reduced-motion {
+    transition: none;
   }
 }
 
@@ -46,23 +66,20 @@ $hero-min-desktop: clamp(26rem, 38vw, 36rem);
   inset: 0;
 }
 
-/* Sizes ImageWithFallback's outer frame - the actual `object-fit: fill` is
-   set on its <img> via the `fit="fill"` prop (HeroCarousel.tsx), since this
-   class only ever reaches that wrapping <div>, not the <img> itself. */
+/* Sizes ImageWithFallback's frame to the whole slide (its own aspect-ratio is
+   switched off in HeroCarousel.tsx so the slide's ratio is the only one). */
 .image {
   width: 100%;
   height: 100%;
 }
 
-/* `fill`, not `cover`/`contain`: nothing is cropped or letterboxed - the
-   stage's height ($hero-min-mobile/$hero-min-desktop above) is tuned to sit
-   close to the source media's own aspect ratio so `fill`'s stretch stays
-   minor instead of visibly distorting people in frame. */
+/* `cover`: fills the frame edge to edge, keeping the video's proportions -
+   a 16:9 video in the default 16:9 frame fits exactly, no crop, no stretch. */
 .video {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: fill;
+  object-fit: cover;
   background: var(--full-secondary, #04253c);
 }
 
@@ -103,26 +120,20 @@ $hero-min-desktop: clamp(26rem, 38vw, 36rem);
   }
 }
 
-/* Only exists to keep the slide title/description legible against the
-   image/video - kept light and focused on the top-left corner where that
-   text sits, so the media itself still reads at close to full original
-   brightness/quality. No bottom-heavy stop here: `.quickLinksOverlay`
-   already supplies its own contrast gradient for the quick-links zone, and
-   stacking this on top of that was the "dull image" double-darkening. */
-.scrim {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(180deg, rgba(4, 37, 60, 0.32) 0%, rgba(4, 37, 60, 0.02) 45%, rgba(4, 37, 60, 0) 100%),
-    linear-gradient(90deg, rgba(4, 37, 60, 0.38) 0%, rgba(4, 37, 60, 0.02) 55%);
-}
+/* No `.scrim` over the media any more (reported: the navy gradients made the
+   photos look dull). Title/description legibility comes from their own
+   text-shadow below. */
 
 .slideContent {
   position: relative;
   z-index: 1;
-  padding: var(--full-space-5, 24px);
+  padding: var(--full-space-4, 16px);
   max-width: 640px;
   color: #fff;
+
+  @include th-tablet-up {
+    padding: var(--full-space-5, 24px);
+  }
 
   @include th-desktop-up {
     padding: var(--full-space-6, 32px);
@@ -131,12 +142,12 @@ $hero-min-desktop: clamp(26rem, 38vw, 36rem);
 
 .slideTitle {
   font-family: var(--full-font-family-display, "Larken", Georgia, serif);
-  font-size: clamp(2.25rem, 5.2vw, 3.5rem);
+  font-size: clamp(1.5rem, 5.2vw, 3.5rem);
   font-weight: var(--full-fw-bold, 700);
   line-height: var(--full-lh-tight, 1.2);
   margin: 0 0 var(--full-space-2, 8px);
   color: #fff;
-  text-shadow: 0 2px 12px rgba(4, 37, 60, 0.35);
+  text-shadow: 0 2px 4px rgba(4, 37, 60, 0.45), 0 4px 18px rgba(4, 37, 60, 0.5);
 }
 
 .slideText {
@@ -144,23 +155,32 @@ $hero-min-desktop: clamp(26rem, 38vw, 36rem);
   line-height: var(--full-lh-normal, 1.5);
   margin: 0;
   color: rgba(255, 255, 255, 0.97);
-  text-shadow: 0 1px 6px rgba(4, 37, 60, 0.3);
+  font-weight: var(--full-fw-medium, 500);
+  text-shadow: 0 1px 3px rgba(4, 37, 60, 0.55), 0 2px 10px rgba(4, 37, 60, 0.45);
 }
 
 /* --- Quick-links overlay (on the image, pinned bottom) ------------------ */
+/* Phones: a solid navy band under the media (the media keeps its full
+   frame). Tablet and up: overlaid on the bottom of the media. */
 .quickLinksOverlay {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  position: relative;
   z-index: 2;
-  padding: var(--full-space-7, 48px) var(--full-space-4, 16px) var(--full-space-4, 16px);
-  background: linear-gradient(
-    to top,
-    rgba(4, 37, 60, 0.42) 8%,
-    rgba(4, 37, 60, 0.16) 50%,
-    rgba(4, 37, 60, 0) 100%
-  );
+  padding: var(--full-space-4, 16px);
+  background: var(--full-secondary, #04253c);
+
+  @include th-tablet-up {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: var(--full-space-7, 48px) var(--full-space-4, 16px) var(--full-space-4, 16px);
+    background: linear-gradient(
+      to top,
+      rgba(4, 37, 60, 0.42) 8%,
+      rgba(4, 37, 60, 0.16) 50%,
+      rgba(4, 37, 60, 0) 100%
+    );
+  }
 
   @include th-desktop-up {
     padding-inline: var(--full-space-6, 32px);
@@ -278,15 +298,16 @@ $hero-min-desktop: clamp(26rem, 38vw, 36rem);
 
 .quickLinkTitle {
   font-family: var(--full-font-family, "Segoe UI", sans-serif);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: var(--full-fw-bold, 700);
   line-height: 1.25;
   color: var(--full-secondary, #04253c);
 }
 
 .quickLinkDesc {
-  font-size: 0.6875rem;
-  line-height: 1.3;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  /* Fixed navy, not a theme token: the card is always near-white, even in dark mode. */
   color: var(--full-secondary, #04253c);
   @include th-line-clamp(2);
 }

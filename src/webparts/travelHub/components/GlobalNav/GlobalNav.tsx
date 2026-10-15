@@ -134,9 +134,11 @@ function NavLink({
  * `configuration.sections`).
  */
 export const GlobalNav: React.FC = () => {
-  const { globalNav, configuration } = useServices();
+  const { globalNav, configuration, admin } = useServices();
   const { view, navigate } = useNavigation();
   const { status, data } = useAsyncData(() => globalNav.getNavItems(configuration), [configuration]);
+  // The Admin tab: Content Admin group members only (TH_SiteConfiguration admin.group).
+  const { data: isAdmin } = useAsyncData(() => admin.canAccess(configuration).catch(() => false), [configuration]);
   const [imageViewer, setImageViewer] = React.useState<IGlobalNavItem | undefined>(undefined);
 
   // No loading skeleton and no error/retry panel for the tabs - a flash of
@@ -165,6 +167,17 @@ export const GlobalNav: React.FC = () => {
               {items.map((item) => (
                 <NavLink key={item.id} item={item} active={isActive(item, view, items)} onOpenImage={setImageViewer} />
               ))}
+              {isAdmin === true && (
+                <li>
+                  <button
+                    type="button"
+                    className={`${styles.navLink} ${styles.navLinkAdmin} ${view.kind === 'admin' ? styles.navLinkActive : ''}`}
+                    onClick={() => navigate({ kind: 'admin' })}
+                  >
+                    <Icon iconName="EditCreate" aria-hidden="true" /> Admin
+                  </button>
+                </li>
+              )}
             </ul>
           )}
         </nav>
